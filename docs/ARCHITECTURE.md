@@ -40,7 +40,7 @@ src/lib/analytics              dataLayer tipado, eventos, attribution (UTM)
 src/lib/consent                estado de consentimento + Consent Mode v2
 src/lib/leads                  schema, scoring (config única), service, store, tipos
 src/lib/crm|email              adapters (CRMProvider, NotificationProvider) + factory por env
-src/lib/security               rate limit, honeypot, idempotência, Turnstile, headers/CSP
+src/lib/security               rate limit, honeypot, idempotência (memória ou Redis REST via kv.ts), Turnstile, headers/CSP
 src/lib/seo                    metadata helpers, JSON-LD builders, URLs canônicas
 src/lib/content                loaders MDX (cases/insights), schemas, gates de publicação
 src/lib/observability          logger estruturado (sem PII desnecessária), hook para error monitoring

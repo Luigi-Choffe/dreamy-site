@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { fieldErrors, leadInputSchema, MAX_PAYLOAD_BYTES, MIN_FILL_TIME_MS } from "@/lib/leads/schema";
 import { createLeadService } from "@/lib/leads/service";
 import { logger, reportServerError } from "@/lib/observability/logger";
-import { createMemoryIdempotencyStore } from "@/lib/security/idempotency";
+import { getLeadIdempotencyStore } from "@/lib/security/idempotency";
 import { getLeadRateLimiter } from "@/lib/security/rate-limit";
 import { getClientIp, getRequestId } from "@/lib/security/request";
 import { verifyTurnstile } from "@/lib/security/turnstile";
@@ -33,7 +33,7 @@ export interface LeadApiError {
   message?: string;
 }
 
-const idempotency = createMemoryIdempotencyStore<LeadApiSuccess>();
+const idempotency = getLeadIdempotencyStore<LeadApiSuccess>();
 let service: ReturnType<typeof createLeadService> | null = null;
 function getService() {
   if (!service) service = createLeadService();
@@ -101,12 +101,12 @@ export async function POST(request: Request) {
       });
     }
 
-    const cached = idempotency.get(input.submissionId);
+    const cached = await idempotency.get(input.submissionId);
     if (cached) {
       logger.info("lead.idempotent_replay", { requestId, submissionId: input.submissionId });
       return json<LeadApiSuccess>({ ...cached, requestId });
     }
-    if (!idempotency.reserve(input.submissionId)) {
+    if (!(await idempotency.reserve(input.submissionId))) {
       // envio simultâneo com o mesmo submissionId: trata como sucesso em andamento
       return json<LeadApiError>({ ok: false, requestId, code: "server_error", message: "Envio em andamento." }, 409);
     }
@@ -114,13 +114,13 @@ export async function POST(request: Request) {
     try {
       const captchaOk = await verifyTurnstile(input.turnstileToken, ip);
       if (!captchaOk) {
-        idempotency.release(input.submissionId);
+        await idempotency.release(input.submissionId);
         return json<LeadApiError>({ ok: false, requestId, code: "captcha_failed" }, 400);
       }
 
       if (input.startedAt && Date.now() - input.startedAt < MIN_FILL_TIME_MS) {
         logger.warn("lead.too_fast", { requestId, ip, elapsedMs: Date.now() - input.startedAt });
-        idempotency.release(input.submissionId);
+        await idempotency.release(input.submissionId);
         return json<LeadApiSuccess>({
           ok: true,
           requestId,
@@ -135,7 +135,7 @@ export async function POST(request: Request) {
       const delivered = delivery.crm === "ok" || delivery.notification === "ok" || delivery.store === "ok";
       const attemptedAndFailed = delivery.crm === "failed" || delivery.notification === "failed";
       if (!delivered && attemptedAndFailed) {
-        idempotency.release(input.submissionId);
+        await idempotency.release(input.submissionId);
         return json<LeadApiError>({ ok: false, requestId, code: "delivery_failed" }, 502);
       }
 
@@ -146,10 +146,10 @@ export async function POST(request: Request) {
         urgencyBucket: lead.urgency_bucket,
         solution: lead.necessidade,
       };
-      idempotency.set(input.submissionId, success);
+      await idempotency.set(input.submissionId, success);
       return json(success);
     } catch (err) {
-      idempotency.release(input.submissionId);
+      await idempotency.release(input.submissionId);
       throw err;
     }
   } catch (err) {

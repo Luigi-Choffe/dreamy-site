@@ -20,7 +20,7 @@ O ambiente "Production" da Vercel (branch `main`, `VERCEL_ENV=production`) **con
 
 1. Vercel → **Add New… → Project → Import Git Repository** → conectar o GitHub `Luigi-Choffe` (instalar o Vercel GitHub App com acesso a `dreamy-site`) → Import.
 2. Framework: Next.js (detectado). Root: `/`. Install/Build: padrão (`pnpm install` / `next build`, pnpm 11 via `packageManager`). Node: 22+ (padrão do host).
-3. Environment Variables: **nenhuma obrigatória** para preview. Opcionais (todas em `.env.example`): `NEXT_PUBLIC_GTM_ID`, `CRM_*`, `EMAIL_*`, `NEXT_PUBLIC_BOOKING_URL`, `TURNSTILE_*`, `CONTENT_PREVIEW=true` (para revisar insights/cases não publicados no preview).
+3. Environment Variables: **nenhuma obrigatória** para preview. Opcionais (todas em `.env.example`): `NEXT_PUBLIC_GTM_ID`, `CRM_*`, `EMAIL_*`, `NEXT_PUBLIC_BOOKING_URL`, `TURNSTILE_*`, `CONTENT_PREVIEW=true` (para revisar insights/cases não publicados no preview). Recomendado para produção: **Storage → Upstash Redis** (Marketplace) — injeta `KV_REST_API_URL/TOKEN` e torna rate limit e idempotência do `/api/leads` globais entre instâncias (ADR-011); sem isso funcionam por instância.
 4. Deploy. O primeiro deploy sai em `https://dreamy-site-<hash>.vercel.app` / `https://dreamy-site.vercel.app`, já `noindex`.
 5. Verificar: `pnpm smoke --base https://dreamy-site.vercel.app` (esperado: regime preview, todas as verificações OK) e, se quiser o pacote completo, `PLAYWRIGHT_BASE_URL=https://dreamy-site.vercel.app pnpm test:e2e`.
 6. Opcional: **Settings → Deployment Protection → Vercel Authentication** para restringir o preview a membros do time (padrão: público, sem indexação).

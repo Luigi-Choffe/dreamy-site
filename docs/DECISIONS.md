@@ -209,7 +209,7 @@ Date:
 2026-08-17
 
 Status:
-Accepted. Em produção multi-instância, considerar Upstash Ratelimit (interface já prevista).
+Accepted. Atualização 2026-08-18: adapters `createKvRateLimiter` / `createKvIdempotencyStore` (Redis via REST — Upstash/Vercel Marketplace, sem SDK) entram automaticamente quando `KV_REST_API_URL/TOKEN` (ou `UPSTASH_REDIS_REST_*`) existem; falha do store é fail-open (lead nunca é bloqueado/perdido por indisponibilidade do Redis). Sem as variáveis, memória por instância.
 
 ---
 

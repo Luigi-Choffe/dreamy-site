@@ -139,15 +139,23 @@ describe("rate limit e idempotência", () => {
     expect((await rl.check("ip")).allowed).toBe(true);
   });
 
-  it("idempotência devolve resposta anterior e expira após TTL", () => {
+  it("idempotência devolve resposta anterior e expira após TTL", async () => {
     let t = 0;
     const store = createMemoryIdempotencyStore<{ ok: boolean }>(1000, () => t);
-    expect(store.reserve("a")).toBe(true);
-    expect(store.reserve("a")).toBe(false);
-    store.set("a", { ok: true });
-    expect(store.get("a")).toEqual({ ok: true });
-    expect(store.reserve("a")).toBe(true); // liberado após set
+    expect(await store.reserve("a")).toBe(true);
+    expect(await store.reserve("a")).toBe(false);
+    await store.set("a", { ok: true });
+    expect(await store.get("a")).toEqual({ ok: true });
+    expect(await store.reserve("a")).toBe(true); // liberado após set
     t = 2000;
-    expect(store.get("a")).toBeUndefined();
+    expect(await store.get("a")).toBeUndefined();
+  });
+
+  it("reserva 'em andamento' expira sozinha (instância que morreu no meio)", async () => {
+    let t = 0;
+    const store = createMemoryIdempotencyStore<{ ok: boolean }>(10 * 60 * 1000, () => t);
+    expect(await store.reserve("b")).toBe(true);
+    t = 61_000;
+    expect(await store.reserve("b")).toBe(true);
   });
 });

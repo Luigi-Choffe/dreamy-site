@@ -64,6 +64,7 @@ Todas opcionais (ver `.env.example`). Nunca commite valores reais.
 | `NEXT_PUBLIC_BOOKING_URL`                                                                            | link de agendamento exibido após o envio                                                                     |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY`                                            | Cloudflare Turnstile (opcional)                                                                              |
 | `CSP_ENFORCE`                                                                                        | `true` aplica a CSP em enforce (padrão Report-Only)                                                          |
+| `KV_REST_API_URL` / `KV_REST_API_TOKEN` (ou `UPSTASH_REDIS_REST_URL` / `_TOKEN`)                     | Redis via REST para rate limit global + idempotência de leads em serverless; sem eles, memória por instância |
 | `LEADS_DEV_STORE`                                                                                    | `false` desativa a gravação local em dev                                                                     |
 | `CONTENT_PREVIEW`                                                                                    | `true` exibe cases não aprovados e insights em `review` (somente fora de produção; preview é sempre noindex) |
 

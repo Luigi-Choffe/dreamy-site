@@ -41,7 +41,7 @@ Atualizado em 2026-08-18 (sessão 3). Leia isto primeiro ao retomar o projeto (j
 
 - Importar o repositório na Vercel (ou outro host) — `docs/DEPLOY.md`.
 - `NEXT_PUBLIC_GTM_ID` + container GTM conforme `docs/TRACKING.md` (GA4 `send_page_view=false`, tag de `page_view` no evento custom, Meta/LinkedIn com consentimento).
-- CRM (`CRM_PROVIDER=webhook`, `CRM_WEBHOOK_URL`, `CRM_API_KEY`), e-mail (`EMAIL_PROVIDER=resend` + chave + `LEADS_NOTIFICATION_EMAIL/FROM`), `NEXT_PUBLIC_BOOKING_URL`, Turnstile (opcional).
+- CRM (`CRM_PROVIDER=webhook`, `CRM_WEBHOOK_URL`, `CRM_API_KEY`), e-mail (`EMAIL_PROVIDER=resend` + chave + `LEADS_NOTIFICATION_EMAIL/FROM`), `NEXT_PUBLIC_BOOKING_URL`, Turnstile (opcional), Redis REST (`KV_REST_API_URL/TOKEN`, opcional — rate limit/idempotência globais em serverless).
 - Cases aprovados (`approved: true` + `approvalRef` + `docs/CONTENT-SOURCES.md`), logos/métricas autorizados (`src/content/proof.ts`).
 - Produção: `NEXT_PUBLIC_SITE_ENV=production` (opt-in explícito — ADR-017), `NEXT_PUBLIC_SITE_URL=https://www.dreamy.app.br`, apex → www no host, Search Console, remover GA4 direto do Framer.
 
@@ -62,4 +62,5 @@ Atualizado em 2026-08-18 (sessão 3). Leia isto primeiro ao retomar o projeto (j
 - Reveals são CSS + IntersectionObserver (`data-reveal`); sem JS tudo fica visível.
 - Git no Windows: `core.autocrlf=true` na máquina; o repositório força LF via `.gitattributes` (`* text=auto eol=lf`) — não "consertar" CRLF/LF à mão. Identidade de commit só neste repositório (`git config user.name/email`, sem `--global`).
 - Vercel via integração nesta máquina: `list_*` funciona; `create_git_project` retorna 403 (sem permissão de criar projeto) — usar o painel.
+- Dependabot (npm) aplica cooldown de 3 dias (`minimumReleaseAge`): logo após um `pnpm install` com pacotes recém-publicados o job "Dependabot Updates" falha com `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION` — transitório, resolve sozinho quando os pacotes envelhecem. Os PRs de bump de actions passam pelo CI completo antes de merge.
 - Utilitários: `scripts/dev/overflow-check.ts`, `reveal-check.ts`, `csp-check.ts`, `axe-check.ts` (dev), `pnpm qa:screenshots --viewports … --no-shots` (só checagens), `pnpm smoke --base <url>` (deploy).
