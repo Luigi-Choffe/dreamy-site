@@ -1,4 +1,5 @@
 import { Section } from "@/components/layout/Section";
+import { AmbientDiscs } from "@/components/marketing/AmbientDiscs";
 import { CtaLink } from "@/components/marketing/CtaLink";
 import { Reveal } from "@/components/marketing/Reveal";
 import type { CtaIntent } from "@/lib/analytics/events";
@@ -35,9 +36,9 @@ export function CTASection({
 }: CTASectionProps) {
   return (
     <Section theme={theme} aria-labelledby={id} className={cn("overflow-hidden", className)}>
-      <div
-        aria-hidden="true"
-        className="glow-brand pointer-events-none absolute -top-40 left-1/2 h-[36rem] w-[36rem] -translate-x-1/2 opacity-70"
+      <AmbientDiscs
+        className="top-1/2 left-1/2 w-[46rem] max-w-none -translate-x-1/2 -translate-y-1/2 sm:w-[56rem]"
+        intensity="soft"
       />
       <Reveal className="relative mx-auto flex max-w-3xl flex-col items-center gap-6 text-center">
         <h2 id={id} className="font-display text-h2 font-bold text-balance">

@@ -9,3 +9,7 @@ pnpm-lock.yaml
 *.png
 *.ico
 *.woff
+
+# skills de terceiros (instaladas pelo usuário) — não formatar
+.agents/skills/
+.claude/skills/

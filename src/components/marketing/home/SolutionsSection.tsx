@@ -1,8 +1,7 @@
-import { Grid } from "@/components/layout/Grid";
 import { Section } from "@/components/layout/Section";
 import { SectionHeading } from "@/components/layout/SectionHeading";
 import { Reveal } from "@/components/marketing/Reveal";
-import { SolutionCard } from "@/components/marketing/SolutionCard";
+import { SolutionCardsGrid } from "@/components/marketing/SolutionCard";
 import { homeContent } from "@/content/home";
 import { solutions } from "@/content/solutions";
 
@@ -13,13 +12,7 @@ export function SolutionsSection() {
       <Reveal>
         <SectionHeading eyebrow="Soluções" title={homeContent.solutions.title} id="solucoes-title" />
       </Reveal>
-      <Grid cols={3} gap="lg" className="mt-12 md:mt-16">
-        {solutions.map((solution, i) => (
-          <Reveal key={solution.slug} delay={i * 90} className="h-full">
-            <SolutionCard solution={solution} />
-          </Reveal>
-        ))}
-      </Grid>
+      <SolutionCardsGrid solutions={[...solutions]} className="mt-12 md:mt-16" />
     </Section>
   );
 }

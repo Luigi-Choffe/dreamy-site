@@ -8,6 +8,7 @@ Atualizado em 2026-08-18 (sessão 3). Leia isto primeiro ao retomar o projeto (j
 - Repositório publicado: `https://github.com/Luigi-Choffe/dreamy-site` (privado, branch `main`; identidade de commit configurada só neste repositório = conta GitHub `Luigi-Choffe`, e-mail noreply). CI (`.github/workflows/ci.yml`) **verde** no GitHub: check ≈ 1m20s + e2e ≈ 2m40s. Dependabot mensal (`.github/dependabot.yml`).
 - Último `pnpm check` local **verde** (typecheck · lint · content-check · 53 testes · build); `pnpm test:e2e` 56 passed (desktop + mobile, inclui axe); Lighthouse mobile 95–98 / 100 / 100 / 100 (`docs/qa/lighthouse/`).
 - **Vercel: projeto ainda não existe.** A criação via integração (time "Rafael Lang's projects") falhou com `403 forbidden` — importar pelo painel (passo a passo em `docs/DEPLOY.md`). Sem `NEXT_PUBLIC_SITE_ENV=production` qualquer deploy sai `noindex` (ADR-017), inclusive o ambiente Production da Vercel em `*.vercel.app`.
+- **Design pass 2026-08-18 (ADR-018)**: hero "sistema vivo" derivado do logo, `FlowDiagram` em rail/pílulas, cards de solução com subgrid alinhado, tokens de tipografia mais apertados. Skills instaladas pelo usuário em `.agents/skills/` e `.claude/skills/` (`frontend-design`, `copywriting`) — usar `frontend-design` para novas telas.
 - Servidores locais parados. Para subir: `pnpm dev` (3000). E2E sobe sozinho `next start` em 3100. Verificação rápida de qualquer URL publicada: `pnpm smoke --base <url>`.
 
 ## Mapa rápido
@@ -18,7 +19,7 @@ Atualizado em 2026-08-18 (sessão 3). Leia isto primeiro ao retomar o projeto (j
 | Regras do agente                                  | `.agents/rules/dreamy-site.md`, `CLAUDE.md`           |
 | Plano/fases                                       | `docs/IMPLEMENTATION-PLAN.md`                         |
 | Arquitetura                                       | `docs/ARCHITECTURE.md`                                |
-| Decisões (ADR-001…017)                            | `docs/DECISIONS.md`                                   |
+| Decisões (ADR-001…018)                            | `docs/DECISIONS.md`                                   |
 | Auditoria do site antigo                          | `docs/AUDIT-SITE-ATUAL.md` + `docs/audit/`            |
 | Prova/claims permitidos                           | `docs/CONTENT-SOURCES.md`                             |
 | Copy autoral a revisar                            | `docs/COPY-REVIEW.md`                                 |

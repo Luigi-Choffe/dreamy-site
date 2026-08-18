@@ -1,54 +1,66 @@
+import { Cog, Database, Layers, Sparkles, TrendingUp, Users, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 /**
- * Visual próprio do Hero (PRD §16): a empresa no centro conectada a clientes, dados,
- * sistemas, operação, IA e receita. SVG + CSS puro (sem JS): linhas desenham na entrada,
- * fluxo animado lento entre nós, nós entram em stagger. Respeita prefers-reduced-motion.
- * Os rótulos são HTML real (acessíveis e legíveis em qualquer viewport).
+ * Visual-assinatura do Hero (PRD §16): "sistema vivo" — a empresa no centro, conectada a
+ * clientes, dados, sistemas e operação (entradas) e produzindo IA e receita (saídas).
+ *
+ * Linguagem: os discos translúcidos do símbolo da Dreamy atrás do núcleo, uma órbita
+ * pontilhada com um brilho que percorre o anel, conectores finos com "pacotes" de luz
+ * fluindo na direção certa e um pulso lento no núcleo. SVG + CSS puro (sem JS, sem
+ * biblioteca); rótulos em HTML real; tudo respeita prefers-reduced-motion.
  */
 
-const W = 600;
-const H = 520;
-const CENTER = { x: 300, y: 260 };
+const W = 640;
+const H = 560;
+const C = { x: 320, y: 292 };
+const RING = 214;
 
 interface Node {
   id: string;
   label: string;
-  x: number;
-  y: number;
-  /** direção do fluxo: "in" (nó → empresa) | "out" (empresa → nó) */
+  angle: number; // graus, sentido horário a partir do eixo x (coordenadas SVG)
   flow: "in" | "out";
+  icon: LucideIcon;
   accent?: boolean;
 }
 
 const NODES: Node[] = [
-  { id: "clientes", label: "Clientes", x: 112, y: 118, flow: "in" },
-  { id: "dados", label: "Dados", x: 300, y: 56, flow: "in" },
-  { id: "sistemas", label: "Sistemas", x: 488, y: 118, flow: "in" },
-  { id: "receita", label: "Receita", x: 488, y: 402, flow: "out", accent: true },
-  { id: "ia", label: "IA", x: 300, y: 464, flow: "out", accent: true },
-  { id: "operacao", label: "Operação", x: 112, y: 402, flow: "in" },
+  { id: "clientes", label: "Clientes", angle: 210, flow: "in", icon: Users },
+  { id: "dados", label: "Dados", angle: 270, flow: "in", icon: Database },
+  { id: "sistemas", label: "Sistemas", angle: 330, flow: "in", icon: Layers },
+  { id: "receita", label: "Receita", angle: 30, flow: "out", icon: TrendingUp, accent: true },
+  { id: "ia", label: "IA", angle: 90, flow: "out", icon: Sparkles, accent: true },
+  { id: "operacao", label: "Operação", angle: 150, flow: "in", icon: Cog },
 ];
 
+function position(angle: number) {
+  const rad = (angle * Math.PI) / 180;
+  return { x: C.x + Math.cos(rad) * RING, y: C.y + Math.sin(rad) * RING };
+}
+
+/** Curva suave nó ↔ núcleo, orientada no sentido do fluxo (para o pacote andar na direção certa). */
 function connector(node: Node): string {
-  const from = node.flow === "in" ? node : CENTER;
-  const to = node.flow === "in" ? CENTER : node;
+  const p = position(node.angle);
+  const from = node.flow === "in" ? p : C;
+  const to = node.flow === "in" ? C : p;
   const mx = (from.x + to.x) / 2;
   const my = (from.y + to.y) / 2;
-  // controle perpendicular suave para curvatura elegante
   const dx = to.x - from.x;
   const dy = to.y - from.y;
   const len = Math.hypot(dx, dy) || 1;
-  const k = 26;
+  const k = 22;
   const cx = mx + (-dy / len) * k;
   const cy = my + (dx / len) * k;
-  return `M ${from.x} ${from.y} Q ${cx.toFixed(1)} ${cy.toFixed(1)} ${to.x} ${to.y}`;
+  return `M ${from.x.toFixed(1)} ${from.y.toFixed(1)} Q ${cx.toFixed(1)} ${cy.toFixed(1)} ${to.x.toFixed(1)} ${to.y.toFixed(1)}`;
 }
+
+const pct = (v: number, total: number) => `${((v / total) * 100).toFixed(3)}%`;
 
 export function HeroSystemDiagram({ title, className }: { title: string; className?: string }) {
   return (
     <div
-      className={cn("relative mx-auto w-full max-w-[600px] select-none", className)}
+      className={cn("relative mx-auto w-full max-w-[640px] select-none", className)}
       style={{ aspectRatio: `${W} / ${H}` }}
       role="img"
       aria-label={title}
@@ -60,41 +72,98 @@ export function HeroSystemDiagram({ title, className }: { title: string; classNa
         focusable="false"
       >
         <defs>
-          <radialGradient id="hero-glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="var(--brand-primary)" stopOpacity="0.32" />
-            <stop offset="55%" stopColor="var(--brand-primary)" stopOpacity="0.08" />
-            <stop offset="100%" stopColor="var(--brand-primary)" stopOpacity="0" />
-          </radialGradient>
-          <linearGradient id="hero-flow" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="var(--brand-gradient-from)" />
+          <linearGradient id="hero-packet" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="var(--brand-gradient-from)" stopOpacity="0" />
+            <stop offset="60%" stopColor="var(--brand-gradient-from)" />
             <stop offset="100%" stopColor="var(--brand-gradient-to)" />
           </linearGradient>
         </defs>
 
-        {/* glow central */}
-        <circle
-          cx={CENTER.x}
-          cy={CENTER.y}
-          r="190"
-          fill="url(#hero-glow)"
-          className="motion-safe:animate-pulse-soft"
-          style={{ transformOrigin: `${CENTER.x}px ${CENTER.y}px` }}
-        />
+        {/* discos do símbolo atrás do núcleo (motivo da marca) */}
+        <g fill="var(--brand-primary)">
+          <circle
+            cx={C.x}
+            cy={C.y}
+            r="118"
+            fillOpacity="0.09"
+            className="motion-safe:animate-breathe"
+            style={{ transformOrigin: `${C.x}px ${C.y}px`, animationDelay: "1.2s", ["--breathe-x" as string]: "4px" }}
+          />
+          <circle
+            cx={C.x + 44}
+            cy={C.y - 32}
+            r="98"
+            fillOpacity="0.11"
+            className="motion-safe:animate-breathe"
+            style={{
+              transformOrigin: `${C.x + 44}px ${C.y - 32}px`,
+              animationDelay: "2.4s",
+              ["--breathe-x" as string]: "-6px",
+              ["--breathe-y" as string]: "4px",
+            }}
+          />
+          <circle
+            cx={C.x - 38}
+            cy={C.y + 36}
+            r="94"
+            fillOpacity="0.11"
+            className="motion-safe:animate-breathe"
+            style={{
+              transformOrigin: `${C.x - 38}px ${C.y + 36}px`,
+              animationDelay: "3.6s",
+              ["--breathe-x" as string]: "5px",
+              ["--breathe-y" as string]: "6px",
+            }}
+          />
+        </g>
 
-        {/* anel de estrutura */}
+        {/* órbitas */}
         <circle
-          cx={CENTER.x}
-          cy={CENTER.y}
-          r="206"
+          cx={C.x}
+          cy={C.y}
+          r={RING}
           fill="none"
-          stroke="var(--border)"
+          stroke="var(--border-strong)"
+          strokeOpacity="0.55"
           strokeWidth="1"
-          strokeDasharray="2 6"
+          strokeDasharray="1 7"
+          strokeLinecap="round"
+        />
+        <circle cx={C.x} cy={C.y} r="142" fill="none" stroke="var(--border)" strokeOpacity="0.9" strokeWidth="1" />
+        {/* brilho que percorre a órbita externa */}
+        <circle
+          cx={C.x}
+          cy={C.y}
+          r={RING}
+          fill="none"
+          stroke="var(--brand-primary)"
+          strokeWidth="2"
+          strokeLinecap="round"
+          pathLength={100}
+          strokeDasharray="6 94"
+          strokeOpacity="0.9"
+          className="motion-safe:animate-orbit"
+          style={{ transformOrigin: `${C.x}px ${C.y}px`, animationDelay: "1s" }}
         />
 
-        {/* conectores: base + fluxo animado */}
+        {/* pulso do núcleo */}
+        <circle
+          cx={C.x}
+          cy={C.y}
+          r="74"
+          fill="none"
+          stroke="var(--brand-primary)"
+          strokeWidth="1.5"
+          className="motion-safe:animate-heartbeat"
+          style={{ transformOrigin: `${C.x}px ${C.y}px`, animationDelay: "1.6s", animationFillMode: "both" }}
+        />
+
+        {/* conectores: trilho + pacote de luz (com halo) */}
         {NODES.map((node, i) => {
           const d = connector(node);
+          const duration = `${5.2 + (i % 3) * 0.9}s`;
+          // começa depois da entrada (protege o LCP) e escalonado entre os conectores
+          const delay = `${1.4 + i * 0.45}s`;
           return (
             <g key={node.id}>
               <path
@@ -106,67 +175,84 @@ export function HeroSystemDiagram({ title, className }: { title: string; classNa
                 pathLength={100}
                 strokeDasharray="100"
                 className="motion-safe:animate-draw"
-                style={{ ["--draw-length" as string]: 100, animationDelay: `${120 + i * 90}ms` }}
+                style={{ ["--draw-length" as string]: 100, animationDelay: `${360 + i * 80}ms` }}
               />
               <path
                 d={d}
                 fill="none"
-                stroke="url(#hero-flow)"
-                strokeWidth="2.5"
+                stroke="var(--brand-primary)"
+                strokeWidth="5"
+                strokeOpacity="0.28"
                 strokeLinecap="round"
                 pathLength={120}
-                strokeDasharray="10 110"
+                strokeDasharray="12 108"
+                strokeDashoffset={-4}
                 className="motion-safe:animate-flow"
-                style={{ animationDelay: `${i * -1.1}s`, animationDuration: `${6 + (i % 3)}s` }}
+                style={{ animationDelay: delay, animationDuration: duration }}
+              />
+              <path
+                d={d}
+                fill="none"
+                stroke="url(#hero-packet)"
+                strokeWidth="2.25"
+                strokeLinecap="round"
+                pathLength={120}
+                strokeDasharray="12 108"
+                className="motion-safe:animate-flow"
+                style={{ animationDelay: delay, animationDuration: duration }}
               />
             </g>
           );
         })}
-
-        {/* pontos de conexão nos nós */}
-        {NODES.map((node, i) => (
-          <circle
-            key={`dot-${node.id}`}
-            cx={node.x}
-            cy={node.y}
-            r="4"
-            fill={node.accent ? "var(--brand-primary)" : "var(--surface)"}
-            stroke={node.accent ? "var(--brand-primary)" : "var(--border-strong)"}
-            strokeWidth="1.5"
-            className="motion-safe:animate-fade-in"
-            style={{ animationDelay: `${300 + i * 90}ms` }}
-          />
-        ))}
       </svg>
 
-      {/* nó central */}
+      {/* núcleo */}
       <div
-        className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2 rounded-xl border border-border bg-surface px-5 py-4 shadow-lg motion-safe:animate-rise-in"
-        style={{ left: `${(CENTER.x / W) * 100}%`, top: `${(CENTER.y / H) * 100}%`, animationDelay: "80ms" }}
+        className={cn(
+          "absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2 rounded-xl border border-border sm:gap-2.5 sm:rounded-2xl",
+          "bg-surface px-4 py-3 shadow-[var(--shadow-lg),var(--shadow-glow-soft)] motion-safe:animate-rise-in sm:px-7 sm:py-5",
+        )}
+        style={{ left: pct(C.x, W), top: pct(C.y, H), animationDelay: "280ms" }}
       >
-        <span className="grid grid-cols-3 gap-1" aria-hidden="true">
-          {[0, 1, 2, 3, 4, 5].map((n) => (
-            <span key={n} className={cn("h-1.5 w-4 rounded-full", n === 4 ? "bg-brand" : "bg-border-strong")} />
-          ))}
+        <span className="flex flex-col gap-[3px] sm:gap-1" aria-hidden="true">
+          <span className="h-1 w-7 rounded-full bg-border-strong sm:h-1.5 sm:w-9" />
+          <span className="h-1 w-5 rounded-full bg-brand sm:h-1.5 sm:w-6" />
+          <span className="h-1 w-6 rounded-full bg-border-strong sm:h-1.5 sm:w-8" />
         </span>
-        <span className="font-display text-[0.9375rem] font-bold whitespace-nowrap text-foreground sm:text-base">
+        <span className="font-display text-[0.8125rem] font-bold tracking-tight whitespace-nowrap text-foreground sm:text-base">
           Sua empresa
         </span>
       </div>
 
       {/* nós satélites */}
-      {NODES.map((node, i) => (
-        <div
-          key={node.id}
-          className={cn(
-            "absolute -translate-x-1/2 -translate-y-1/2 rounded-full border px-3 py-1.5 text-xs font-semibold whitespace-nowrap shadow-sm motion-safe:animate-rise-in sm:px-3.5 sm:text-small",
-            node.accent ? "border-brand/50 bg-brand text-brand-ink" : "border-border bg-surface text-foreground",
-          )}
-          style={{ left: `${(node.x / W) * 100}%`, top: `${(node.y / H) * 100}%`, animationDelay: `${260 + i * 90}ms` }}
-        >
-          {node.label}
-        </div>
-      ))}
+      {NODES.map((node, i) => {
+        const p = position(node.angle);
+        const Icon = node.icon;
+        return (
+          <div
+            key={node.id}
+            className={cn(
+              "absolute inline-flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-full border py-0.5 pr-2.5 pl-0.5 shadow-md",
+              "text-[0.6875rem] font-semibold whitespace-nowrap motion-safe:animate-rise-in sm:gap-2 sm:py-1.5 sm:pr-3.5 sm:pl-1.5 sm:text-small",
+              node.accent
+                ? "border-brand bg-brand text-brand-ink shadow-glow-soft"
+                : "border-border bg-surface text-foreground",
+            )}
+            style={{ left: pct(p.x, W), top: pct(p.y, H), animationDelay: `${420 + i * 80}ms` }}
+          >
+            <span
+              aria-hidden="true"
+              className={cn(
+                "grid size-5 shrink-0 place-items-center rounded-full sm:size-7",
+                node.accent ? "bg-brand-ink/10 text-brand-ink" : "bg-brand-soft text-brand-strong",
+              )}
+            >
+              <Icon className="size-3 sm:size-4" strokeWidth={2.25} />
+            </span>
+            {node.label}
+          </div>
+        );
+      })}
     </div>
   );
 }

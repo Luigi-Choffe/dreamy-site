@@ -11,12 +11,12 @@ const base =
   "transition-[background-color,color,border-color,box-shadow,transform] duration-(--duration-fast) ease-(--ease-out) " +
   "select-none outline-none focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-focus " +
   "disabled:pointer-events-none disabled:opacity-55 aria-disabled:pointer-events-none aria-disabled:opacity-55 " +
-  "active:translate-y-px";
+  "active:scale-[0.99]";
 
 const variants: Record<ButtonVariant, string> = {
   primary:
-    "bg-brand text-brand-ink shadow-sm hover:bg-brand-hover active:bg-brand-active " +
-    "data-[loading=true]:text-transparent",
+    "bg-brand text-brand-ink shadow-sm hover:bg-brand-hover hover:shadow-glow-soft active:bg-brand-active " +
+    "motion-safe:hover:scale-[1.02] data-[loading=true]:text-transparent",
   secondary:
     "border border-border-strong bg-transparent text-foreground hover:bg-surface-hover hover:border-foreground/40 " +
     "active:bg-surface-hover data-[loading=true]:text-transparent",

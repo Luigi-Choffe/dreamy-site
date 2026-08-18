@@ -9,6 +9,7 @@ import { SystemDiagram } from "@/components/diagrams/SystemDiagram";
 import { Container } from "@/components/layout/Container";
 import { Section } from "@/components/layout/Section";
 import { SectionHeading } from "@/components/layout/SectionHeading";
+import { AmbientDiscs } from "@/components/marketing/AmbientDiscs";
 import { CTASection } from "@/components/marketing/CTASection";
 import { CtaLink } from "@/components/marketing/CtaLink";
 import { Reveal } from "@/components/marketing/Reveal";
@@ -116,10 +117,7 @@ export function SolutionPage({ solution }: { solution: Solution }) {
         aria-labelledby="solution-title"
         className="relative overflow-hidden border-b border-border bg-background pt-8 pb-16 md:pt-10 md:pb-24"
       >
-        <div
-          aria-hidden="true"
-          className="glow-brand pointer-events-none absolute top-0 right-[-14%] hidden h-[38rem] w-[38rem] -translate-y-1/3 lg:block"
-        />
+        <AmbientDiscs className="top-[-30%] right-[-16%] hidden w-[50rem] max-w-none lg:block" intensity="soft" />
         <Container className="relative">
           <Breadcrumbs
             items={[
@@ -148,8 +146,8 @@ export function SolutionPage({ solution }: { solution: Solution }) {
               </div>
             </div>
             <Reveal className="lg:col-span-5" delay={120}>
-              <Card padding="md" className="bg-surface/80 backdrop-blur-sm">
-                <p className="mb-4 text-xs font-semibold tracking-(--tracking-eyebrow) text-foreground-subtle uppercase">
+              <Card padding="lg" className="shadow-md">
+                <p className="mb-6 text-xs font-semibold tracking-(--tracking-eyebrow) text-foreground-subtle uppercase">
                   Como funciona
                 </p>
                 <FlowDiagram
@@ -206,8 +204,10 @@ export function SolutionPage({ solution }: { solution: Solution }) {
               <Reveal key={uc.id} delay={i * 80} className="h-full">
                 <Card as="article" padding="lg" className="flex h-full flex-col gap-6">
                   <h3 className="font-display text-h3 font-bold">{uc.title}</h3>
-                  <AgentFlow useCase={uc} />
-                  <ul className="mt-auto flex flex-wrap gap-1.5 border-t border-border pt-5">
+                  <div className="flex flex-1 items-center rounded-xl border border-border bg-background-secondary/70 px-5 py-5">
+                    <AgentFlow useCase={uc} />
+                  </div>
+                  <ul className="flex flex-wrap gap-1.5">
                     {uc.tasks.map((t) => (
                       <li
                         key={t}

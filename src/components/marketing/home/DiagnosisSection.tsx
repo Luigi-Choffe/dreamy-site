@@ -1,3 +1,4 @@
+import { FlowDiagram } from "@/components/diagrams/FlowDiagram";
 import { Section } from "@/components/layout/Section";
 import { Reveal } from "@/components/marketing/Reveal";
 import { homeContent } from "@/content/home";
@@ -5,11 +6,10 @@ import { cn } from "@/lib/utils/cn";
 
 /**
  * Home — Diagnóstico (PRD §21): copy + fluxo vertical DOR → … → RESULTADO.
- * O fluxo é uma lista ordenada com trilha contínua (line drawing sutil via CSS).
+ * O fluxo é o rail numerado do FlowDiagram (a ordem aqui carrega informação).
  */
 export function DiagnosisSection() {
   const { diagnosis } = homeContent;
-  const steps = diagnosis.flow.steps;
   return (
     <Section theme="secondary" aria-labelledby="diagnostico-title">
       <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
@@ -37,39 +37,19 @@ export function DiagnosisSection() {
         </div>
 
         <Reveal className="lg:col-span-5" delay={120}>
-          <figure className="relative rounded-2xl border border-border bg-surface p-6 shadow-md md:p-8">
-            <figcaption className="sr-only">{diagnosis.flow.title}</figcaption>
-            <ol className="relative flex flex-col">
-              {/* trilha vertical */}
-              <span aria-hidden="true" className="absolute top-3 bottom-3 left-[1.15rem] w-px bg-border" />
-              {steps.map((step, i) => {
-                const last = i === steps.length - 1;
-                return (
-                  <li key={step.label} className={cn("relative flex items-center gap-4", !last && "pb-6")}>
-                    <span
-                      aria-hidden="true"
-                      className={cn(
-                        "relative z-10 grid size-9 shrink-0 place-items-center rounded-full border text-xs font-bold tabular-nums",
-                        last
-                          ? "border-brand bg-brand text-brand-ink"
-                          : "border-border bg-surface text-foreground-muted",
-                      )}
-                    >
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <span
-                      className={cn(
-                        "font-display text-h4 font-bold tracking-wide uppercase",
-                        last ? "text-brand-strong" : "text-foreground",
-                      )}
-                    >
-                      {step.label}
-                    </span>
-                  </li>
-                );
-              })}
-            </ol>
-          </figure>
+          <div className="surface-sheen rounded-xl border border-border bg-surface p-6 shadow-md md:p-8">
+            <p className="mb-6 text-xs font-semibold tracking-(--tracking-eyebrow) text-foreground-subtle uppercase">
+              {diagnosis.flow.title}
+            </p>
+            <FlowDiagram
+              title={diagnosis.flow.title}
+              steps={diagnosis.flow.steps}
+              direction="vertical"
+              size="lg"
+              numbered
+              highlightLast
+            />
+          </div>
         </Reveal>
       </div>
     </Section>

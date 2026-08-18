@@ -1,6 +1,6 @@
 # QA — Checklists e registro de verificação (PRD §90–§95, §106–§108)
 
-Screenshots de cada fase em `docs/qa/<fase>/` (390 px, 768 px, 1440 px), gerados com `pnpm qa:screenshots` (Playwright contra o servidor local).
+Screenshots de cada fase em `docs/qa/<fase>/` (390 px, 768 px, 1440 px), gerados com `pnpm qa:screenshots` (Playwright contra o servidor local). `docs/qa/final/` reflete o design pass de 2026-08-18 (ADR-018): viewport de todas as rotas + página inteira da home.
 
 ## Definition of Done por fase (PRD §106)
 

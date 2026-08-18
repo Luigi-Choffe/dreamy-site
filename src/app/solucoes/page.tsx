@@ -1,11 +1,10 @@
 import { Breadcrumbs } from "@/components/content/Breadcrumbs";
 import { Container } from "@/components/layout/Container";
-import { Grid } from "@/components/layout/Grid";
 import { Section } from "@/components/layout/Section";
 import { SectionHeading } from "@/components/layout/SectionHeading";
 import { CTASection } from "@/components/marketing/CTASection";
 import { Reveal } from "@/components/marketing/Reveal";
-import { SolutionCard } from "@/components/marketing/SolutionCard";
+import { SolutionCardsGrid } from "@/components/marketing/SolutionCard";
 import { routes } from "@/config/site";
 import { homeContent } from "@/content/home";
 import { solutions, solutionsIndexContent } from "@/content/solutions";
@@ -38,13 +37,7 @@ export default function SolutionsIndexPage() {
       </section>
 
       <Section theme="dark" aria-label="As três soluções">
-        <Grid cols={3} gap="lg">
-          {solutions.map((solution, i) => (
-            <Reveal key={solution.slug} delay={i * 90} className="h-full">
-              <SolutionCard solution={solution} ctaLocation="solutions_index" />
-            </Reveal>
-          ))}
-        </Grid>
+        <SolutionCardsGrid solutions={[...solutions]} ctaLocation="solutions_index" />
       </Section>
 
       <Section aria-labelledby="solucoes-diagnostico-title">

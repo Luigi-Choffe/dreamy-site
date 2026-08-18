@@ -324,3 +324,28 @@ Date:
 
 Status:
 Accepted.
+
+---
+
+# ADR-018
+
+Decision:
+Passo de design "Apple × Spotify" (2026-08-18), a pedido da Dreamy, mantendo copy do PRD intacta:
+
+- **Assinatura**: o hero é um "sistema vivo" derivado do símbolo da marca — os três discos translúcidos do logo atrás do núcleo, órbita pontilhada com brilho percorrendo o anel, conectores com pacotes de luz fluindo (entradas → empresa → IA/receita), pulso lento no núcleo; nós com ícones em pílulas. Mesmo vocabulário no `HubDiagram` (agente + integrações) e no `AmbientDiscs` da faixa de CTA. Tudo SVG + CSS (sem JS, sem lib), `prefers-reduced-motion` respeitado; animações contínuas começam depois do primeiro paint (LCP protegido) e sem filtros SVG/backdrop-blur sobre camadas animadas.
+- **Diagramas de fluxo** (`FlowDiagram`): vertical vira "rail" (marcadores centrados numa linha contínua, rótulos alinhados à esquerda, último passo em pílula verde; `numbered` para o diagnóstico); horizontal vira pílulas ligadas por fio fino. Substitui as setas/chips desalinhados.
+- **Cards de solução**: cada card é item de `grid-rows-subgrid` (meta · título · diagrama · CTA) — diagramas começam na mesma altura e CTAs terminam alinhados; painel do diagrama centralizado; brilho suave no hover.
+- **Tipografia/tokens**: display 38→72 px (≈65 px em 1440), tracking −0.032em, leading 1; `--shadow-glow-soft`; `surface-sheen` (realce superior sutil só em superfícies escuras); botão primário com hover scale 1.02 + glow.
+- `Reveal` remove o atributo após a entrada (o elemento volta às próprias transições de hover).
+
+Reason:
+O usuário pediu um "tapa de design" (referência: precisão da Apple + energia/pílulas/verde da Spotify, combinando com o logo) antes de hospedar; os gráficos do hero eram genéricos e os campos dos cards ficavam desalinhados. A linguagem visual passa a vir do próprio símbolo da Dreamy (discos sobrepostos), o que a torna própria e não templável.
+
+Alternatives:
+Biblioteca de animação (ADR-016 mantém sem lib); grid faint no fundo do hero (removido — default genérico); `content-visibility: auto` nas seções (testado, sem ganho de LCP e com risco de salto na barra de rolagem — descartado).
+
+Date:
+2026-08-18
+
+Status:
+Accepted. Lighthouse mobile home ≥ 94–95 (LCP simulado ~3,0 s vs baseline medida nas mesmas condições 3,1–3,6 s); e2e 56 passed; axe limpo.

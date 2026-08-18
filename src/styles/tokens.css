@@ -43,7 +43,7 @@
   --font-sans: var(--font-instrument-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-display: var(--font-urbanist), var(--font-sans);
 
-  --text-display: clamp(2.375rem, 1.45rem + 3.4vw, 5rem); /* 38 → 80 px (≈72 px em 1440) */
+  --text-display: clamp(2.375rem, 1.35rem + 3vw, 4.5rem); /* 38 → 72 px (≈65 px em 1440) */
   --text-h1: clamp(2.25rem, 1.5rem + 3vw, 4rem); /* 36 → 64 px */
   --text-h2: clamp(2rem, 1.35rem + 2.6vw, 3.5rem); /* 32 → 56 px */
   --text-h3: clamp(1.375rem, 1.15rem + 0.9vw, 1.875rem); /* 22 → 30 px */
@@ -54,12 +54,12 @@
   --text-xs: 0.8125rem; /* 13 px */
   --text-eyebrow: 0.75rem; /* 12 px, uppercase, tracking */
 
-  --leading-display: 1.02;
-  --leading-heading: 1.1;
+  --leading-display: 1;
+  --leading-heading: 1.08;
   --leading-subheading: 1.25;
   --leading-body: 1.6;
-  --tracking-display: -0.025em;
-  --tracking-heading: -0.02em;
+  --tracking-display: -0.032em;
+  --tracking-heading: -0.024em;
   --tracking-eyebrow: 0.14em;
 
   /* --- Layout -------------------------------------------------------------- */
@@ -81,6 +81,10 @@
   --shadow-md: 0 1px 2px rgb(var(--shadow-color) / 0.04), 0 8px 24px -12px rgb(var(--shadow-color) / 0.14);
   --shadow-lg: 0 2px 4px rgb(var(--shadow-color) / 0.04), 0 24px 48px -20px rgb(var(--shadow-color) / 0.22);
   --shadow-glow: 0 0 0 1px rgb(70 235 126 / 0.25), 0 12px 40px -12px rgb(70 235 126 / 0.35);
+  --shadow-glow-soft: 0 8px 28px -10px rgb(70 235 126 / 0.45);
+  /* realce superior sutil em superfícies escuras (efeito "vidro"/Apple) */
+  --surface-highlight: rgb(255 255 255 / 0);
+  --surface-sheen: linear-gradient(180deg, var(--surface-highlight), transparent 40%);
 
   /* --- Motion --------------------------------------------------------------- */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -114,6 +118,8 @@
   --focus-ring: #46eb7e;
   --overlay: rgb(0 0 0 / 0.7);
   --shadow-color: 0 0 0;
+  --surface-highlight: rgb(255 255 255 / 0.05);
+  --shadow-glow-soft: 0 10px 34px -12px rgb(70 235 126 / 0.55);
   color-scheme: dark;
 }
 

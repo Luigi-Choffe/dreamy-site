@@ -35,20 +35,27 @@ export function Reveal({ children, className, delay = 0, y = 18, as = "div" }: R
     if (alreadyVisible) return;
 
     el.dataset.reveal = "hidden";
+    let cleanupTimer: ReturnType<typeof setTimeout> | undefined;
     const io = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
             el.dataset.reveal = "visible";
             io.disconnect();
+            // após a entrada, remove o atributo: o elemento volta a usar só as próprias
+            // transições (hover etc.), sem herdar a transição longa do reveal
+            cleanupTimer = setTimeout(() => delete el.dataset.reveal, 800 + delay);
           }
         }
       },
       { threshold: 0.12, rootMargin: "0px 0px -5% 0px" },
     );
     io.observe(el);
-    return () => io.disconnect();
-  }, []);
+    return () => {
+      io.disconnect();
+      if (cleanupTimer) clearTimeout(cleanupTimer);
+    };
+  }, [delay]);
 
   const style = { "--reveal-y": `${y}px`, "--reveal-delay": `${delay}ms` } as CSSProperties;
 

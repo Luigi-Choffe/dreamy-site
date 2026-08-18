@@ -20,7 +20,7 @@ export function Card({ interactive, padding = "md", className, as = "div", ...pr
   return (
     <Comp
       className={cn(
-        "relative rounded-xl border border-border bg-surface text-foreground shadow-sm",
+        "surface-sheen relative rounded-xl border border-border bg-surface text-foreground shadow-sm",
         "transition-[border-color,box-shadow,transform,background-color] duration-(--duration-base) ease-(--ease-out)",
         interactive &&
           "focus-within:border-brand-strong/50 focus-within:shadow-md hover:border-border-strong hover:shadow-md motion-safe:hover:-translate-y-0.5",

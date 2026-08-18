@@ -12,18 +12,8 @@ export function Hero() {
       aria-labelledby="hero-title"
       className="relative overflow-hidden border-b border-border bg-background pt-10 pb-16 md:pt-16 md:pb-24 lg:pt-20 lg:pb-28"
     >
-      {/* fundo: grade sutil + brilho verde discreto */}
-      <div
-        aria-hidden="true"
-        className="bg-grid-faint pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,black_35%,transparent_75%)]"
-      />
-      <div
-        aria-hidden="true"
-        className="glow-brand pointer-events-none absolute top-1/2 right-[-10%] hidden h-[42rem] w-[42rem] -translate-y-1/2 lg:block"
-      />
-
-      <Container className="relative grid items-center gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-10">
-        <div className="flex max-w-2xl flex-col gap-6">
+      <Container className="relative grid items-center gap-14 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-8">
+        <div className="flex max-w-3xl flex-col gap-6">
           <Eyebrow>{hero.eyebrow}</Eyebrow>
           <h1 id="hero-title" className="font-display text-display font-bold text-balance">
             {hero.title}

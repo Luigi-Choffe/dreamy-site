@@ -76,6 +76,7 @@
   --shadow-md: var(--shadow-md);
   --shadow-lg: var(--shadow-lg);
   --shadow-glow: var(--shadow-glow);
+  --shadow-glow-soft: var(--shadow-glow-soft);
 
   --ease-brand: var(--ease-out);
   --ease-in-out-brand: var(--ease-in-out);
@@ -131,6 +132,37 @@
     }
     to {
       stroke-dashoffset: 0;
+    }
+  }
+  --animate-heartbeat: heartbeat 3.6s var(--ease-out) infinite;
+  --animate-breathe: breathe 14s var(--ease-in-out) infinite;
+  --animate-orbit: orbit 48s linear infinite;
+  @keyframes heartbeat {
+    0% {
+      opacity: 0.55;
+      transform: scale(0.72);
+    }
+    70% {
+      opacity: 0;
+      transform: scale(1.35);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.35);
+    }
+  }
+  @keyframes breathe {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(var(--breathe-x, 0px), var(--breathe-y, 0px)) scale(1.04);
+    }
+  }
+  @keyframes orbit {
+    to {
+      transform: rotate(360deg);
     }
   }
 }
@@ -380,6 +412,10 @@
   }
   .glow-brand {
     background: radial-gradient(closest-side, rgb(70 235 126 / 0.28), transparent 70%);
+  }
+  /* superfície com brilho superior sutil (só aparece em data-theme="dark") */
+  .surface-sheen {
+    background-image: var(--surface-sheen);
   }
   /* Reveal on scroll (src/components/marketing/Reveal.tsx) — sem JS o conteúdo fica visível */
   [data-reveal="hidden"] {

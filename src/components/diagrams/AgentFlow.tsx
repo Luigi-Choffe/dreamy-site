@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils/cn";
 export function AgentFlow({
   useCase,
   className,
-  size = "sm",
+  size = "md",
 }: {
   useCase: UseCase;
   className?: string;

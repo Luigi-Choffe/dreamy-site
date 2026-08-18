@@ -8,7 +8,7 @@ export function FitSection() {
   const { fit } = homeContent;
   return (
     <Section theme="dark" aria-labelledby="fit-title">
-      <div className="grid gap-10 lg:grid-cols-12 lg:gap-16">
+      <div className="grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-16">
         <Reveal className="lg:col-span-6">
           <p className="eyebrow">Para quem</p>
           <h2 id="fit-title" className="mt-4 font-display text-h2 font-bold text-balance">
@@ -21,11 +21,11 @@ export function FitSection() {
             {fit.items.map((item) => (
               <li
                 key={item}
-                className="flex items-center gap-3 rounded-lg border border-border bg-surface px-4 py-3.5 text-small font-medium text-foreground"
+                className="surface-sheen flex items-center gap-3 rounded-xl border border-border bg-surface px-5 py-4 text-small font-medium text-foreground shadow-sm md:text-body"
               >
                 <span
                   aria-hidden="true"
-                  className="grid size-6 shrink-0 place-items-center rounded-full bg-brand-soft text-brand-strong"
+                  className="grid size-7 shrink-0 place-items-center rounded-full bg-brand-soft text-brand-strong"
                 >
                   <Check className="size-3.5" strokeWidth={3} />
                 </span>
