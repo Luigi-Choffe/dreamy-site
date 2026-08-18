@@ -2,12 +2,12 @@
  * Screenshots do formulário de contato (passo 2, erros e sucesso) — revisão visual (dev).
  * Uso: pnpm tsx scripts/dev/form-shots.ts <pasta-saida> [base=http://localhost:3100]
  */
-import { chromium, devices } from "@playwright/test";
+import { chromium, devices, type BrowserContextOptions } from "@playwright/test";
 
 const out = process.argv[2];
 const base = process.argv[3] ?? "http://localhost:3100";
 
-async function run(name: string, ctxOpts: Parameters<typeof chromium.launch>[0] & object) {
+async function run(name: string, ctxOpts: BrowserContextOptions) {
   const b = await chromium.launch();
   const ctx = await b.newContext(ctxOpts);
   await ctx.addCookies([
