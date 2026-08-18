@@ -37,7 +37,7 @@ Todos os pushes têm a forma `{ event: '<nome>', ...params }`. Parâmetros não 
 | `meeting_scheduled`  | quando a ferramenta de agendamento notificar (postMessage/redirect) — só se tecnicamente mensurável | `page`                                                                                                                                                  |
 | `consent_update`     | após escolha de consentimento                                                                       | `consent_analytics`, `consent_marketing` (booleans)                                                                                                     |
 
-`intent` em `cta_click`: `contact` \| `solutions` \| `solution:<slug>` \| `case` \| `whatsapp` \| `booking`.
+`intent` em `cta_click`: `contact` \| `solutions` \| `solution:<slug>` \| `case` \| `insight` \| `whatsapp` \| `booking` \| `about` \| `how_we_work` \| `home`.
 
 ## Configuração esperada no container GTM
 

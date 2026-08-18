@@ -5,10 +5,13 @@ import { Container } from "@/components/layout/Container";
 import { Grid } from "@/components/layout/Grid";
 import { Section } from "@/components/layout/Section";
 import { SectionHeading } from "@/components/layout/SectionHeading";
+import { CTASection } from "@/components/marketing/CTASection";
 import { Reveal } from "@/components/marketing/Reveal";
 import { routes } from "@/config/site";
+import { homeContent } from "@/content/home";
 import { getPublishedInsights, isInsightsSectionLive } from "@/lib/content/collections";
 import { createPageMetadata } from "@/lib/seo/metadata";
+import { readingMinutes } from "@/lib/utils/reading-time";
 
 export const metadata = createPageMetadata({
   title: "Insights: software sob medida, sistemas e IA aplicada | Dreamy",
@@ -41,11 +44,21 @@ export default function InsightsPage() {
         <Grid cols={3}>
           {posts.map((p, i) => (
             <Reveal key={p.frontmatter.slug} delay={i * 60} className="h-full">
-              <ArticleCard data={p.frontmatter} />
+              <ArticleCard data={p.frontmatter} readingMinutes={readingMinutes(p.body)} />
             </Reveal>
           ))}
         </Grid>
       </Section>
+      <CTASection
+        title={homeContent.finalCta.title}
+        text={homeContent.finalCta.text}
+        ctaLabel={homeContent.finalCta.cta.label}
+        ctaHref={homeContent.finalCta.cta.href}
+        ctaId="insights_index_cta"
+        ctaLocation="insights_index"
+        microcopy={homeContent.finalCta.microcopy}
+        id="insights-cta-title"
+      />
     </>
   );
 }

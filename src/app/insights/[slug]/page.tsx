@@ -3,8 +3,11 @@ import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/content/Breadcrumbs";
 import { RichText } from "@/components/content/RichText";
 import { JsonLd } from "@/components/content/JsonLd";
+import { ArticleCard } from "@/components/content/ArticleCard";
 import { Container } from "@/components/layout/Container";
+import { Section } from "@/components/layout/Section";
 import { CTASection } from "@/components/marketing/CTASection";
+import { Reveal } from "@/components/marketing/Reveal";
 import { Eyebrow } from "@/components/ui/Badge";
 import { routes } from "@/config/site";
 import { getInsightBySlug, getPublishedInsights, isInsightsSectionLive } from "@/lib/content/collections";
@@ -12,6 +15,7 @@ import { renderMdx } from "@/lib/content/mdx";
 import { articleJsonLd } from "@/lib/seo/jsonld";
 import { createPageMetadata } from "@/lib/seo/metadata";
 import { formatDatePtBr } from "@/lib/utils/date";
+import { formatReadingTime, readingMinutes } from "@/lib/utils/reading-time";
 
 interface Params {
   slug: string;
@@ -51,6 +55,10 @@ export default async function InsightPage({ params }: { params: Promise<Params> 
   const fm = entry.frontmatter;
   const body = await renderMdx(entry.body);
   const path = `${routes.insights}/${fm.slug}`;
+  const minutes = readingMinutes(entry.body);
+  const related = getPublishedInsights()
+    .filter((i) => i.frontmatter.slug !== fm.slug)
+    .slice(0, 2);
 
   return (
     <>
@@ -77,10 +85,24 @@ export default async function InsightPage({ params }: { params: Promise<Params> 
             <Eyebrow>Insights</Eyebrow>
             <h1 className="font-display text-h1 font-bold text-balance">{fm.title}</h1>
             <p className="text-lead text-foreground-muted">{fm.description}</p>
-            <p className="text-small text-foreground-subtle">
-              <time dateTime={fm.date}>{formatDatePtBr(fm.date)}</time> · {fm.author}
-              {fm.updatedAt ? ` · atualizado em ${formatDatePtBr(fm.updatedAt)}` : null}
-            </p>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-3 text-small text-foreground-subtle">
+              <p>
+                <time dateTime={fm.date}>{formatDatePtBr(fm.date)}</time> · {fm.author} · {formatReadingTime(minutes)}
+                {fm.updatedAt ? ` · atualizado em ${formatDatePtBr(fm.updatedAt)}` : null}
+              </p>
+              {fm.tags.length ? (
+                <ul className="flex flex-wrap gap-1.5" aria-label="Temas">
+                  {fm.tags.map((tag) => (
+                    <li
+                      key={tag}
+                      className="rounded-full bg-brand-soft px-2.5 py-1 text-xs leading-none font-semibold text-brand-strong"
+                    >
+                      {tag}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
           </header>
           {fm.image ? (
             <div className="mt-10 overflow-hidden rounded-2xl border border-border">
@@ -98,6 +120,24 @@ export default async function InsightPage({ params }: { params: Promise<Params> 
           <RichText className="mt-10">{body}</RichText>
         </Container>
       </article>
+      {related.length ? (
+        <Section theme="secondary" padding="compact" aria-labelledby="related-insights-title">
+          <h2 id="related-insights-title" className="font-display text-h3 font-bold">
+            Mais insights
+          </h2>
+          <div className="mt-8 grid gap-6 md:grid-cols-2">
+            {related.map((r, i) => (
+              <Reveal key={r.frontmatter.slug} delay={i * 60} className="h-full">
+                <ArticleCard
+                  data={r.frontmatter}
+                  readingMinutes={readingMinutes(r.body)}
+                  ctaLocation="insight_related"
+                />
+              </Reveal>
+            ))}
+          </div>
+        </Section>
+      ) : null}
       <CTASection
         title="Quer aplicar isso na sua empresa?"
         text="Conte o contexto. Vamos entender o problema e avaliar o que faz sentido construir."

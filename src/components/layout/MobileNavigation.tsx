@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowUpRight, MessageCircle } from "lucide-react";
+import { ArrowRight, MessageCircle } from "lucide-react";
 import { Dialog } from "@/components/ui/Dialog";
 import { LinkButton } from "@/components/ui/Button";
 import type { NavigationModel } from "@/config/navigation";
@@ -34,12 +34,12 @@ export function MobileNavigation({ open, onClose, nav, whatsappUrl }: MobileNavi
                   <Link
                     href={item.href}
                     onClick={onClose}
-                    className="flex items-center justify-between py-3 font-display text-h4 font-semibold text-foreground"
+                    className="flex items-center justify-between py-3 font-display text-h3 font-bold tracking-tight text-foreground"
                   >
                     {item.label}
-                    <ArrowUpRight aria-hidden="true" className="size-5 text-foreground-subtle" />
+                    <ArrowRight aria-hidden="true" className="size-5 text-foreground-subtle" />
                   </Link>
-                  <ul className="mb-2 flex flex-col gap-1 pl-3">
+                  <ul className="mb-2 flex flex-col gap-0.5">
                     {item.children.map((child) => (
                       <li key={child.href}>
                         <Link
@@ -47,11 +47,17 @@ export function MobileNavigation({ open, onClose, nav, whatsappUrl }: MobileNavi
                           onClick={onClose}
                           aria-current={pathname === child.href ? "page" : undefined}
                           className={cn(
-                            "flex items-center gap-3 rounded-md py-2.5 pr-2 pl-3 text-base text-foreground-muted",
-                            "border-l-2 border-border transition-colors hover:border-brand-strong hover:text-foreground",
-                            "aria-[current=page]:border-brand-strong aria-[current=page]:text-foreground",
+                            "group/sub flex items-center gap-3 rounded-lg py-2.5 pr-2 text-base font-medium text-foreground-muted",
+                            "transition-colors hover:text-foreground aria-[current=page]:text-foreground",
                           )}
                         >
+                          <span
+                            aria-hidden="true"
+                            className={cn(
+                              "size-1.5 shrink-0 rounded-full bg-border-strong transition-colors",
+                              "group-hover/sub:bg-brand group-aria-[current=page]/sub:bg-brand",
+                            )}
+                          />
                           {child.label}
                         </Link>
                       </li>
@@ -63,10 +69,10 @@ export function MobileNavigation({ open, onClose, nav, whatsappUrl }: MobileNavi
                   href={item.href}
                   onClick={onClose}
                   aria-current={pathname === item.href.split("#")[0] && !item.href.includes("#") ? "page" : undefined}
-                  className="flex items-center justify-between py-3 font-display text-h4 font-semibold text-foreground"
+                  className="flex items-center justify-between py-3 font-display text-h3 font-bold tracking-tight text-foreground"
                 >
                   {item.label}
-                  <ArrowUpRight aria-hidden="true" className="size-5 text-foreground-subtle" />
+                  <ArrowRight aria-hidden="true" className="size-5 text-foreground-subtle" />
                 </Link>
               )}
             </li>

@@ -12,6 +12,7 @@ export type CtaIntent =
   | "solutions"
   | `solution:${SolutionParam}`
   | "case"
+  | "insight"
   | "whatsapp"
   | "booking"
   | "about"
