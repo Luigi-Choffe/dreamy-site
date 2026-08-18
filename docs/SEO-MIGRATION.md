@@ -37,7 +37,7 @@ Fora de produção (`NEXT_PUBLIC_SITE_ENV !== 'production'` — o valor não é 
 1. Definir `NEXT_PUBLIC_SITE_URL=https://www.dreamy.app.br` e `NEXT_PUBLIC_SITE_ENV=production` no ambiente de produção.
 2. Apontar DNS: `www` → host de produção; apex `dreamy.app.br` → redirect 301 para `www`.
 3. Confirmar HTTPS + HSTS ativos; testar `http://dreamy.app.br/`, `https://dreamy.app.br/`, `http://www.dreamy.app.br/`.
-4. Validar `https://www.dreamy.app.br/robots.txt` e `/sitemap.xml`.
+4. Validar `https://www.dreamy.app.br/robots.txt` e `/sitemap.xml` — atalho: `pnpm smoke --base https://www.dreamy.app.br --expect production --redirects` cobre 3 e 4 e o `redirect-map.csv`.
 5. Search Console: verificar propriedade (domínio), enviar sitemap, solicitar indexação das páginas principais, monitorar Cobertura/404.
 6. Validar structured data (Rich Results Test / Schema validator) em `/`, `/solucoes/*`.
 7. Validar OG (LinkedIn Post Inspector, WhatsApp).

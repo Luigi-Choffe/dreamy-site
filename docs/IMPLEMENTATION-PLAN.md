@@ -58,11 +58,12 @@ Gate: `pnpm check` verde + relatório em `docs/QA.md`.
 
 ## Fase 8 — Migração ⏳ (documentada; requer DNS/host/Search Console)
 
-`docs/redirect-map.csv`, domínio (`dreamy.app.br` → `www`), HTTPS, produção, sitemap, Search Console, validação de analytics, DNS. Checklist §108.
+Feito (2026-08-18): repositório publicado (`github.com/Luigi-Choffe/dreamy-site`), CI verde, produção como opt-in explícito (ADR-017), `pnpm smoke` (verificação de deploy/redirects), roteiro em `docs/DEPLOY.md`.
+Pendente (externo): importar na Vercel/host, `docs/redirect-map.csv`, domínio (`dreamy.app.br` → `www`), HTTPS, produção, sitemap, Search Console, validação de analytics, DNS. Checklist §108.
 
 ## Fase 9 — Pós-lançamento ⏳
 
-Monitorar erros, leads, analytics, 404, Search Console, performance real (p75), eventos, conversão.
+Monitorar erros (`src/instrumentation.ts` → log `server.request_error`; `docs/DEPLOY.md` § Observabilidade), leads, analytics, 404, Search Console, performance real (p75), eventos, conversão.
 
 ## Dependências externas (não bloqueiam desenvolvimento)
 

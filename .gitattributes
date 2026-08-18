@@ -1,0 +1,18 @@
+# Normaliza quebras de linha: repositório e working copy sempre em LF (Prettier endOfLine=lf; evita ruído com core.autocrlf no Windows).
+* text=auto eol=lf
+
+# Binários
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.pdf binary
+*.docx binary
+*.zip binary

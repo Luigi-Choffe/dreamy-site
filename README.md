@@ -47,7 +47,8 @@ Preview/staging: sem `NEXT_PUBLIC_SITE_ENV=production` (opt-in explícito — n�
 | `pnpm content:check`                           | integridade de conteúdo: schemas MDX, prova aprovada, termos proibidos/placeholders                                    |
 | `pnpm qa:screenshots`                          | screenshots 390/768/1440 de todas as rotas + checagem de overflow/H1/console (`--base`, `--out`, `--routes`, `--full`) |
 | `pnpm audit:screenshots`                       | screenshots do site atual (Fase 0)                                                                                     |
-| `pnpm check`                                   | typecheck + lint + testes + build                                                                                      |
+| `pnpm smoke --base <url>`                      | smoke test de deploy sem browser: rotas, 404, headers, regime noindex/produção, API, OG (`--expect`, `--redirects`)    |
+| `pnpm check`                                   | typecheck + lint + content-check + testes + build                                                                      |
 
 ## Variáveis de ambiente
 
@@ -72,7 +73,7 @@ Todas opcionais (ver `.env.example`). Nunca commite valores reais.
 
 ## Deploy
 
-Qualquer host Node/Next (recomendado: Vercel). Checklist completo: `docs/LAUNCH-CHECKLIST.md`. Checklist de produção e migração de domínio em `docs/SEO-MIGRATION.md`; lançamento em `docs/PRD.md` §108. Em produção: `NEXT_PUBLIC_SITE_ENV=production`, `NEXT_PUBLIC_SITE_URL=https://www.dreamy.app.br`, apex `dreamy.app.br` → 301 para `www` (host + `next.config.ts`).
+Passo a passo (Vercel/host Node, regimes preview × produção, go-live) em `docs/DEPLOY.md`. Qualquer host Node/Next (recomendado: Vercel). Checklist completo: `docs/LAUNCH-CHECKLIST.md`. Checklist de produção e migração de domínio em `docs/SEO-MIGRATION.md`; lançamento em `docs/PRD.md` §108. Em produção: `NEXT_PUBLIC_SITE_ENV=production`, `NEXT_PUBLIC_SITE_URL=https://www.dreamy.app.br`, apex `dreamy.app.br` → 301 para `www` (host + `next.config.ts`).
 
 ## Analytics
 

@@ -30,6 +30,7 @@ Validar 320, 375, 390, 768, 1024, 1280, 1440, 1920 px. Sem overflow horizontal. 
 ## SEO (PRD §93)
 
 - [ ] um H1 por página · title · description · canonical · sitemap · robots · OG · favicon · structured data · 404 · redirects · noindex em preview
+- Em qualquer ambiente publicado: `pnpm smoke --base <url>` (regime inferido pelo robots.txt; `--expect production --redirects` no go-live) — `docs/DEPLOY.md`.
 
 ## Analytics (PRD §94)
 

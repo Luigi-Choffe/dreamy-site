@@ -1,31 +1,33 @@
 # HANDOFF — estado atual e como retomar
 
-Atualizado em 2026-08-18. Leia isto primeiro ao retomar o projeto (junto com `.agents/rules/dreamy-site.md` e `docs/PRD.md`).
+Atualizado em 2026-08-18 (sessão 3). Leia isto primeiro ao retomar o projeto (junto com `.agents/rules/dreamy-site.md` e `docs/PRD.md`).
 
 ## Estado
 
-- **V1 completa e verificada localmente** (Fases 0–7 do PRD). Fases 8–9 (DNS/host/Search Console/pós-lançamento) dependem de configuração externa.
-- Último `pnpm check` (typecheck · lint · content-check · 53 testes unit/componentes · build) **verde**; `pnpm test:e2e` **56 passed** (desktop + mobile, inclui axe); Lighthouse mobile 95–98 / 100 / 100 / 100 (`docs/qa/lighthouse/`).
-- Repositório: `git init` feito, **nenhum commit ainda** (aguardando ordem). `PRD v2.docx` na raiz está no `.gitignore` (cópia oficial em `docs/source/`).
-- Servidores locais parados. Para subir: `pnpm dev` (3000). E2E sobe sozinho `next start` em 3100.
+- **V1 completa e verificada** (Fases 0–7 do PRD). Fases 8–9 (DNS/host/Search Console/pós-lançamento) dependem de configuração externa — roteiro em `docs/DEPLOY.md`.
+- Repositório publicado: `https://github.com/Luigi-Choffe/dreamy-site` (privado, branch `main`; identidade de commit configurada só neste repositório = conta GitHub `Luigi-Choffe`, e-mail noreply). CI (`.github/workflows/ci.yml`) **verde** no GitHub: check ≈ 1m20s + e2e ≈ 2m40s. Dependabot mensal (`.github/dependabot.yml`).
+- Último `pnpm check` local **verde** (typecheck · lint · content-check · 53 testes · build); `pnpm test:e2e` 56 passed (desktop + mobile, inclui axe); Lighthouse mobile 95–98 / 100 / 100 / 100 (`docs/qa/lighthouse/`).
+- **Vercel: projeto ainda não existe.** A criação via integração (time "Rafael Lang's projects") falhou com `403 forbidden` — importar pelo painel (passo a passo em `docs/DEPLOY.md`). Sem `NEXT_PUBLIC_SITE_ENV=production` qualquer deploy sai `noindex` (ADR-017), inclusive o ambiente Production da Vercel em `*.vercel.app`.
+- Servidores locais parados. Para subir: `pnpm dev` (3000). E2E sobe sozinho `next start` em 3100. Verificação rápida de qualquer URL publicada: `pnpm smoke --base <url>`.
 
 ## Mapa rápido
 
-| Preciso de…              | Onde                                                  |
-| ------------------------ | ----------------------------------------------------- |
-| Fonte de verdade         | `docs/PRD.md`                                         |
-| Regras do agente         | `.agents/rules/dreamy-site.md`, `CLAUDE.md`           |
-| Plano/fases              | `docs/IMPLEMENTATION-PLAN.md`                         |
-| Arquitetura              | `docs/ARCHITECTURE.md`                                |
-| Decisões (ADR-001…016)   | `docs/DECISIONS.md`                                   |
-| Auditoria do site antigo | `docs/AUDIT-SITE-ATUAL.md` + `docs/audit/`            |
-| Prova/claims permitidos  | `docs/CONTENT-SOURCES.md`                             |
-| Copy autoral a revisar   | `docs/COPY-REVIEW.md`                                 |
-| Tracking/GTM             | `docs/TRACKING.md`                                    |
-| QA e resultados          | `docs/QA.md`, `docs/qa/final/`, `docs/qa/lighthouse/` |
-| Migração SEO/domínio     | `docs/SEO-MIGRATION.md`, `docs/redirect-map.csv`      |
-| Checklist de lançamento  | `docs/LAUNCH-CHECKLIST.md`                            |
-| Variáveis de ambiente    | `.env.example`, README                                |
+| Preciso de…                                       | Onde                                                  |
+| ------------------------------------------------- | ----------------------------------------------------- |
+| Fonte de verdade                                  | `docs/PRD.md`                                         |
+| Regras do agente                                  | `.agents/rules/dreamy-site.md`, `CLAUDE.md`           |
+| Plano/fases                                       | `docs/IMPLEMENTATION-PLAN.md`                         |
+| Arquitetura                                       | `docs/ARCHITECTURE.md`                                |
+| Decisões (ADR-001…017)                            | `docs/DECISIONS.md`                                   |
+| Auditoria do site antigo                          | `docs/AUDIT-SITE-ATUAL.md` + `docs/audit/`            |
+| Prova/claims permitidos                           | `docs/CONTENT-SOURCES.md`                             |
+| Copy autoral a revisar                            | `docs/COPY-REVIEW.md`                                 |
+| Tracking/GTM                                      | `docs/TRACKING.md`                                    |
+| QA e resultados                                   | `docs/QA.md`, `docs/qa/final/`, `docs/qa/lighthouse/` |
+| Migração SEO/domínio                              | `docs/SEO-MIGRATION.md`, `docs/redirect-map.csv`      |
+| Deploy (Vercel/host), preview × produção, go-live | `docs/DEPLOY.md`                                      |
+| Checklist de lançamento                           | `docs/LAUNCH-CHECKLIST.md`                            |
+| Variáveis de ambiente                             | `.env.example`, README                                |
 
 ## Decisões que ainda precisam de confirmação da Dreamy
 
@@ -37,19 +39,20 @@ Atualizado em 2026-08-18. Leia isto primeiro ao retomar o projeto (junto com `.a
 
 ## Pendências externas (não bloqueiam código)
 
+- Importar o repositório na Vercel (ou outro host) — `docs/DEPLOY.md`.
 - `NEXT_PUBLIC_GTM_ID` + container GTM conforme `docs/TRACKING.md` (GA4 `send_page_view=false`, tag de `page_view` no evento custom, Meta/LinkedIn com consentimento).
 - CRM (`CRM_PROVIDER=webhook`, `CRM_WEBHOOK_URL`, `CRM_API_KEY`), e-mail (`EMAIL_PROVIDER=resend` + chave + `LEADS_NOTIFICATION_EMAIL/FROM`), `NEXT_PUBLIC_BOOKING_URL`, Turnstile (opcional).
 - Cases aprovados (`approved: true` + `approvalRef` + `docs/CONTENT-SOURCES.md`), logos/métricas autorizados (`src/content/proof.ts`).
-- Produção: `NEXT_PUBLIC_SITE_ENV=production`, `NEXT_PUBLIC_SITE_URL=https://www.dreamy.app.br`, apex → www no host, Search Console, remover GA4 direto do Framer.
+- Produção: `NEXT_PUBLIC_SITE_ENV=production` (opt-in explícito — ADR-017), `NEXT_PUBLIC_SITE_URL=https://www.dreamy.app.br`, apex → www no host, Search Console, remover GA4 direto do Framer.
 
 ## Próximos passos sugeridos (em ordem)
 
-1. Commit inicial (`git add -A && git commit`), publicar repositório e conectar CI (`.github/workflows/ci.yml`).
-2. Deploy de preview (Vercel ou host Node) — sai automaticamente `noindex`; revisar no browser (Safari/iOS manual — PRD §91).
-3. Preencher `.env` de preview: GTM (validar eventos no Preview do GTM), CRM webhook e Resend com lead de teste.
+1. ~~Commit inicial, publicar repositório e conectar CI~~ ✅ (2026-08-18).
+2. Importar o repositório na Vercel (painel — `docs/DEPLOY.md`); rodar `pnpm smoke --base <url-do-preview>` e revisar no browser (Safari/iOS manual — PRD §91).
+3. Preencher variáveis do preview: GTM (validar eventos no Preview do GTM), CRM webhook e Resend com lead de teste; `CONTENT_PREVIEW=true` para revisar insights/cases não publicados.
 4. Revisar decisões acima; publicar Insights quando ≥ 3 aprovados; adicionar cases quando aprovados.
 5. Avaliar `CSP_ENFORCE=true` após validar tags no browser.
-6. Fase 8: DNS/domínio conforme `docs/SEO-MIGRATION.md`; Fase 9: monitoramento (`docs/LAUNCH-CHECKLIST.md`).
+6. Fase 8: `NEXT_PUBLIC_SITE_ENV=production` + `NEXT_PUBLIC_SITE_URL` no ambiente de produção, domínios/DNS conforme `docs/SEO-MIGRATION.md`, depois `pnpm smoke --base https://www.dreamy.app.br --expect production --redirects`; Fase 9: monitoramento (`docs/LAUNCH-CHECKLIST.md`).
 
 ## Armadilhas conhecidas (ambiente/dev)
 
@@ -57,4 +60,6 @@ Atualizado em 2026-08-18. Leia isto primeiro ao retomar o projeto (junto com `.a
 - Lighthouse local: `CHROME_PATH` apontando para o Chromium do Playwright (`%LOCALAPPDATA%\ms-playwright\chromium-*\chrome-win64\chrome.exe`) e servidor `next start` em 3100 (matar processo anterior na porta antes de rebuild).
 - Zod 4: schema do lead usa `zod/mini` + `jitless` (CSP sem `unsafe-eval`); schemas de conteúdo usam `zod` clássico e aceitam datas YAML sem aspas.
 - Reveals são CSS + IntersectionObserver (`data-reveal`); sem JS tudo fica visível.
-- Utilitários: `scripts/dev/overflow-check.ts`, `reveal-check.ts`, `csp-check.ts`, `axe-check.ts` (dev), `pnpm qa:screenshots --viewports … --no-shots` (só checagens).
+- Git no Windows: `core.autocrlf=true` na máquina; o repositório força LF via `.gitattributes` (`* text=auto eol=lf`) — não "consertar" CRLF/LF à mão. Identidade de commit só neste repositório (`git config user.name/email`, sem `--global`).
+- Vercel via integração nesta máquina: `list_*` funciona; `create_git_project` retorna 403 (sem permissão de criar projeto) — usar o painel.
+- Utilitários: `scripts/dev/overflow-check.ts`, `reveal-check.ts`, `csp-check.ts`, `axe-check.ts` (dev), `pnpm qa:screenshots --viewports … --no-shots` (só checagens), `pnpm smoke --base <url>` (deploy).

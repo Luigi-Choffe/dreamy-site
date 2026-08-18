@@ -44,7 +44,9 @@ src/lib/security               rate limit, honeypot, idempotência, Turnstile, h
 src/lib/seo                    metadata helpers, JSON-LD builders, URLs canônicas
 src/lib/content                loaders MDX (cases/insights), schemas, gates de publicação
 src/lib/observability          logger estruturado (sem PII desnecessária), hook para error monitoring
+src/instrumentation.ts         onRequestError → log JSON de erros do servidor (ponto único p/ Sentry/OTel)
 src/styles                     tokens.css, globals.css, fonts.ts
+scripts/                       content-check, qa-screenshots, smoke (verificação de deploy), dev/*
 tests/unit|components|e2e
 ```
 

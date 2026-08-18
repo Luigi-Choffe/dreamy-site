@@ -20,8 +20,9 @@ Marque cada item antes de apontar o domínio. "Auto" = já garantido pelo códig
 - [x] Sitemap e robots nativos; preview/staging noindex (Auto)
 - [x] Structured data sem review/rating (Auto — teste e2e)
 - [x] OG images geradas por página (Auto)
-- [ ] `NEXT_PUBLIC_SITE_ENV=production` e `NEXT_PUBLIC_SITE_URL=https://www.dreamy.app.br` no ambiente de produção (Config)
+- [ ] `NEXT_PUBLIC_SITE_ENV=production` e `NEXT_PUBLIC_SITE_URL=https://www.dreamy.app.br` no ambiente de produção (Config — opt-in explícito, ADR-017)
 - [ ] Redirect apex → www e HTTP → HTTPS ativos no host/DNS (Config — `docs/SEO-MIGRATION.md`)
+- [ ] `pnpm smoke --base https://www.dreamy.app.br --expect production --redirects` sem falhas após o DNS (Manual — `docs/DEPLOY.md`)
 - [ ] Search Console: propriedade verificada, sitemap enviado (Manual)
 - [ ] Rich Results Test / validador de schema em `/` e `/solucoes/*` (Manual)
 - [ ] LinkedIn Post Inspector / WhatsApp preview do OG (Manual)
@@ -54,9 +55,10 @@ Marque cada item antes de apontar o domínio. "Auto" = já garantido pelo códig
 - [x] Acessibilidade axe sem violações sérias/críticas (Auto)
 - [ ] Safari / iOS Safari revisados manualmente (Manual — PRD §91)
 - [x] Links internos, 404 própria, error boundaries (Auto)
+- [ ] Preview publicado e revisado (`pnpm smoke --base <preview>` = regime preview OK) (Manual — `docs/DEPLOY.md`)
 - [x] Headers de segurança; CSP em Report-Only (Auto) → [ ] avaliar `CSP_ENFORCE=true` após validar tags no browser (Manual)
 - [x] Nenhum secret no repositório (Auto — apenas `.env.example`)
 
 ## Pós-lançamento (Fase 9)
 
-- [ ] Monitorar erros (logs do host / error monitoring se configurado), leads recebidos, eventos no GA4, 404 no Search Console, Core Web Vitals p75 (CrUX) por 30 dias
+- [ ] Monitorar erros (logs do host: eventos `server.request_error`, `lead.*`, `crm.*`, `email.*` — `docs/DEPLOY.md`), leads recebidos, eventos no GA4, 404 no Search Console, Core Web Vitals p75 (CrUX) por 30 dias
