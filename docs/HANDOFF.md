@@ -27,6 +27,7 @@ Atualizado em 2026-08-18 (sessão 3). Leia isto primeiro ao retomar o projeto (j
 | QA e resultados                                   | `docs/QA.md`, `docs/qa/final/`, `docs/qa/lighthouse/` |
 | Migração SEO/domínio                              | `docs/SEO-MIGRATION.md`, `docs/redirect-map.csv`      |
 | Deploy (Vercel/host), preview × produção, go-live | `docs/DEPLOY.md`                                      |
+| Apresentação institucional (PDF + fonte HTML)     | `docs/apresentacao/`                                  |
 | Checklist de lançamento                           | `docs/LAUNCH-CHECKLIST.md`                            |
 | Variáveis de ambiente                             | `.env.example`, README                                |
 
