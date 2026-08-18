@@ -1,0 +1,39 @@
+---
+# Renomeie para <slug>.mdx. A seção Insights só vai ao ar com >= 3 artigos "published" (PRD §33).
+# Não escrever conteúdo genérico ("o que é IA"). Priorizar a intenção do ICP.
+slug: titulo-do-artigo
+title: ""             # 10–120 caracteres
+description: ""       # 50–300 caracteres
+date: 2026-01-01
+author: ""            # nome real do autor
+status: draft         # draft | review | published
+cluster: software-personalizado   # software-personalizado | ia | sistemas | receita
+tags: []
+image:
+  src: /images/insights/<slug>/cover.jpg
+  alt: ""
+  width: 1600
+  height: 900
+seo:
+  title: ""
+  description: ""
+---
+
+Introdução: qual pergunta do leitor este artigo responde.
+
+## Subtítulo
+
+Conteúdo.
+
+## Backlog inicial (PRD §33)
+
+- Como saber se sua empresa precisa de um software sob medida
+- Quando um sistema personalizado faz sentido — e quando não faz
+- Como transformar uma base de clientes em um novo produto digital
+- Onde agentes de IA realmente geram valor em empresas
+- O custo invisível de processos sustentados por planilhas
+- IA no atendimento: onde automatizar e onde manter humanos
+- Como identificar processos candidatos à automação
+- Quando desenvolver software próprio pode virar vantagem competitiva
+- SaaS B2B: como transformar conhecimento de mercado em produto
+- Por que conectar IA ao CRM muda mais do que adicionar um chatbot

@@ -1,0 +1,54 @@
+---
+# Renomeie para <slug>.mdx (o slug deve ser igual ao nome do arquivo).
+# NUNCA marque approved: true sem aprovação escrita do cliente registrada em docs/CONTENT-SOURCES.md.
+slug: nome-do-cliente-projeto
+client: ""            # nome do cliente (autorizado)
+sector: ""            # setor de atuação
+summary: ""           # 1 frase: o que foi construído e para quê (vira o H1)
+problem: ""           # o que estava impedindo crescimento/eficiência
+solution: ""          # o que foi construído
+result: ""            # resultado verificável (financeiro ou operacional: "antes/depois")
+solutionSlug: sistemas-sob-medida   # nova-receita-digital | sistemas-sob-medida | agentes-de-ia
+cover:
+  src: /images/cases/<slug>/cover.jpg
+  alt: ""
+  width: 1600
+  height: 900
+images: []            # screenshots reais do produto (com autorização)
+metrics: []           # somente indicadores comprováveis, cada um com sourceRef em docs/CONTENT-SOURCES.md
+  # - label: "Cadastro de clientes"
+  #   value: "Fluxo automatizado"
+  #   before: "cadastro dependia de processo manual"
+  #   after: "cadastro passou a ser realizado através de fluxo automatizado conectado ao sistema"
+  #   sourceRef: case-<slug>-cadastro
+approved: false
+approvalRef: ""       # e-mail/contrato/data da aprovação do cliente
+publishedAt: 2026-01-01
+featured: false
+seo:
+  title: ""           # 10–70 caracteres (opcional)
+  description: ""     # 50–170 caracteres (opcional)
+---
+
+## 01 — Contexto
+
+Como funcionava a operação antes do projeto.
+
+## 02 — Problema
+
+O que estava impedindo crescimento ou eficiência.
+
+## 03 — Solução
+
+O que foi construído (linguagem de negócio, não catálogo técnico).
+
+## 04 — Como funciona
+
+<FlowDiagram
+  title="Como funciona"
+  steps={[{ label: "Entrada" }, { label: "Sistema" }, { label: "Saída" }]}
+  highlightLast
+/>
+
+<!-- 05 — Resultado é gerado a partir de `metrics` no frontmatter. -->
+<!-- 06 — Produto é gerado a partir de `images` no frontmatter. -->

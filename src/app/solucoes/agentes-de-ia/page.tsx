@@ -1,0 +1,14 @@
+import { SolutionPage } from "@/components/marketing/SolutionPage";
+import { routes } from "@/config/site";
+import { agentesDeIa as solution } from "@/content/solutions/agentes-de-ia";
+import { createPageMetadata } from "@/lib/seo/metadata";
+
+export const metadata = createPageMetadata({
+  title: solution.seo.title,
+  description: solution.seo.description,
+  path: `${routes.solutions}/${solution.slug}`,
+});
+
+export default function Page() {
+  return <SolutionPage solution={solution} />;
+}

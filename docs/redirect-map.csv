@@ -1,0 +1,9 @@
+old_url,new_url,status
+https://dreamy.app.br/,https://www.dreamy.app.br/,301
+http://dreamy.app.br/,https://www.dreamy.app.br/,301
+http://www.dreamy.app.br/,https://www.dreamy.app.br/,301
+/,/,200
+/#form,/contato,client-side
+/#tools,/solucoes,client-side
+/#features,/#como-trabalhamos,client-side
+/#integrations,/solucoes/agentes-de-ia,client-side

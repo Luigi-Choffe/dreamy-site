@@ -1,0 +1,11 @@
+node_modules
+.next
+out
+docs/qa
+docs/audit
+docs/source
+public/brand
+pnpm-lock.yaml
+*.png
+*.ico
+*.woff
