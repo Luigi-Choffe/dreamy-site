@@ -2,9 +2,14 @@
 <html lang="pt-BR">
   <head>
     <meta charset="utf-8" />
-    <title>Dreamy — Apresentação institucional</title>
+    <title>Dreamy — Apresentação Institucional</title>
     <style>
-      /* ============ Fontes da marca (locais, ADR-004) ============ */
+      /* ================================================================
+         Dreamy — pitch deck (palco) · 12 slides · 1280×720
+         Identidade do site (ADR-018): ink + off-white + verde do logo,
+         Urbanist display + Instrument Sans, discos translúcidos, rails.
+         Assinatura do deck: barra de progresso de player no rodapé.
+         ================================================================ */
       @font-face {
         font-family: "Urbanist";
         src: url("../../src/assets/fonts/Urbanist-Bold.woff") format("woff");
@@ -13,32 +18,21 @@
       @font-face {
         font-family: "Instrument Sans";
         src: url("../../src/assets/fonts/InstrumentSans-Medium.woff") format("woff");
-        font-weight: 400 600;
+        font-weight: 500;
       }
-
-      /* ============ Tokens (espelham src/styles/tokens.css) ============ */
       :root {
-        --green: #46eb7e;
-        --green-soft: #e4fbec;
-        --green-strong: #0f7c47;
         --ink: #0b0b0c;
+        --ink-2: #131316;
         --paper: #f7f8f8;
-        --paper-2: #eef0f1;
-        --white: #ffffff;
-        --muted-l: #575c61;
-        --subtle-l: #6b7075;
-        --border-l: #e1e4e6;
-        --border-l2: #c3c8cc;
-        --dark-2: #101012;
-        --surface-d: #141416;
-        --fg-d: #f7f8f8;
-        --muted-d: #a7abaf;
-        --border-d: #232327;
-        --border-d2: #35353b;
-        --sans: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-        --display: "Urbanist", var(--sans);
+        --green: #46eb7e;
+        --green-deep: #0f7c47;
+        --mut-d: #9ba1a6; /* texto muted sobre escuro */
+        --mut-l: #575c61; /* texto muted sobre claro */
+        --line-d: rgba(255, 255, 255, 0.14);
+        --line-l: rgba(11, 11, 12, 0.14);
+        --display: "Urbanist", ui-sans-serif, system-ui, sans-serif;
+        --sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
       }
-
       * {
         margin: 0;
         padding: 0;
@@ -46,1029 +40,1163 @@
       }
       html,
       body {
-        background: #333;
+        background: #232326;
       }
       @page {
         size: 1280px 720px;
         margin: 0;
       }
-
       .slide {
         position: relative;
         width: 1280px;
         height: 720px;
         overflow: hidden;
-        page-break-after: always;
-        break-after: page;
-        padding: 64px 72px 88px;
+        background: var(--ink);
+        color: #fff;
         font-family: var(--sans);
-        font-size: 19px;
-        line-height: 1.55;
+        padding: 60px 72px 96px;
+        page-break-after: always;
         display: flex;
         flex-direction: column;
+      }
+      .slide.paper {
         background: var(--paper);
         color: var(--ink);
-        margin: 24px auto; /* só na visualização em tela; impressão ignora */
       }
-      @media print {
+      @media screen {
         .slide {
-          margin: 0;
+          margin: 24px auto;
+          box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
         }
       }
 
-      .slide.dark {
-        background: var(--ink);
-        color: var(--fg-d);
+      /* --- tipografia ------------------------------------------------ */
+      .eyebrow {
+        font-size: 13px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--green);
+        margin-bottom: 22px;
       }
-      .slide.paper2 {
-        background: var(--paper-2);
+      .paper .eyebrow {
+        color: var(--green-deep);
+      }
+      h1 {
+        font-family: var(--display);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1.02;
+      }
+      .g {
+        color: var(--green);
+      }
+      .paper .g {
+        color: var(--green-deep);
+      }
+      .support {
+        color: var(--mut-d);
+        font-size: 21px;
+        line-height: 1.45;
+        letter-spacing: -0.008em;
+      }
+      .paper .support {
+        color: var(--mut-l);
       }
 
-      /* ============ Motivo da marca: discos ============ */
+      /* --- assinatura: progresso de player --------------------------- */
+      .progress {
+        position: absolute;
+        left: 72px;
+        right: 72px;
+        bottom: 38px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+      .progress .track {
+        flex: 1;
+        height: 2px;
+        border-radius: 2px;
+        background: var(--line-d);
+        position: relative;
+      }
+      .paper .progress .track {
+        background: var(--line-l);
+      }
+      .progress .fill {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 2px;
+        border-radius: 2px;
+        background: var(--green);
+      }
+      .paper .progress .fill {
+        background: var(--green-deep);
+      }
+      .progress .knob {
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--green);
+      }
+      .paper .progress .knob {
+        background: var(--green-deep);
+      }
+      .progress .idx {
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        color: var(--mut-d);
+        min-width: 52px;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .paper .progress .idx {
+        color: var(--mut-l);
+      }
+
+      /* --- discos de marca (fundo) ----------------------------------- */
       .discs {
         position: absolute;
         pointer-events: none;
       }
-      .discs circle {
-        fill: var(--green);
-      }
 
-      /* ============ Tipografia ============ */
-      .kicker {
-        font-size: 13px;
-        font-weight: 600;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        color: var(--green-strong);
-      }
-      .dark .kicker {
-        color: var(--green);
-      }
-      h1,
-      h2,
-      h3 {
-        font-family: var(--display);
-        font-weight: 700;
-        letter-spacing: -0.028em;
-        line-height: 1.04;
-      }
-      h1 {
-        font-size: 72px;
-      }
-      h2 {
-        font-size: 46px;
-        letter-spacing: -0.024em;
-        line-height: 1.08;
-      }
-      h3 {
-        font-size: 24px;
-        letter-spacing: -0.01em;
-        line-height: 1.25;
-      }
-      .lead {
-        font-size: 23px;
-        line-height: 1.5;
-        color: var(--muted-l);
-      }
-      .dark .lead {
-        color: var(--muted-d);
-      }
-      .muted {
-        color: var(--muted-l);
-      }
-      .dark .muted {
-        color: var(--muted-d);
-      }
-      .green {
-        color: var(--green-strong);
-      }
-      .dark .green {
-        color: var(--green);
-      }
-
-      /* ============ Rodapé ============ */
-      .foot {
-        position: absolute;
-        left: 72px;
-        right: 72px;
-        bottom: 36px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 12.5px;
-        color: var(--subtle-l);
-      }
-      .dark .foot {
-        color: var(--muted-d);
-      }
-      .foot .brand {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 600;
-      }
-      .foot img {
-        height: 16px;
+      /* --- logo ------------------------------------------------------- */
+      .logo {
+        height: 30px;
         width: auto;
-        display: block;
-      }
-      .pagenum {
-        font-variant-numeric: tabular-nums;
+        align-self: flex-start;
       }
 
-      /* ============ Componentes ============ */
+      /* --- pills / nós ------------------------------------------------ */
       .pill {
         display: inline-flex;
         align-items: center;
-        border: 1px solid var(--border-l);
-        background: var(--white);
+        border: 1px solid var(--line-d);
         border-radius: 999px;
-        padding: 8px 16px;
-        font-size: 16px;
-        font-weight: 600;
-        line-height: 1.2;
-        white-space: nowrap;
+        padding: 9px 18px;
+        font-size: 15px;
+        color: #e8eaec;
+        background: rgba(255, 255, 255, 0.03);
       }
-      .dark .pill {
-        border-color: var(--border-d2);
-        background: var(--surface-d);
-        color: var(--fg-d);
+      .paper .pill {
+        border-color: var(--line-l);
+        color: var(--ink);
+        background: #fff;
       }
-      .pill.accent {
+      .pill.solid {
         background: var(--green);
         border-color: var(--green);
         color: var(--ink);
+        font-weight: 500;
       }
 
-      .card {
-        background: var(--white);
-        border: 1px solid var(--border-l);
-        border-radius: 20px;
-        padding: 28px;
+      /* ================================================================
+         S1 — capa
+         ================================================================ */
+      .s1 .cols {
+        display: flex;
+        flex: 1;
+        align-items: center;
+        gap: 40px;
       }
-      .dark .card {
-        background: var(--surface-d);
-        border-color: var(--border-d);
+      .s1 .txt {
+        width: 600px;
+        flex: none;
       }
-      .panel {
-        background: rgba(11, 11, 12, 0.035);
-        border: 1px solid var(--border-l);
-        border-radius: 16px;
-        padding: 22px 24px;
+      .s1 h1 {
+        font-size: 78px;
+        margin: 0 0 30px;
       }
-      .dark .panel {
-        background: var(--dark-2);
-        border-color: var(--border-d);
+      .s1 .micro {
+        font-size: 16px;
+        color: var(--mut-d);
+        letter-spacing: 0.01em;
+      }
+      .s1 .orbit {
+        flex: 1;
+        display: flex;
+        justify-content: center;
       }
 
-      /* rail vertical (mesma linguagem do site) */
-      .rail {
-        list-style: none;
+      /* ================================================================
+         S2 — problema
+         ================================================================ */
+      .s2 .cols {
+        display: flex;
+        flex: 1;
+        align-items: center;
+        gap: 48px;
+      }
+      .s2 h1 {
+        font-size: 66px;
+        width: 620px;
+        flex: none;
+      }
+      .s2 .frag {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+      }
+
+      /* ================================================================
+         S3 — punchline
+         ================================================================ */
+      .s3 {
+        justify-content: center;
+      }
+      .s3 h1 {
+        font-size: 124px;
+        max-width: 1060px;
+      }
+
+      /* ================================================================
+         S4 — diagnóstico (paper) · rail horizontal
+         ================================================================ */
+      .s4 h1 {
+        font-size: 64px;
+        max-width: 900px;
+        margin-bottom: 18px;
+      }
+      .s4 .support {
+        max-width: 720px;
+      }
+      .hwrap {
+        flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        justify-content: center;
+        margin-bottom: 24px;
       }
-      .rail li {
+      .hrail {
+        position: relative;
+        height: 120px;
+      }
+      .hrail .line {
+        position: absolute;
+        left: 8px;
+        right: 8px;
+        top: 27px;
+        height: 2px;
+        background: var(--line-l);
+      }
+      .dark .hrail .line {
+        background: var(--line-d);
+      }
+      .hrail .steps {
+        position: relative;
         display: flex;
-        gap: 14px;
-        align-items: flex-start;
+        justify-content: space-between;
       }
-      .rail .m {
+      .hrail .step {
+        width: 150px;
         display: flex;
         flex-direction: column;
         align-items: center;
-        align-self: stretch;
-        flex: none;
+        text-align: center;
+        gap: 16px;
       }
-      .rail .dot {
-        width: 12px;
-        height: 12px;
-        border-radius: 999px;
-        flex: none;
-        border: 1.5px solid var(--border-l2);
-        background: var(--white);
-        margin-top: 6px;
-      }
-      .dark .rail .dot {
-        border-color: var(--border-d2);
-        background: var(--surface-d);
-      }
-      .rail .line {
-        width: 1.5px;
-        flex: 1;
-        background: var(--border-l2);
-        margin-top: 4px;
-        margin-bottom: -14px;
-      }
-      .dark .rail .line {
-        background: var(--border-d2);
-      }
-      .rail .t {
-        font-weight: 600;
+      .hrail .dotnum {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: #fff;
+        border: 2px solid var(--line-l);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--display);
+        font-weight: 700;
         font-size: 18px;
-        line-height: 1.35;
+        color: var(--ink);
       }
-      .rail .d {
-        font-size: 14.5px;
-        color: var(--muted-l);
-        margin-top: 1px;
-      }
-      .dark .rail .d {
-        color: var(--muted-d);
-      }
-      .rail li.last .dot {
+      .hrail .step.last .dotnum {
         background: var(--green);
         border-color: var(--green);
       }
-      .rail li.last .t {
-        background: var(--green);
-        color: var(--ink);
-        border-radius: 999px;
-        padding: 4px 14px 5px;
-        margin: -4px 0 0 -12px;
-      }
-
-      .check {
-        list-style: none;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-      }
-      .check li {
-        display: flex;
-        gap: 12px;
-        align-items: flex-start;
-        font-size: 18.5px;
+      .hrail .lbl {
+        font-size: 18px;
         font-weight: 500;
-      }
-      .check .ck {
-        flex: none;
-        width: 22px;
-        height: 22px;
-        margin-top: 3px;
-        border-radius: 999px;
-        background: var(--green-soft);
-        color: var(--green-strong);
-        display: grid;
-        place-items: center;
-        font-size: 13px;
-        font-weight: 700;
-      }
-      .dark .check .ck {
-        background: rgba(70, 235, 126, 0.14);
-        color: var(--green);
+        color: var(--ink);
+        letter-spacing: -0.01em;
       }
 
-      .num {
+      /* ================================================================
+         S5 — três soluções
+         ================================================================ */
+      .s5 h1 {
+        font-size: 54px;
+        max-width: 860px;
+        margin-bottom: 56px;
+      }
+      .s5 .trio {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        align-content: center;
+        align-items: start;
+      }
+      .s5 .sol {
+        padding: 8px 40px 0 0;
+      }
+      .s5 .sol + .sol {
+        border-left: 1px solid var(--line-d);
+        padding-left: 40px;
+      }
+      .s5 .num {
         font-family: var(--display);
         font-weight: 700;
-        color: var(--green-strong);
+        font-size: 108px;
+        line-height: 1;
+        color: transparent;
+        -webkit-text-stroke: 1.5px rgba(70, 235, 126, 0.65);
+        margin-bottom: 26px;
       }
-      .dark .num {
-        color: var(--green);
+      .s5 .name {
+        font-family: var(--display);
+        font-weight: 700;
+        font-size: 29px;
+        letter-spacing: -0.02em;
+        margin-bottom: 14px;
+      }
+      .s5 .one {
+        font-size: 17px;
+        line-height: 1.5;
+        color: var(--mut-d);
       }
 
-      .cols {
+      /* ================================================================
+         S6–S8 — produtos
+         ================================================================ */
+      .prod .head {
+        display: flex;
+        align-items: flex-start;
+        gap: 34px;
+        margin-bottom: 8px;
+      }
+      .prod .bignum {
+        font-family: var(--display);
+        font-weight: 700;
+        font-size: 96px;
+        line-height: 0.9;
+        color: transparent;
+        -webkit-text-stroke: 1.5px rgba(70, 235, 126, 0.65);
+        flex: none;
+        width: 150px;
+      }
+      .prod h1 {
+        font-size: 52px;
+        max-width: 880px;
+      }
+      .prod .head .eyebrow {
+        margin-bottom: 12px;
+      }
+      .prod .viz {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+      }
+      .prod .viz svg {
+        margin-left: -36px;
+      }
+      .prod .note {
+        position: absolute;
+        right: 72px;
+        top: 66px;
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--mut-d);
+      }
+      .prod .ask {
+        font-size: 19px;
+        color: var(--mut-d);
+        max-width: 880px;
+        margin-bottom: 40px;
+      }
+      .prod .ask strong {
+        color: #fff;
+        font-weight: 500;
+      }
+
+      /* svg text helpers */
+      svg text {
+        font-family: var(--sans);
+      }
+      .svgl {
+        font-size: 16px;
+        fill: #e8eaec;
+      }
+      .svgm {
+        font-size: 14px;
+        fill: var(--mut-d);
+      }
+      .svgs {
+        font-size: 13px;
+        fill: var(--mut-d);
+      }
+
+      /* ================================================================
+         S9 — casos de uso + controle
+         ================================================================ */
+      .s9 h1 {
+        font-size: 50px;
+        margin-bottom: 48px;
+      }
+      .s9 .trio {
+        flex: 1;
         display: grid;
-        gap: 40px;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 0;
+        align-content: center;
+        align-items: start;
+        margin-bottom: 40px;
+      }
+      .s9 .col {
+        padding-right: 40px;
+      }
+      .s9 .col + .col {
+        border-left: 1px solid var(--line-d);
+        padding-left: 40px;
+      }
+      .s9 .cap {
+        font-family: var(--display);
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: -0.02em;
+        margin-bottom: 26px;
+      }
+      .vrail {
+        position: relative;
+        padding-left: 26px;
+      }
+      .vrail::before {
+        content: "";
+        position: absolute;
+        left: 6px;
+        top: 8px;
+        bottom: 12px;
+        width: 2px;
+        background: var(--line-d);
+      }
+      .vrail .vstep {
+        position: relative;
+        margin-bottom: 24px;
+        font-size: 17px;
+        color: #e8eaec;
+      }
+      .vrail .vstep::before {
+        content: "";
+        position: absolute;
+        left: -26px;
+        top: 5px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--ink);
+        border: 2px solid var(--mut-d);
+      }
+      .vrail .vstep.last {
+        color: var(--green);
+      }
+      .vrail .vstep.last::before {
+        background: var(--green);
+        border-color: var(--green);
+      }
+      /* ================================================================
+         S10 — como trabalhamos (paper) · rail vertical
+         ================================================================ */
+      .s10 .cols {
+        flex: 1;
+        display: flex;
+        gap: 70px;
+        align-items: center;
+        margin-bottom: 30px;
+      }
+      .s10 .intro {
+        width: 430px;
+        flex: none;
+      }
+      .s10 h1 {
+        font-size: 72px;
+      }
+      .s10 .vlist {
+        flex: 1;
+        position: relative;
+      }
+      .s10 .vlist::before {
+        content: "";
+        position: absolute;
+        left: 27px;
+        top: 16px;
+        bottom: 30px;
+        width: 2px;
+        background: var(--line-l);
+      }
+      .s10 .vitem {
+        position: relative;
+        display: flex;
+        gap: 28px;
+        align-items: flex-start;
+        padding: 12px 0;
+      }
+      .s10 .vnum {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: #fff;
+        border: 2px solid var(--line-l);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--display);
+        font-weight: 700;
+        font-size: 18px;
+        flex: none;
+        position: relative;
+      }
+      .s10 .vitem.last .vnum {
+        background: var(--green);
+        border-color: var(--green);
+      }
+      .s10 .vtxt {
+        padding-top: 4px;
+      }
+      .s10 .vtit {
+        font-family: var(--display);
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: -0.01em;
+      }
+      .s10 .vdesc {
+        font-size: 14px;
+        color: var(--mut-l);
+        margin-top: 3px;
+      }
+
+      /* ================================================================
+         S11 — para quem
+         ================================================================ */
+      .s11 h1 {
+        font-size: 58px;
+        max-width: none;
+        white-space: nowrap;
+        margin-bottom: 52px;
+      }
+      .s11 .pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-bottom: 44px;
+      }
+      .s11 .pill {
+        font-size: 17px;
+        padding: 12px 22px;
+      }
+      .s11 .closing {
+        margin-top: auto;
+        margin-bottom: 48px;
+        font-size: 20px;
+        color: var(--mut-d);
+        max-width: 820px;
+      }
+      .s11 .closing strong {
+        color: var(--green);
+        font-weight: 500;
+      }
+
+      /* ================================================================
+         S12 — fechamento
+         ================================================================ */
+      .s12 {
+        justify-content: center;
+      }
+      .s12 .logo {
+        position: absolute;
+        top: 60px;
+        left: 72px;
+      }
+      .s12 h1 {
+        font-size: 74px;
+        max-width: 1020px;
+        margin-bottom: 46px;
+      }
+      .s12 .contact {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        margin-bottom: 22px;
+      }
+      .s12 .contact .pill {
+        font-size: 18px;
+        padding: 12px 24px;
+      }
+      .s12 .micro {
+        font-size: 16px;
+        color: var(--mut-d);
       }
     </style>
   </head>
   <body>
-    <!-- ============ 1 · CAPA ============ -->
-    <section class="slide dark">
-      <svg
-        class="discs"
-        style="right: -320px; top: -120px; width: 940px; height: 940px"
-        viewBox="0 0 400 400"
-        aria-hidden="true"
-      >
-        <circle cx="200" cy="200" r="150" fill-opacity="0.06" />
-        <circle cx="262" cy="150" r="122" fill-opacity="0.08" />
-        <circle cx="150" cy="258" r="112" fill-opacity="0.08" />
+    <!-- ============================================================ S1 · capa -->
+    <section class="slide s1">
+      <svg class="discs" style="right: -180px; top: -160px" width="620" height="620" viewBox="0 0 620 620">
+        <circle cx="310" cy="310" r="300" fill="#46eb7e" opacity="0.05" />
+        <circle cx="310" cy="310" r="210" fill="#46eb7e" opacity="0.06" />
+        <circle cx="310" cy="310" r="120" fill="#46eb7e" opacity="0.07" />
       </svg>
-      <img
-        src="../../public/brand/dreamy-logo-dark-bg.png"
-        alt="Dreamy"
-        style="height: 44px; width: auto; align-self: flex-start"
-      />
-      <div style="margin-top: auto; max-width: 900px; position: relative">
-        <p class="kicker">Software sob medida + Inteligência Artificial</p>
-        <h1 style="margin-top: 22px">Tecnologia sob medida para sua empresa ganhar mais e operar melhor.</h1>
-        <p class="lead" style="margin-top: 26px; max-width: 760px">
-          Criamos novos produtos digitais, sistemas personalizados e agentes de IA para desafios que softwares prontos
-          não resolvem.
-        </p>
-      </div>
-      <div class="foot">
-        <span>Apresentação institucional</span>
-        <span>Começamos pelo problema. A tecnologia vem depois.</span>
-      </div>
-    </section>
-
-    <!-- ============ 2 · O PROBLEMA ============ -->
-    <section class="slide">
-      <p class="kicker">O problema</p>
-      <div class="cols" style="grid-template-columns: 480px 1fr; margin-top: 26px; align-items: center; flex: 1">
-        <h2>Nem todo problema da sua empresa cabe em um software pronto.</h2>
-        <div>
-          <ul style="list-style: none; border-top: 1px solid var(--border-l)">
-            <li style="padding: 15px 4px; border-bottom: 1px solid var(--border-l); font-size: 21px; font-weight: 600">
-              Sua empresa cresce.
-            </li>
-            <li style="padding: 15px 4px; border-bottom: 1px solid var(--border-l); font-size: 21px; font-weight: 600">
-              Os processos ficam mais específicos.
-            </li>
-            <li style="padding: 15px 4px; border-bottom: 1px solid var(--border-l); font-size: 21px; font-weight: 600">
-              Sistemas deixam de conversar.
-            </li>
-            <li style="padding: 15px 4px; border-bottom: 1px solid var(--border-l); font-size: 21px; font-weight: 600">
-              Planilhas passam a sustentar decisões importantes.
-            </li>
-            <li style="padding: 15px 4px; border-bottom: 1px solid var(--border-l); font-size: 21px; font-weight: 600">
-              Informações dependem de pessoas.
-            </li>
-            <li style="padding: 15px 4px; border-bottom: 1px solid var(--border-l); font-size: 21px; font-weight: 600">
-              Leads deixam de receber acompanhamento.
-            </li>
-          </ul>
-          <p class="muted" style="margin-top: 20px; font-size: 18px; max-width: 560px">
-            E oportunidades que poderiam virar receita ficam paradas porque a tecnologia disponível não acompanha o
-            negócio.
-          </p>
+      <img class="logo" src="../../public/brand/dreamy-logo-dark-bg.png" alt="Dreamy" />
+      <div class="cols">
+        <div class="txt">
+          <p class="eyebrow">Software + Inteligência Artificial</p>
+          <h1>Tecnologia sob medida para <span class="g">ganhar mais</span> e operar melhor.</h1>
+          <p class="micro">Começamos pelo problema. A tecnologia vem depois.</p>
+        </div>
+        <div class="orbit">
+          <!-- sistema vivo: a empresa no centro, conectada ao que importa -->
+          <svg width="490" height="490" viewBox="0 0 470 470">
+            <circle cx="235" cy="235" r="196" fill="none" stroke="rgba(255,255,255,0.20)" stroke-width="2" />
+            <circle cx="235" cy="235" r="150" fill="#46eb7e" opacity="0.05" />
+            <circle cx="235" cy="235" r="104" fill="#46eb7e" opacity="0.07" />
+            <!-- conectores -->
+            <g stroke="rgba(255,255,255,0.30)" stroke-width="2">
+              <line x1="235" y1="235" x2="235" y2="39" />
+              <line x1="235" y1="235" x2="405" y2="137" />
+              <line x1="235" y1="235" x2="405" y2="333" />
+              <line x1="235" y1="235" x2="235" y2="431" />
+              <line x1="235" y1="235" x2="65" y2="333" />
+              <line x1="235" y1="235" x2="65" y2="137" />
+            </g>
+            <!-- núcleo -->
+            <circle cx="235" cy="235" r="66" fill="#0b0b0c" stroke="#46eb7e" stroke-width="2" />
+            <text x="235" y="230" text-anchor="middle" class="svgl" style="font-size: 15px">Sua</text>
+            <text x="235" y="250" text-anchor="middle" class="svgl" style="font-size: 15px">empresa</text>
+            <!-- nós -->
+            <g>
+              <rect x="187" y="21" width="96" height="36" rx="18" fill="#131316" stroke="rgba(255,255,255,0.2)" />
+              <text x="235" y="44" text-anchor="middle" class="svgm" style="fill: #e8eaec">Clientes</text>
+              <rect x="357" y="119" width="96" height="36" rx="18" fill="#131316" stroke="rgba(255,255,255,0.2)" />
+              <text x="405" y="142" text-anchor="middle" class="svgm" style="fill: #e8eaec">Dados</text>
+              <rect x="357" y="315" width="96" height="36" rx="18" fill="#46eb7e" />
+              <text x="405" y="338" text-anchor="middle" class="svgm" style="fill: #0b0b0c">IA</text>
+              <rect x="187" y="413" width="96" height="36" rx="18" fill="#131316" stroke="rgba(255,255,255,0.2)" />
+              <text x="235" y="436" text-anchor="middle" class="svgm" style="fill: #e8eaec">Operação</text>
+              <rect x="17" y="315" width="96" height="36" rx="18" fill="#131316" stroke="rgba(255,255,255,0.2)" />
+              <text x="65" y="338" text-anchor="middle" class="svgm" style="fill: #e8eaec">Sistemas</text>
+              <rect x="17" y="119" width="96" height="36" rx="18" fill="#46eb7e" />
+              <text x="65" y="142" text-anchor="middle" class="svgm" style="fill: #0b0b0c">Receita</text>
+            </g>
+          </svg>
         </div>
       </div>
-      <div class="foot">
-        <span class="brand"><img src="../../public/brand/dreamy-symbol.png" alt="" />Dreamy</span
-        ><span class="pagenum">02</span>
+      <div class="progress">
+        <div class="track">
+          <div class="fill" style="width: 8.3%"></div>
+          <div class="knob" style="left: 8.3%"></div>
+        </div>
+        <span class="idx">01 / 12</span>
       </div>
     </section>
 
-    <!-- ============ 3 · QUEM SOMOS ============ -->
-    <section class="slide dark">
-      <svg
-        class="discs"
-        style="left: -320px; bottom: -360px; width: 880px; height: 880px"
-        viewBox="0 0 400 400"
-        aria-hidden="true"
-      >
-        <circle cx="200" cy="200" r="150" fill-opacity="0.05" />
-        <circle cx="262" cy="150" r="122" fill-opacity="0.07" />
-        <circle cx="150" cy="258" r="112" fill-opacity="0.07" />
+    <!-- ============================================================ S2 · problema -->
+    <section class="slide s2">
+      <p class="eyebrow" style="color: var(--mut-d)">O problema</p>
+      <div class="cols">
+        <h1>Nem todo problema da sua empresa cabe em um <span style="color: var(--mut-d)">software pronto.</span></h1>
+        <div class="frag">
+          <!-- fragmentação: peças que não conversam -->
+          <svg width="540" height="450" viewBox="0 0 540 450">
+            <g stroke="rgba(255,255,255,0.22)" stroke-width="1.5" stroke-dasharray="4 10">
+              <line x1="160" y1="98" x2="340" y2="190" />
+              <line x1="340" y1="190" x2="200" y2="310" />
+              <line x1="200" y1="310" x2="290" y2="400" />
+              <line x1="430" y1="98" x2="340" y2="190" />
+              <line x1="70" y1="215" x2="160" y2="98" />
+              <line x1="430" y1="98" x2="480" y2="280" />
+              <line x1="348" y1="310" x2="480" y2="280" />
+            </g>
+            <g>
+              <rect x="25" y="74" width="270" height="44" rx="22" fill="#131316" stroke="rgba(255,255,255,0.2)" />
+              <text x="160" y="101" text-anchor="middle" class="svgl">Sistemas que não conversam</text>
+              <rect x="258" y="288" width="180" height="44" rx="22" fill="#131316" stroke="rgba(255,255,255,0.2)" />
+              <text x="348" y="315" text-anchor="middle" class="svgl">Planilhas críticas</text>
+              <rect x="152" y="378" width="256" height="44" rx="22" fill="#131316" stroke="rgba(255,255,255,0.2)" />
+              <text x="280" y="405" text-anchor="middle" class="svgl">Leads sem acompanhamento</text>
+              <rect x="340" y="168" width="180" height="44" rx="22" fill="#131316" stroke="rgba(255,255,255,0.2)" />
+              <text x="430" y="195" text-anchor="middle" class="svgl">Trabalho manual</text>
+            </g>
+            <g fill="rgba(255,255,255,0.30)">
+              <circle cx="70" cy="215" r="5" />
+              <circle cx="480" cy="280" r="5" />
+              <circle cx="130" cy="24" r="5" />
+              <circle cx="430" cy="24" r="5" />
+              <circle cx="500" cy="420" r="5" />
+              <circle cx="40" cy="330" r="5" />
+              <circle cx="520" cy="130" r="4" />
+            </g>
+          </svg>
+        </div>
+      </div>
+      <div class="progress">
+        <div class="track">
+          <div class="fill" style="width: 16.7%"></div>
+          <div class="knob" style="left: 16.7%"></div>
+        </div>
+        <span class="idx">02 / 12</span>
+      </div>
+    </section>
+
+    <!-- ============================================================ S3 · punchline -->
+    <section class="slide s3">
+      <svg class="discs" style="left: -220px; bottom: -260px" width="720" height="720" viewBox="0 0 720 720">
+        <circle cx="360" cy="360" r="350" fill="#46eb7e" opacity="0.06" />
+        <circle cx="360" cy="360" r="240" fill="#46eb7e" opacity="0.07" />
+        <circle cx="360" cy="360" r="140" fill="#46eb7e" opacity="0.08" />
       </svg>
-      <p class="kicker">Quem somos</p>
-      <div style="position: relative; margin: auto 0; max-width: 980px">
-        <h2 style="font-size: 54px">É nesse ponto que <span class="green">entramos</span>.</h2>
-        <div style="margin-top: 34px; display: flex; flex-direction: column; gap: 18px; max-width: 860px">
-          <p class="lead">A Dreamy é uma empresa de desenvolvimento de software e inteligência artificial.</p>
-          <p class="lead">
-            Trabalhamos com empresas que possuem problemas específicos, processos próprios ou oportunidades que exigem
-            tecnologia construída em torno do negócio.
-          </p>
-          <p class="lead" style="color: var(--fg-d); font-weight: 600">
-            Não começamos escolhendo ferramenta. Começamos entendendo o problema.
-          </p>
+      <h1>É nesse ponto que <span class="g">entramos.</span></h1>
+      <div class="progress">
+        <div class="track">
+          <div class="fill" style="width: 25%"></div>
+          <div class="knob" style="left: 25%"></div>
         </div>
-      </div>
-      <div class="foot">
-        <span class="brand"><img src="../../public/brand/dreamy-symbol.png" alt="" />Dreamy</span
-        ><span class="pagenum">03</span>
+        <span class="idx">03 / 12</span>
       </div>
     </section>
 
-    <!-- ============ 4 · DIAGNÓSTICO ============ -->
-    <section class="slide paper2">
-      <p class="kicker">Diagnóstico</p>
-      <div class="cols" style="grid-template-columns: 1fr 400px; margin-top: 26px; flex: 1; align-items: center">
+    <!-- ============================================================ S4 · diagnóstico (paper) -->
+    <section class="slide paper s4">
+      <p class="eyebrow">Diagnóstico</p>
+      <h1>Você não precisa saber <span class="g">o que construir.</span></h1>
+      <p class="support">Nossos clientes chegam com uma dor — não com uma especificação técnica.</p>
+      <div class="hwrap">
+        <div class="hrail">
+          <div class="line"></div>
+          <div class="steps">
+            <div class="step">
+              <div class="dotnum">1</div>
+              <div class="lbl">Dor</div>
+            </div>
+            <div class="step">
+              <div class="dotnum">2</div>
+              <div class="lbl">Impacto</div>
+            </div>
+            <div class="step">
+              <div class="dotnum">3</div>
+              <div class="lbl">Oportunidade</div>
+            </div>
+            <div class="step">
+              <div class="dotnum">4</div>
+              <div class="lbl">Solução</div>
+            </div>
+            <div class="step">
+              <div class="dotnum">5</div>
+              <div class="lbl">Tecnologia</div>
+            </div>
+            <div class="step last">
+              <div class="dotnum">6</div>
+              <div class="lbl">Resultado</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="progress">
+        <div class="track">
+          <div class="fill" style="width: 33.3%"></div>
+          <div class="knob" style="left: 33.3%"></div>
+        </div>
+        <span class="idx">04 / 12</span>
+      </div>
+    </section>
+
+    <!-- ============================================================ S5 · três soluções -->
+    <section class="slide s5">
+      <p class="eyebrow">Soluções</p>
+      <h1>Três formas de transformar tecnologia em <span class="g">resultado.</span></h1>
+      <div class="trio">
+        <div class="sol">
+          <div class="num">01</div>
+          <div class="name">Nova Receita Digital</div>
+          <p class="one">Novos produtos digitais a partir dos ativos que a empresa já tem.</p>
+        </div>
+        <div class="sol">
+          <div class="num">02</div>
+          <div class="name">Sistemas Sob Medida</div>
+          <p class="one">Sistemas específicos para eliminar gargalos e centralizar a operação.</p>
+        </div>
+        <div class="sol">
+          <div class="num">03</div>
+          <div class="name">Agentes de IA</div>
+          <p class="one">IA conectada aos dados e sistemas da empresa, executando trabalho real.</p>
+        </div>
+      </div>
+      <div class="progress">
+        <div class="track">
+          <div class="fill" style="width: 41.7%"></div>
+          <div class="knob" style="left: 41.7%"></div>
+        </div>
+        <span class="idx">05 / 12</span>
+      </div>
+    </section>
+
+    <!-- ============================================================ S6 · Nova Receita Digital -->
+    <section class="slide prod s6">
+      <p class="note">Ilustrativo</p>
+      <div class="head">
+        <div class="bignum">01</div>
         <div>
-          <h2 style="max-width: 560px">Você não precisa saber o que construir.</h2>
-          <div style="margin-top: 26px; display: flex; flex-direction: column; gap: 16px; max-width: 600px">
-            <p class="muted" style="font-size: 20px">
-              Normalmente, nossos clientes chegam com uma dor. Não com uma especificação técnica.
-            </p>
-            <p class="muted" style="font-size: 20px">
-              Eles sabem que determinada atividade demora demais. Que uma oportunidade comercial está sendo
-              desperdiçada. Que informações estão espalhadas. Ou que alguma parte da operação não escala.
-            </p>
-            <p style="font-size: 20px; font-weight: 600">
-              Nosso trabalho começa identificando qual tecnologia faz sentido construir — se fizer sentido construir
-              alguma.
-            </p>
-          </div>
-        </div>
-        <div class="card" style="padding: 34px 36px">
-          <p class="kicker" style="font-size: 11.5px; margin-bottom: 22px">Fluxo do diagnóstico</p>
-          <ol class="rail" style="gap: 16px">
-            <li>
-              <span class="m"><span class="dot"></span><span class="line"></span></span
-              ><span class="t" style="font-family: var(--display); text-transform: uppercase; letter-spacing: 0.04em"
-                >Dor</span
-              >
-            </li>
-            <li>
-              <span class="m"><span class="dot"></span><span class="line"></span></span
-              ><span class="t" style="font-family: var(--display); text-transform: uppercase; letter-spacing: 0.04em"
-                >Impacto</span
-              >
-            </li>
-            <li>
-              <span class="m"><span class="dot"></span><span class="line"></span></span
-              ><span class="t" style="font-family: var(--display); text-transform: uppercase; letter-spacing: 0.04em"
-                >Oportunidade</span
-              >
-            </li>
-            <li>
-              <span class="m"><span class="dot"></span><span class="line"></span></span
-              ><span class="t" style="font-family: var(--display); text-transform: uppercase; letter-spacing: 0.04em"
-                >Solução</span
-              >
-            </li>
-            <li>
-              <span class="m"><span class="dot"></span><span class="line"></span></span
-              ><span class="t" style="font-family: var(--display); text-transform: uppercase; letter-spacing: 0.04em"
-                >Tecnologia</span
-              >
-            </li>
-            <li class="last">
-              <span class="m"><span class="dot"></span></span
-              ><span class="t" style="font-family: var(--display); text-transform: uppercase; letter-spacing: 0.04em"
-                >Resultado</span
-              >
-            </li>
-          </ol>
+          <p class="eyebrow">Nova Receita Digital</p>
+          <h1>Transforme sua base de clientes em uma <span class="g">nova fonte de receita.</span></h1>
         </div>
       </div>
-      <div class="foot">
-        <span class="brand"><img src="../../public/brand/dreamy-symbol.png" alt="" />Dreamy</span
-        ><span class="pagenum">04</span>
+      <div class="viz">
+        <!-- curva conceitual: da base atual à receita recorrente -->
+        <svg width="1130" height="330" viewBox="0 0 1130 330">
+          <defs>
+            <linearGradient id="area" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#46eb7e" stop-opacity="0.22" />
+              <stop offset="1" stop-color="#46eb7e" stop-opacity="0" />
+            </linearGradient>
+          </defs>
+          <line x1="40" y1="262" x2="1080" y2="262" stroke="rgba(255,255,255,0.14)" stroke-width="1.5" />
+          <!-- receita atual -->
+          <line
+            x1="40"
+            y1="236"
+            x2="1080"
+            y2="218"
+            stroke="rgba(255,255,255,0.30)"
+            stroke-width="2"
+            stroke-dasharray="2 8"
+          />
+          <text x="1080" y="200" text-anchor="end" class="svgs">receita atual</text>
+          <!-- nova receita -->
+          <path
+            d="M40,232 C 170,230 280,224 386,212 C 500,199 610,168 732,128 C 850,89 970,56 1078,34 L 1078,262 L 40,262 Z"
+            fill="url(#area)"
+          />
+          <path
+            d="M40,232 C 170,230 280,224 386,212 C 500,199 610,168 732,128 C 850,89 970,56 1078,34"
+            fill="none"
+            stroke="#46eb7e"
+            stroke-width="3"
+          />
+          <text x="1078" y="18" text-anchor="end" class="svgs" style="fill: #46eb7e">nova receita digital</text>
+          <!-- marcos -->
+          <g>
+            <circle cx="40" cy="232" r="7" fill="#0b0b0c" stroke="rgba(255,255,255,0.5)" stroke-width="2" />
+            <text x="40" y="296" text-anchor="start" class="svgl">Base atual</text>
+            <text x="40" y="318" text-anchor="start" class="svgs">clientes, conhecimento, dados</text>
+            <circle cx="386" cy="212" r="7" fill="#0b0b0c" stroke="rgba(255,255,255,0.5)" stroke-width="2" />
+            <text x="386" y="296" text-anchor="middle" class="svgl">Produto</text>
+            <text x="386" y="318" text-anchor="middle" class="svgs">novo produto digital</text>
+            <circle cx="732" cy="128" r="7" fill="#0b0b0c" stroke="rgba(255,255,255,0.5)" stroke-width="2" />
+            <text x="732" y="296" text-anchor="middle" class="svgl">Assinatura</text>
+            <text x="732" y="318" text-anchor="middle" class="svgs">modelo de cobrança</text>
+            <circle cx="1078" cy="34" r="8" fill="#46eb7e" />
+            <text x="1078" y="296" text-anchor="end" class="svgl" style="fill: #46eb7e">Receita recorrente</text>
+            <text x="1078" y="318" text-anchor="end" class="svgs">nova linha de receita</text>
+          </g>
+        </svg>
       </div>
-    </section>
-
-    <!-- ============ 5 · AS TRÊS SOLUÇÕES ============ -->
-    <section class="slide dark">
-      <p class="kicker">Soluções</p>
-      <h2 style="margin-top: 22px; max-width: 760px">Três formas de transformar tecnologia em resultado.</h2>
-      <div
-        class="cols"
-        style="grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 44px; flex: 1; align-content: start"
-      >
-        <div class="card" style="display: flex; flex-direction: column; gap: 16px">
-          <div style="display: flex; justify-content: space-between; align-items: baseline">
-            <span class="num" style="font-size: 18px">01</span>
-            <span
-              style="
-                font-size: 11.5px;
-                letter-spacing: 0.13em;
-                text-transform: uppercase;
-                color: var(--muted-d);
-                font-weight: 600;
-              "
-              >Nova Receita Digital</span
-            >
-          </div>
-          <h3>Crie o próximo produto que seus clientes podem comprar.</h3>
-          <p class="muted" style="font-size: 16.5px">
-            Transformamos oportunidades dentro da base e do conhecimento da empresa em novos produtos digitais.
-          </p>
-        </div>
-        <div class="card" style="display: flex; flex-direction: column; gap: 16px">
-          <div style="display: flex; justify-content: space-between; align-items: baseline">
-            <span class="num" style="font-size: 18px">02</span>
-            <span
-              style="
-                font-size: 11.5px;
-                letter-spacing: 0.13em;
-                text-transform: uppercase;
-                color: var(--muted-d);
-                font-weight: 600;
-              "
-              >Sistemas Sob Medida</span
-            >
-          </div>
-          <h3>Construa tecnologia em torno da sua operação.</h3>
-          <p class="muted" style="font-size: 16.5px">
-            Criamos sistemas específicos para eliminar gargalos, centralizar informações e aumentar produtividade.
-          </p>
-        </div>
-        <div class="card" style="display: flex; flex-direction: column; gap: 16px">
-          <div style="display: flex; justify-content: space-between; align-items: baseline">
-            <span class="num" style="font-size: 18px">03</span>
-            <span
-              style="
-                font-size: 11.5px;
-                letter-spacing: 0.13em;
-                text-transform: uppercase;
-                color: var(--muted-d);
-                font-weight: 600;
-              "
-              >Agentes de IA</span
-            >
-          </div>
-          <h3>Faça a IA executar trabalho real.</h3>
-          <p class="muted" style="font-size: 16.5px">
-            Criamos agentes conectados aos sistemas, dados e processos da empresa.
-          </p>
-        </div>
-      </div>
-      <div class="foot">
-        <span class="brand"><img src="../../public/brand/dreamy-symbol.png" alt="" />Dreamy</span
-        ><span class="pagenum">05</span>
-      </div>
-    </section>
-
-    <!-- ============ 6 · PRODUTO 01 ============ -->
-    <section class="slide">
-      <div style="display: flex; justify-content: space-between; align-items: baseline">
-        <p class="kicker">Solução <span class="num">01</span> · Nova Receita Digital</p>
-      </div>
-      <div class="cols" style="grid-template-columns: 1fr 380px; margin-top: 24px; flex: 1; align-items: center">
-        <div>
-          <h2 style="max-width: 600px">Transforme sua base de clientes em uma nova fonte de receita.</h2>
-          <p class="muted" style="margin-top: 22px; font-size: 19.5px; max-width: 600px">
-            Sua empresa já conquistou clientes, conhecimento, distribuição e confiança. A próxima oportunidade pode
-            estar em transformar parte disso em um produto digital que os clientes também estejam dispostos a comprar.
-          </p>
-          <p
-            style="
-              margin-top: 26px;
-              font-size: 15px;
-              font-weight: 600;
-              letter-spacing: 0.1em;
-              text-transform: uppercase;
-              color: var(--subtle-l);
-            "
-          >
-            Ativos que viram produto
-          </p>
-          <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; max-width: 620px">
-            <span class="pill">Conhecimento</span><span class="pill">Processo</span><span class="pill">Dados</span
-            ><span class="pill">Serviço</span><span class="pill">Distribuição</span><span class="pill">Comunidade</span
-            ><span class="pill">Relacionamento</span>
-          </div>
-        </div>
-        <div class="panel" style="padding: 30px 32px">
-          <p class="kicker" style="font-size: 11.5px; margin-bottom: 20px">Do ativo à receita</p>
-          <ol class="rail">
-            <li>
-              <span class="m"><span class="dot"></span><span class="line"></span></span
-              ><span
-                ><span class="t">Base atual</span
-                ><span class="d" style="display: block">clientes, conhecimento, dados</span></span
-              >
-            </li>
-            <li>
-              <span class="m"><span class="dot"></span><span class="line"></span></span
-              ><span
-                ><span class="t">Produto</span><span class="d" style="display: block">novo produto digital</span></span
-              >
-            </li>
-            <li>
-              <span class="m"><span class="dot"></span><span class="line"></span></span
-              ><span
-                ><span class="t">Assinatura</span><span class="d" style="display: block">modelo de cobrança</span></span
-              >
-            </li>
-            <li class="last">
-              <span class="m"><span class="dot"></span></span
-              ><span
-                ><span class="t">Receita recorrente</span
-                ><span class="d" style="display: block; margin-top: 6px">nova linha de receita</span></span
-              >
-            </li>
-          </ol>
-        </div>
-      </div>
-      <p
-        style="
-          font-family: var(--display);
-          font-weight: 700;
-          font-size: 23px;
-          letter-spacing: -0.01em;
-          color: var(--green-strong);
-          max-width: 900px;
-        "
-      >
-        Se apenas uma parte dos seus clientes pagasse por um novo produto digital, o que valeria a pena construir?
+      <p class="ask">
+        Se parte dos seus clientes pagasse por um novo produto digital, <strong>o que valeria a pena construir?</strong>
       </p>
-      <div class="foot">
-        <span class="brand"><img src="../../public/brand/dreamy-symbol.png" alt="" />Dreamy</span
-        ><span class="pagenum">06</span>
+      <div class="progress">
+        <div class="track">
+          <div class="fill" style="width: 50%"></div>
+          <div class="knob" style="left: 50%"></div>
+        </div>
+        <span class="idx">06 / 12</span>
       </div>
     </section>
 
-    <!-- ============ 7 · PRODUTO 02 ============ -->
-    <section class="slide">
-      <p class="kicker">Solução <span class="num">02</span> · Sistemas Sob Medida</p>
-      <div class="cols" style="grid-template-columns: 1fr 380px; margin-top: 24px; flex: 1; align-items: center">
+    <!-- ============================================================ S7 · Sistemas Sob Medida -->
+    <section class="slide prod s7">
+      <div class="head">
+        <div class="bignum">02</div>
         <div>
-          <h2 style="max-width: 600px">Sua operação é única. Seu sistema também pode ser.</h2>
-          <p class="muted" style="margin-top: 22px; font-size: 19.5px; max-width: 600px">
-            Quando o software existente exige que sua empresa mude demais para utilizá-lo, pode ser hora de construir a
-            tecnologia em torno do negócio — e não o contrário.
-          </p>
-          <p
-            style="
-              margin-top: 26px;
-              font-size: 15px;
-              font-weight: 600;
-              letter-spacing: 0.1em;
-              text-transform: uppercase;
-              color: var(--subtle-l);
-            "
+          <p class="eyebrow">Sistemas Sob Medida</p>
+          <h1>Sua operação é única. <span class="g">Seu sistema também pode ser.</span></h1>
+        </div>
+      </div>
+      <div class="viz">
+        <!-- convergência: dos dados dispersos à decisão -->
+        <svg width="1130" height="330" viewBox="0 0 1130 330">
+          <!-- fragmentos: as fontes dispersas de hoje -->
+          <g fill="none" stroke="rgba(255,255,255,0.24)" stroke-width="1.5">
+            <path d="M160,46 C 300,52 360,118 443,146" />
+            <path d="M246,110 C 320,122 380,138 443,152" />
+            <path d="M166,176 C 300,174 370,165 443,158" />
+            <path d="M310,242 C 360,232 400,190 443,164" />
+            <path d="M190,308 C 320,298 380,215 443,170" />
+          </g>
+          <g>
+            <rect x="36" y="26" width="124" height="40" rx="20" fill="#131316" stroke="rgba(255,255,255,0.35)" />
+            <text x="98" y="51" text-anchor="middle" class="svgm" style="fill: #e8eaec">Planilhas</text>
+            <rect x="150" y="90" width="96" height="40" rx="20" fill="#131316" stroke="rgba(255,255,255,0.35)" />
+            <text x="198" y="115" text-anchor="middle" class="svgm" style="fill: #e8eaec">ERP</text>
+            <rect x="56" y="156" width="110" height="40" rx="20" fill="#131316" stroke="rgba(255,255,255,0.35)" />
+            <text x="111" y="181" text-anchor="middle" class="svgm" style="fill: #e8eaec">E-mail</text>
+            <rect x="170" y="222" width="140" height="40" rx="20" fill="#131316" stroke="rgba(255,255,255,0.35)" />
+            <text x="240" y="247" text-anchor="middle" class="svgm" style="fill: #e8eaec">Documentos</text>
+            <rect x="80" y="288" width="110" height="40" rx="20" fill="#131316" stroke="rgba(255,255,255,0.35)" />
+            <text x="135" y="313" text-anchor="middle" class="svgm" style="fill: #e8eaec">Pessoas</text>
+          </g>
+          <!-- sistema -->
+          <rect
+            x="443"
+            y="103"
+            width="290"
+            height="116"
+            rx="20"
+            fill="rgba(70,235,126,0.06)"
+            stroke="#46eb7e"
+            stroke-width="2"
+          />
+          <text
+            x="588"
+            y="152"
+            text-anchor="middle"
+            class="svgl"
+            style="font-size: 21px; font-family: Urbanist; font-weight: 700"
           >
-            Quando o software genérico vira o gargalo
-          </p>
-          <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; max-width: 640px">
-            <span class="pill">Trabalho manual</span><span class="pill">Dados espalhados</span
-            ><span class="pill">Planilhas críticas</span><span class="pill">Retrabalho</span
-            ><span class="pill">Sistemas desconectados</span><span class="pill">Processo específico demais</span>
-          </div>
-        </div>
-        <div class="panel" style="padding: 30px 32px">
-          <p class="kicker" style="font-size: 11.5px; margin-bottom: 20px">Dos dados à decisão</p>
-          <ol class="rail">
-            <li>
-              <span class="m"><span class="dot"></span><span class="line"></span></span
-              ><span
-                ><span class="t">Dados</span
-                ><span class="d" style="display: block">planilhas, sistemas, pessoas</span></span
-              >
-            </li>
-            <li>
-              <span class="m"><span class="dot"></span><span class="line"></span></span
-              ><span
-                ><span class="t">Sistema</span
-                ><span class="d" style="display: block">construído em torno da operação</span></span
-              >
-            </li>
-            <li>
-              <span class="m"><span class="dot"></span><span class="line"></span></span
-              ><span
-                ><span class="t">Dashboard</span
-                ><span class="d" style="display: block">informação consolidada</span></span
-              >
-            </li>
-            <li class="last">
-              <span class="m"><span class="dot"></span></span
-              ><span
-                ><span class="t">Decisão</span
-                ><span class="d" style="display: block; margin-top: 6px">com visibilidade</span></span
-              >
-            </li>
-          </ol>
-        </div>
+            Sistema sob medida
+          </text>
+          <text x="588" y="182" text-anchor="middle" class="svgs">construído em torno da operação</text>
+          <!-- saída -->
+          <line x1="733" y1="161" x2="808" y2="161" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" />
+          <circle cx="772" cy="161" r="4" fill="#46eb7e" />
+          <rect x="810" y="137" width="280" height="48" rx="24" fill="#46eb7e" />
+          <text x="950" y="167" text-anchor="middle" style="font-size: 17px; fill: #0b0b0c; font-weight: 500">
+            Decisão com visibilidade
+          </text>
+        </svg>
       </div>
-      <p
-        style="
-          font-family: var(--display);
-          font-weight: 700;
-          font-size: 23px;
-          letter-spacing: -0.01em;
-          max-width: 900px;
-        "
-      >
-        Você não precisa chegar com a solução pronta.
-        <span class="green">Você conhece seu negócio. Nós conhecemos tecnologia.</span>
-      </p>
-      <div class="foot">
-        <span class="brand"><img src="../../public/brand/dreamy-symbol.png" alt="" />Dreamy</span
-        ><span class="pagenum">07</span>
+      <p class="ask"><strong>Você conhece seu negócio; nós conhecemos tecnologia.</strong></p>
+      <div class="progress">
+        <div class="track">
+          <div class="fill" style="width: 58.3%"></div>
+          <div class="knob" style="left: 58.3%"></div>
+        </div>
+        <span class="idx">07 / 12</span>
       </div>
     </section>
 
-    <!-- ============ 8 · PRODUTO 03 ============ -->
-    <section class="slide">
-      <p class="kicker">Solução <span class="num">03</span> · Agentes de IA</p>
-      <div class="cols" style="grid-template-columns: 1fr 400px; margin-top: 24px; flex: 1; align-items: center">
+    <!-- ============================================================ S8 · Agentes de IA -->
+    <section class="slide prod s8">
+      <div class="head">
+        <div class="bignum">03</div>
         <div>
-          <h2 style="max-width: 620px">Coloque a IA para executar trabalho dentro da sua empresa.</h2>
-          <p class="muted" style="margin-top: 22px; font-size: 19.5px; max-width: 620px">
-            IA gera valor quando deixa de ser apenas uma conversa e passa a participar de processos reais. Criamos
-            agentes conectados aos dados, sistemas e ferramentas da empresa.
-          </p>
-          <p
-            style="
-              margin-top: 26px;
-              font-size: 15px;
-              font-weight: 600;
-              letter-spacing: 0.1em;
-              text-transform: uppercase;
-              color: var(--subtle-l);
-            "
+          <p class="eyebrow">Agentes de IA</p>
+          <h1>Coloque a IA para <span class="g">executar trabalho</span> dentro da sua empresa.</h1>
+        </div>
+      </div>
+      <div class="viz">
+        <!-- hub: agente conectado ao contexto da empresa -->
+        <svg width="1130" height="340" viewBox="0 0 1130 340">
+          <circle cx="330" cy="170" r="132" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="1.5" />
+          <!-- conectores -->
+          <g stroke="rgba(255,255,255,0.18)" stroke-width="1.5">
+            <line x1="330" y1="170" x2="396" y2="56" />
+            <line x1="330" y1="170" x2="206" y2="46" />
+            <line x1="330" y1="170" x2="106" y2="125" />
+            <line x1="330" y1="170" x2="106" y2="215" />
+            <line x1="330" y1="170" x2="206" y2="294" />
+            <line x1="330" y1="170" x2="396" y2="284" />
+          </g>
+          <!-- núcleo -->
+          <circle cx="330" cy="170" r="58" fill="#101711" stroke="#46eb7e" stroke-width="2" />
+          <text
+            x="330"
+            y="177"
+            text-anchor="middle"
+            class="svgl"
+            style="font-size: 19px; font-family: Urbanist; font-weight: 700"
           >
-            Não é um chatbot — um agente:
-          </p>
-          <ul class="check" style="margin-top: 16px">
-            <li><span class="ck">✓</span>Interpreta informações</li>
-            <li><span class="ck">✓</span>Acessa ferramentas autorizadas</li>
-            <li><span class="ck">✓</span>Executa etapas de processos e registra em sistemas</li>
-            <li><span class="ck">✓</span>Encaminha para pessoas quando necessário</li>
-          </ul>
-        </div>
-        <div class="panel" style="padding: 30px 32px">
-          <p class="kicker" style="font-size: 11.5px; margin-bottom: 20px">Como funciona</p>
-          <ol class="rail">
-            <li>
-              <span class="m"><span class="dot"></span><span class="line"></span></span
-              ><span><span class="t">Humano</span><span class="d" style="display: block">define o objetivo</span></span>
-            </li>
-            <li>
-              <span class="m"><span class="dot"></span><span class="line"></span></span
-              ><span
-                ><span class="t">Agente</span><span class="d" style="display: block">interpreta e decide</span></span
-              >
-            </li>
-            <li>
-              <span class="m"><span class="dot"></span><span class="line"></span></span
-              ><span
-                ><span class="t">Ferramentas</span
-                ><span class="d" style="display: block">CRM, ERP, documentos</span></span
-              >
-            </li>
-            <li>
-              <span class="m"><span class="dot"></span><span class="line"></span></span
-              ><span><span class="t">Ação</span><span class="d" style="display: block">executa a etapa</span></span>
-            </li>
-            <li class="last">
-              <span class="m"><span class="dot"></span></span
-              ><span
-                ><span class="t">Retorno</span
-                ><span class="d" style="display: block; margin-top: 6px">registra e informa</span></span
-              >
-            </li>
-          </ol>
-        </div>
+            Agente
+          </text>
+          <!-- contexto -->
+          <g>
+            <rect x="344" y="34" width="104" height="36" rx="18" fill="#131316" stroke="rgba(255,255,255,0.2)" />
+            <text x="396" y="57" text-anchor="middle" class="svgm" style="fill: #e8eaec">CRM</text>
+            <rect x="154" y="24" width="104" height="36" rx="18" fill="#131316" stroke="rgba(255,255,255,0.2)" />
+            <text x="206" y="47" text-anchor="middle" class="svgm" style="fill: #e8eaec">ERP</text>
+            <rect x="34" y="107" width="144" height="36" rx="18" fill="#131316" stroke="rgba(255,255,255,0.2)" />
+            <text x="106" y="130" text-anchor="middle" class="svgm" style="fill: #e8eaec">WhatsApp</text>
+            <rect x="34" y="197" width="144" height="36" rx="18" fill="#131316" stroke="rgba(255,255,255,0.2)" />
+            <text x="106" y="220" text-anchor="middle" class="svgm" style="fill: #e8eaec">E-mail</text>
+            <rect x="144" y="276" width="124" height="36" rx="18" fill="#131316" stroke="rgba(255,255,255,0.2)" />
+            <text x="206" y="299" text-anchor="middle" class="svgm" style="fill: #e8eaec">Documentos</text>
+            <rect x="344" y="266" width="104" height="36" rx="18" fill="#131316" stroke="rgba(255,255,255,0.2)" />
+            <text x="396" y="289" text-anchor="middle" class="svgm" style="fill: #e8eaec">APIs</text>
+          </g>
+          <!-- saídas -->
+          <line x1="388" y1="152" x2="606" y2="122" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" />
+          <circle cx="500" cy="137" r="4" fill="#46eb7e" />
+          <rect x="608" y="98" width="270" height="48" rx="24" fill="#46eb7e" />
+          <text x="743" y="128" text-anchor="middle" style="font-size: 17px; fill: #0b0b0c; font-weight: 500">
+            Trabalho executado
+          </text>
+          <line x1="388" y1="188" x2="606" y2="218" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" />
+          <rect x="608" y="194" width="330" height="48" rx="24" fill="none" stroke="rgba(255,255,255,0.35)" />
+          <text x="773" y="224" text-anchor="middle" class="svgl">Humano quando necessário</text>
+        </svg>
       </div>
-      <div class="foot">
-        <span class="brand"><img src="../../public/brand/dreamy-symbol.png" alt="" />Dreamy</span
-        ><span class="pagenum">08</span>
-      </div>
-    </section>
-
-    <!-- ============ 9 · AGENTES: ONDE TRABALHAM ============ -->
-    <section class="slide dark">
-      <p class="kicker">Agentes de IA · Casos de uso</p>
-      <h2 style="margin-top: 22px">Onde um agente pode trabalhar?</h2>
-      <div class="cols" style="grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 36px">
-        <div class="card" style="padding: 24px 26px">
-          <h3 style="margin-bottom: 16px">Atendimento</h3>
-          <div style="display: flex; flex-wrap: wrap; gap: 8px">
-            <span class="pill" style="font-size: 14px; padding: 6px 13px">Responder</span
-            ><span class="pill" style="font-size: 14px; padding: 6px 13px">Consultar informações</span
-            ><span class="pill" style="font-size: 14px; padding: 6px 13px">Qualificar</span
-            ><span class="pill" style="font-size: 14px; padding: 6px 13px">Registrar</span
-            ><span class="pill" style="font-size: 14px; padding: 6px 13px">Atualizar CRM</span
-            ><span class="pill" style="font-size: 14px; padding: 6px 13px">Agendar</span>
-          </div>
-        </div>
-        <div class="card" style="padding: 24px 26px">
-          <h3 style="margin-bottom: 16px">Vendas</h3>
-          <div style="display: flex; flex-wrap: wrap; gap: 8px">
-            <span class="pill" style="font-size: 14px; padding: 6px 13px">Pesquisar prospects</span
-            ><span class="pill" style="font-size: 14px; padding: 6px 13px">Qualificar</span
-            ><span class="pill" style="font-size: 14px; padding: 6px 13px">Priorizar leads</span
-            ><span class="pill" style="font-size: 14px; padding: 6px 13px">Criar follow-ups</span
-            ><span class="pill" style="font-size: 14px; padding: 6px 13px">Preparar vendedor</span>
-          </div>
-        </div>
-        <div class="card" style="padding: 24px 26px">
-          <h3 style="margin-bottom: 16px">Operação</h3>
-          <div style="display: flex; flex-wrap: wrap; gap: 8px">
-            <span class="pill" style="font-size: 14px; padding: 6px 13px">Consolidar informações</span
-            ><span class="pill" style="font-size: 14px; padding: 6px 13px">Gerar relatórios</span
-            ><span class="pill" style="font-size: 14px; padding: 6px 13px">Executar processos</span
-            ><span class="pill" style="font-size: 14px; padding: 6px 13px">Automatizar multi-etapas</span>
-          </div>
-        </div>
-      </div>
-      <div class="panel" style="margin-top: 26px; display: flex; align-items: center; gap: 28px; padding: 20px 26px">
-        <p style="font-family: var(--display); font-weight: 700; font-size: 20px; flex: none">
-          Autonomia não significa<br />falta de controle.
-        </p>
-        <div style="display: flex; flex-wrap: wrap; gap: 8px">
-          <span class="pill" style="font-size: 14px; padding: 6px 13px">Escopo definido</span
-          ><span class="pill" style="font-size: 14px; padding: 6px 13px">Regras</span
-          ><span class="pill" style="font-size: 14px; padding: 6px 13px">Permissões</span
-          ><span class="pill" style="font-size: 14px; padding: 6px 13px">Pontos de confirmação</span
-          ><span class="pill" style="font-size: 14px; padding: 6px 13px">Rastreabilidade</span
-          ><span class="pill accent" style="font-size: 14px; padding: 6px 13px">Handoff humano</span>
-        </div>
-      </div>
-      <div class="foot">
-        <span class="brand"><img src="../../public/brand/dreamy-symbol.png" alt="" />Dreamy</span
-        ><span class="pagenum">09</span>
-      </div>
-    </section>
-
-    <!-- ============ 10 · COMO TRABALHAMOS ============ -->
-    <section class="slide">
-      <p class="kicker">Como trabalhamos</p>
-      <h2 style="margin-top: 22px">Da dor ao software.</h2>
-      <div
-        class="cols"
-        style="
-          grid-template-columns: repeat(5, 1fr);
-          gap: 0;
-          margin-top: 48px;
-          border: 1px solid var(--border-l);
-          border-radius: 20px;
-          overflow: hidden;
-          background: var(--border-l);
-        "
-      >
-        <div
-          style="background: var(--white); padding: 28px 24px 32px; display: flex; flex-direction: column; gap: 14px"
-        >
-          <span class="num" style="font-size: 26px; color: var(--subtle-l)">01</span>
-          <h3 style="font-size: 21px">Entender</h3>
-          <p class="muted" style="font-size: 15.5px">Mapeamos problema, impacto e contexto.</p>
-        </div>
-        <div
-          style="
-            background: var(--white);
-            padding: 28px 24px 32px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            margin-left: 1px;
-          "
-        >
-          <span class="num" style="font-size: 26px; color: var(--subtle-l)">02</span>
-          <h3 style="font-size: 21px">Desenhar</h3>
-          <p class="muted" style="font-size: 15.5px">Definimos solução, experiência, arquitetura e integrações.</p>
-        </div>
-        <div
-          style="
-            background: var(--white);
-            padding: 28px 24px 32px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            margin-left: 1px;
-          "
-        >
-          <span class="num" style="font-size: 26px; color: var(--subtle-l)">03</span>
-          <h3 style="font-size: 21px">Construir</h3>
-          <p class="muted" style="font-size: 15.5px">Desenvolvemos em ciclos curtos e validamos continuamente.</p>
-        </div>
-        <div
-          style="
-            background: var(--white);
-            padding: 28px 24px 32px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            margin-left: 1px;
-          "
-        >
-          <span class="num" style="font-size: 26px; color: var(--subtle-l)">04</span>
-          <h3 style="font-size: 21px">Colocar para trabalhar</h3>
-          <p class="muted" style="font-size: 15.5px">Implantamos a solução na operação real.</p>
-        </div>
-        <div
-          style="
-            background: var(--white);
-            padding: 28px 24px 32px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            margin-left: 1px;
-          "
-        >
-          <span class="num" style="font-size: 26px">05</span>
-          <h3 style="font-size: 21px">Evoluir</h3>
-          <p class="muted" style="font-size: 15.5px">Acompanhamos uso, resultados e novas oportunidades.</p>
-        </div>
-      </div>
-      <p class="muted" style="margin-top: 34px; font-size: 19px; max-width: 820px">
-        A entrada em produção é o começo: acompanhamos uso e resultados para evoluir o que foi construído.
+      <p class="ask">
+        <strong>Não é um chatbot.</strong> É software que executa etapas de processos — com escopo, regras e permissões.
       </p>
-      <div class="foot">
-        <span class="brand"><img src="../../public/brand/dreamy-symbol.png" alt="" />Dreamy</span
-        ><span class="pagenum">10</span>
+      <div class="progress">
+        <div class="track">
+          <div class="fill" style="width: 66.7%"></div>
+          <div class="knob" style="left: 66.7%"></div>
+        </div>
+        <span class="idx">08 / 12</span>
       </div>
     </section>
 
-    <!-- ============ 11 · PARA QUEM ============ -->
-    <section class="slide dark">
-      <p class="kicker">Para quem</p>
-      <div class="cols" style="grid-template-columns: 1fr 480px; margin-top: 26px; flex: 1; align-items: center">
-        <div>
-          <h2 style="max-width: 560px">Para empresas que já têm operação — e querem chegar ao próximo nível.</h2>
-          <p class="lead" style="margin-top: 26px; max-width: 560px">
-            Se a empresa já funciona, mas a tecnologia começou a limitar seu crescimento, provavelmente existe algo que
-            podemos construir.
-          </p>
-        </div>
-        <ul class="check" style="gap: 14px">
-          <li><span class="ck">✓</span>Processos que não escalam</li>
-          <li><span class="ck">✓</span>Sistemas desconectados</li>
-          <li><span class="ck">✓</span>Base relevante de clientes</li>
-          <li><span class="ck">✓</span>Equipe comercial</li>
-          <li><span class="ck">✓</span>Dados espalhados</li>
-          <li><span class="ck">✓</span>Oportunidades digitais ainda não exploradas</li>
-        </ul>
-      </div>
-      <div class="foot">
-        <span class="brand"><img src="../../public/brand/dreamy-symbol.png" alt="" />Dreamy</span
-        ><span class="pagenum">11</span>
-      </div>
-    </section>
-
-    <!-- ============ 12 · PRINCÍPIOS ============ -->
-    <section class="slide">
-      <p class="kicker">Princípios</p>
-      <h2 style="margin-top: 22px">O que orienta a forma como trabalhamos.</h2>
-      <div
-        class="cols"
-        style="grid-template-columns: 1fr 1fr; gap: 14px 40px; margin-top: 40px; flex: 1; align-content: start"
-      >
-        <div style="display: flex; gap: 16px; padding: 18px 0; border-top: 1px solid var(--border-l)">
-          <span class="num" style="font-size: 17px; flex: none; width: 34px">01</span>
-          <div>
-            <h3 style="font-size: 20px">Negócio antes da tecnologia</h3>
-            <p class="muted" style="font-size: 16px; margin-top: 5px">
-              A escolha da tecnologia é consequência, não ponto de partida.
-            </p>
+    <!-- ============================================================ S9 · onde os agentes atuam -->
+    <section class="slide s9">
+      <p class="eyebrow">Onde os agentes atuam</p>
+      <h1>Atendimento, vendas e <span class="g">operação.</span></h1>
+      <div class="trio">
+        <div class="col">
+          <div class="cap">Atendimento</div>
+          <div class="vrail">
+            <div class="vstep">Cliente</div>
+            <div class="vstep">Agente</div>
+            <div class="vstep">CRM atualizado</div>
+            <div class="vstep last">Humano quando necessário</div>
           </div>
         </div>
-        <div style="display: flex; gap: 16px; padding: 18px 0; border-top: 1px solid var(--border-l)">
-          <span class="num" style="font-size: 17px; flex: none; width: 34px">02</span>
-          <div>
-            <h3 style="font-size: 20px">Simplicidade antes da complexidade</h3>
-            <p class="muted" style="font-size: 16px; margin-top: 5px">
-              Preferimos a solução mais simples que resolve o problema.
-            </p>
+        <div class="col">
+          <div class="cap">Vendas</div>
+          <div class="vrail">
+            <div class="vstep">Lead</div>
+            <div class="vstep">Qualificação</div>
+            <div class="vstep">Follow-up</div>
+            <div class="vstep last">Vendedor preparado</div>
           </div>
         </div>
-        <div style="display: flex; gap: 16px; padding: 18px 0; border-top: 1px solid var(--border-l)">
-          <span class="num" style="font-size: 17px; flex: none; width: 34px">03</span>
-          <div>
-            <h3 style="font-size: 20px">Software deve gerar consequência</h3>
-            <p class="muted" style="font-size: 16px; margin-top: 5px">
-              Menos trabalho manual, mais visibilidade, mais capacidade ou nova receita.
-            </p>
-          </div>
-        </div>
-        <div style="display: flex; gap: 16px; padding: 18px 0; border-top: 1px solid var(--border-l)">
-          <span class="num" style="font-size: 17px; flex: none; width: 34px">04</span>
-          <div>
-            <h3 style="font-size: 20px">IA precisa executar algo útil</h3>
-            <p class="muted" style="font-size: 16px; margin-top: 5px">
-              Agentes executam etapas de processos reais, com escopo, permissões e supervisão.
-            </p>
-          </div>
-        </div>
-        <div style="display: flex; gap: 16px; padding: 18px 0; border-top: 1px solid var(--border-l)">
-          <span class="num" style="font-size: 17px; flex: none; width: 34px">05</span>
-          <div>
-            <h3 style="font-size: 20px">Produto continua evoluindo depois do lançamento</h3>
-            <p class="muted" style="font-size: 16px; margin-top: 5px">A entrada em produção é o começo.</p>
+        <div class="col">
+          <div class="cap">Operação</div>
+          <div class="vrail">
+            <div class="vstep">Sistemas + dados</div>
+            <div class="vstep">Agente</div>
+            <div class="vstep">Análise</div>
+            <div class="vstep last">Ação</div>
           </div>
         </div>
       </div>
-      <div class="foot">
-        <span class="brand"><img src="../../public/brand/dreamy-symbol.png" alt="" />Dreamy</span
-        ><span class="pagenum">12</span>
+      <div class="progress">
+        <div class="track">
+          <div class="fill" style="width: 75%"></div>
+          <div class="knob" style="left: 75%"></div>
+        </div>
+        <span class="idx">09 / 12</span>
       </div>
     </section>
 
-    <!-- ============ 13 · FECHAMENTO ============ -->
-    <section class="slide dark" style="align-items: center; text-align: center; justify-content: center">
-      <svg
-        class="discs"
-        style="left: 50%; top: 50%; width: 1100px; height: 1100px; transform: translate(-50%, -50%)"
-        viewBox="0 0 400 400"
-        aria-hidden="true"
-      >
-        <circle cx="200" cy="200" r="150" fill-opacity="0.06" />
-        <circle cx="262" cy="150" r="122" fill-opacity="0.08" />
-        <circle cx="150" cy="258" r="112" fill-opacity="0.08" />
+    <!-- ============================================================ S10 · como trabalhamos (paper) -->
+    <section class="slide paper s10">
+      <div class="cols">
+        <div class="intro">
+          <p class="eyebrow">Como trabalhamos</p>
+          <h1>Da dor ao <span class="g">software.</span></h1>
+        </div>
+        <div class="vlist">
+          <div class="vitem">
+            <div class="vnum">1</div>
+            <div class="vtxt">
+              <div class="vtit">Entender</div>
+              <p class="vdesc">Mapeamos problema, impacto e contexto.</p>
+            </div>
+          </div>
+          <div class="vitem">
+            <div class="vnum">2</div>
+            <div class="vtxt">
+              <div class="vtit">Desenhar</div>
+              <p class="vdesc">Solução, experiência, arquitetura e integrações.</p>
+            </div>
+          </div>
+          <div class="vitem">
+            <div class="vnum">3</div>
+            <div class="vtxt">
+              <div class="vtit">Construir</div>
+              <p class="vdesc">Ciclos curtos, validação contínua.</p>
+            </div>
+          </div>
+          <div class="vitem">
+            <div class="vnum">4</div>
+            <div class="vtxt">
+              <div class="vtit">Implantar</div>
+              <p class="vdesc">Na operação real.</p>
+            </div>
+          </div>
+          <div class="vitem last">
+            <div class="vnum">5</div>
+            <div class="vtxt">
+              <div class="vtit">Evoluir</div>
+              <p class="vdesc">Uso, resultados e novas oportunidades.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="progress">
+        <div class="track">
+          <div class="fill" style="width: 83.3%"></div>
+          <div class="knob" style="left: 83.3%"></div>
+        </div>
+        <span class="idx">10 / 12</span>
+      </div>
+    </section>
+
+    <!-- ============================================================ S11 · para quem -->
+    <section class="slide s11">
+      <p class="eyebrow">Para quem</p>
+      <h1>Para empresas que já têm operação —<br />e querem chegar ao <span class="g">próximo nível.</span></h1>
+      <div class="pills">
+        <span class="pill">Processos que não escalam</span>
+        <span class="pill">Sistemas desconectados</span>
+        <span class="pill">Dados espalhados</span>
+        <span class="pill">Oportunidades digitais não exploradas</span>
+      </div>
+      <p class="closing">
+        Se a empresa já funciona, mas a tecnologia começou a limitar o crescimento,
+        <strong>provavelmente existe algo que podemos construir.</strong>
+      </p>
+      <div class="progress">
+        <div class="track">
+          <div class="fill" style="width: 91.7%"></div>
+          <div class="knob" style="left: 91.7%"></div>
+        </div>
+        <span class="idx">11 / 12</span>
+      </div>
+    </section>
+
+    <!-- ============================================================ S12 · fechamento -->
+    <section class="slide s12">
+      <svg class="discs" style="right: -200px; bottom: -240px" width="680" height="680" viewBox="0 0 680 680">
+        <circle cx="340" cy="340" r="330" fill="#46eb7e" opacity="0.06" />
+        <circle cx="340" cy="340" r="225" fill="#46eb7e" opacity="0.07" />
+        <circle cx="340" cy="340" r="130" fill="#46eb7e" opacity="0.08" />
       </svg>
-      <div
-        style="
-          position: relative;
-          max-width: 900px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 28px;
-        "
-      >
-        <img src="../../public/brand/dreamy-logo-dark-bg.png" alt="Dreamy" style="height: 36px; width: auto" />
-        <h2 style="font-size: 52px">Qual problema da sua empresa valeria a pena resolver agora?</h2>
-        <p class="lead" style="max-width: 700px">
-          Conte o contexto. Vamos entender a oportunidade e avaliar se existe uma solução tecnológica capaz de gerar
-          impacto relevante.
-        </p>
-        <div style="display: flex; gap: 14px; margin-top: 6px">
-          <span class="pill accent" style="font-size: 17px; padding: 12px 26px">www.dreamy.app.br</span>
-          <span class="pill" style="font-size: 17px; padding: 12px 26px">WhatsApp&nbsp;·&nbsp;+55 11 94879-3233</span>
-        </div>
-        <p class="muted" style="font-size: 15px">Sem apresentação genérica. Vamos falar sobre o seu negócio.</p>
+      <img class="logo" src="../../public/brand/dreamy-logo-dark-bg.png" alt="Dreamy" />
+      <h1>Qual problema da sua empresa valeria a pena <span class="g">resolver agora?</span></h1>
+      <div class="contact">
+        <span class="pill solid">WhatsApp +55 11 94879-3233</span>
+        <span class="pill">www.dreamy.app.br</span>
       </div>
-      <div class="foot">
-        <span>Começamos pelo problema. A tecnologia vem depois.</span><span class="pagenum">13</span>
+      <p class="micro">Vamos falar sobre o seu negócio.</p>
+      <div class="progress">
+        <div class="track">
+          <div class="fill" style="width: 100%"></div>
+          <div class="knob" style="left: 100%"></div>
+        </div>
+        <span class="idx">12 / 12</span>
       </div>
     </section>
   </body>
