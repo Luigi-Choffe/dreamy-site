@@ -1,15 +1,16 @@
 /**
  * Screenshots por slide de um HTML de apresentação (`.slide` 1280×720) — revisão visual (dev).
- * Uso: pnpm tsx scripts/dev/deck-shots.ts <arquivo.html> <pasta-saida>
+ * Uso: pnpm tsx scripts/dev/deck-shots.ts <arquivo.html> <pasta-saida> [escala=1]
  */
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { chromium } from "@playwright/test";
 
-const [htmlPath, outDir] = process.argv.slice(2);
+const [htmlPath, outDir, scaleArg] = process.argv.slice(2);
+const scale = Number(scaleArg) || 1;
 (async () => {
   const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+  const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: scale });
   await page.goto(pathToFileURL(path.resolve(htmlPath)).href, { waitUntil: "networkidle" });
   await page.evaluate(() => document.fonts.ready);
   const slides = await page.locator(".slide").count();
