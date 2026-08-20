@@ -62,3 +62,4 @@ next-env.d.ts
 /dist/
 *.log
 Thumbs.db
+scripts/dev/__pycache__/
