@@ -141,4 +141,3 @@ Não precisa ser a resposta perfeita. Me conta o contexto, e a gente avalia junt
 O próximo passo é simples: uma conversa. O WhatsApp está aí no slide. E como diz o nosso site: sem apresentação genérica — na próxima conversa, o assunto é o seu negócio.
 
 Obrigado!
-
