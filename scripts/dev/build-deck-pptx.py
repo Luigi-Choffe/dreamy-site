@@ -14,7 +14,7 @@ import sys
 from pptx import Presentation
 from pptx.util import Emu
 
-SHOTS = sys.argv[1]
+SHOTS = sys.argv[1] if len(sys.argv) > 1 else None
 OUT_PPTX = "docs/apresentacao/Dreamy — Apresentação Institucional.pptx"
 OUT_MD = "docs/apresentacao/ROTEIRO.md"
 
@@ -115,39 +115,44 @@ NOTES = [
     ),
 ]
 
-files = sorted(glob.glob(os.path.join(SHOTS, "slide-*.png")))
-assert len(files) == len(NOTES) == 12, (len(files), len(NOTES))
+def main():
+    files = sorted(glob.glob(os.path.join(SHOTS, "slide-*.png")))
+    assert len(files) == len(NOTES) == 12, (len(files), len(NOTES))
+    
+    # --- PPTX ---------------------------------------------------------------
+    prs = Presentation()
+    prs.slide_width = Emu(12192000)   # 13,333 in — 16:9
+    prs.slide_height = Emu(6858000)  # 7,5 in
+    blank = prs.slide_layouts[6]
+    
+    for png, (title, goal, speech) in zip(files, NOTES):
+        slide = prs.slides.add_slide(blank)
+        slide.shapes.add_picture(png, 0, 0, width=prs.slide_width, height=prs.slide_height)
+        slide.notes_slide.notes_text_frame.text = f"{goal}\n\n{speech}"
+    
+    prs.core_properties.title = "Dreamy — Apresentação Institucional"
+    prs.core_properties.author = "Dreamy"
+    prs.core_properties.comments = "Pitch de palco — 12 slides. Fala completa nas notas do apresentador."
+    prs.save(OUT_PPTX)
+    print("PPTX salvo:", OUT_PPTX, os.path.getsize(OUT_PPTX), "bytes")
+    
+    # --- ROTEIRO.md ----------------------------------------------------------
+    md = io.StringIO()
+    md.write("# Roteiro do pitch — Dreamy (12 slides, ≈ 9 min)\n\n")
+    md.write(
+        "A mesma fala está nas notas do apresentador do PPTX (visão do apresentador no PowerPoint: `Alt+F5`).\n"
+        "Substitua `[seu nome]` e ensaie as pausas marcadas — elas fazem parte do pitch.\n"
+        "Copy fiel ao PRD/site: sem métricas, clientes ou cases inventados (PRD §2).\n\n"
+    )
+    for i, (title, goal, speech) in enumerate(NOTES, 1):
+        md.write(f"## Slide {i:02d} — {title}\n\n")
+        md.write(f"_{goal}_\n\n")
+        for par in speech.split("\n\n"):
+            md.write(f"> {par}\n\n" if par.startswith("[") else f"{par}\n\n")
+    with open(OUT_MD, "w", encoding="utf-8", newline="\n") as f:
+        f.write(md.getvalue())
+    print("Roteiro salvo:", OUT_MD)
 
-# --- PPTX ---------------------------------------------------------------
-prs = Presentation()
-prs.slide_width = Emu(12192000)   # 13,333 in — 16:9
-prs.slide_height = Emu(6858000)  # 7,5 in
-blank = prs.slide_layouts[6]
 
-for png, (title, goal, speech) in zip(files, NOTES):
-    slide = prs.slides.add_slide(blank)
-    slide.shapes.add_picture(png, 0, 0, width=prs.slide_width, height=prs.slide_height)
-    slide.notes_slide.notes_text_frame.text = f"{goal}\n\n{speech}"
-
-prs.core_properties.title = "Dreamy — Apresentação Institucional"
-prs.core_properties.author = "Dreamy"
-prs.core_properties.comments = "Pitch de palco — 12 slides. Fala completa nas notas do apresentador."
-prs.save(OUT_PPTX)
-print("PPTX salvo:", OUT_PPTX, os.path.getsize(OUT_PPTX), "bytes")
-
-# --- ROTEIRO.md ----------------------------------------------------------
-md = io.StringIO()
-md.write("# Roteiro do pitch — Dreamy (12 slides, ≈ 9 min)\n\n")
-md.write(
-    "A mesma fala está nas notas do apresentador do PPTX (visão do apresentador no PowerPoint: `Alt+F5`).\n"
-    "Substitua `[seu nome]` e ensaie as pausas marcadas — elas fazem parte do pitch.\n"
-    "Copy fiel ao PRD/site: sem métricas, clientes ou cases inventados (PRD §2).\n\n"
-)
-for i, (title, goal, speech) in enumerate(NOTES, 1):
-    md.write(f"## Slide {i:02d} — {title}\n\n")
-    md.write(f"_{goal}_\n\n")
-    for par in speech.split("\n\n"):
-        md.write(f"> {par}\n\n" if par.startswith("[") else f"{par}\n\n")
-with open(OUT_MD, "w", encoding="utf-8", newline="\n") as f:
-    f.write(md.getvalue())
-print("Roteiro salvo:", OUT_MD)
+if __name__ == "__main__":
+    main()
