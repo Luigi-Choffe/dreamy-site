@@ -16,11 +16,12 @@ const settle = Number(waitArg) || 2200;
   });
   await page.evaluate(() => document.fonts.ready);
   await page.evaluate(() => document.getElementById("hint")!.remove());
-  for (let i = 0; i < 12; i++) {
+  const total = await page.evaluate(() => document.querySelectorAll(".slide").length);
+  for (let i = 0; i < total; i++) {
     await page.evaluate((n) => (window as unknown as { go: (i: number) => void }).go(n), i);
     await page.waitForTimeout(settle);
     await page.screenshot({ path: `${outDir}/slide-${String(i + 1).padStart(2, "0")}.png` });
   }
   await browser.close();
-  console.log("✓ 12 slides");
+  console.log("✓ slides");
 })();

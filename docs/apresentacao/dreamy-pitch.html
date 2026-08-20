@@ -250,10 +250,6 @@
       #stage.on-paper #chrome .idx {
         color: var(--mut-l);
       }
-      body.notes-open #chrome {
-        opacity: 0;
-        transition: opacity 0.3s;
-      }
 
       /* ---------- elementos vivos --------------------------------------- */
       .breathe {
@@ -577,7 +573,8 @@
       .prod .viz svg {
         margin-left: -36px;
       }
-      .prod .note {
+      .prod .note,
+      .s6b .note {
         position: absolute;
         right: 72px;
         top: 66px;
@@ -878,6 +875,162 @@
         color: var(--mut-d);
       }
 
+      /* ============================================================== S6b · simulador */
+      .s6b h1 {
+        font-size: 46px;
+        margin-bottom: 30px;
+      }
+      .calc {
+        display: flex;
+        gap: 56px;
+        flex: 1;
+        min-height: 0;
+        margin-bottom: 26px;
+      }
+      .calc .in {
+        width: 350px;
+        flex: none;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .field label {
+        display: block;
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--mut-d);
+        margin-bottom: 8px;
+      }
+      .field input {
+        width: 100%;
+        background: var(--ink2);
+        border: 1px solid var(--line-d);
+        border-radius: 14px;
+        color: #fff;
+        font-family: var(--display);
+        font-weight: 700;
+        font-size: 28px;
+        padding: 11px 16px;
+        outline: none;
+        letter-spacing: -0.01em;
+      }
+      .field input:focus {
+        border-color: var(--green);
+      }
+      .seg {
+        display: flex;
+        border: 1px solid var(--line-d);
+        border-radius: 999px;
+        overflow: hidden;
+        background: var(--ink2);
+      }
+      .seg button {
+        flex: 1;
+        background: none;
+        border: 0;
+        color: var(--mut-d);
+        font-family: var(--sans);
+        font-size: 16px;
+        padding: 11px 0;
+        cursor: pointer;
+      }
+      .seg button.on {
+        background: var(--green);
+        color: var(--ink);
+        font-weight: 500;
+      }
+      .calc .hint2 {
+        font-size: 13px;
+        color: var(--mut-d);
+      }
+      .calc .out {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+      .stats {
+        display: flex;
+        gap: 52px;
+        margin-bottom: 20px;
+      }
+      .stat .k {
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--mut-d);
+        margin-bottom: 7px;
+      }
+      .stat .v {
+        font-family: var(--display);
+        font-weight: 700;
+        font-size: 48px;
+        letter-spacing: -0.02em;
+        white-space: nowrap;
+      }
+      .stat .v small {
+        font-size: 19px;
+        color: var(--mut-d);
+        font-family: var(--sans);
+        font-weight: 500;
+        margin-left: 6px;
+      }
+      .stat.mrr .v {
+        color: var(--green);
+      }
+      .charthead {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 6px;
+      }
+      .charthead .t {
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--mut-d);
+      }
+      .charthead .cum {
+        font-size: 14px;
+        color: var(--light);
+      }
+      .bars {
+        flex: 1;
+        display: flex;
+        align-items: flex-end;
+        gap: 9px;
+        border-bottom: 1.5px solid var(--line-d);
+        min-height: 130px;
+      }
+      .bars .bar {
+        flex: 1;
+        background: linear-gradient(180deg, rgba(70, 235, 126, 0.85), rgba(70, 235, 126, 0.2));
+        border-radius: 5px 5px 0 0;
+        height: 4%;
+        transition: height 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      .months {
+        display: flex;
+        gap: 9px;
+        margin-top: 7px;
+      }
+      .months span {
+        flex: 1;
+        text-align: center;
+        font-size: 11px;
+        color: var(--mut-d);
+      }
+      .mesa {
+        margin-top: 18px;
+        font-size: 19px;
+        color: var(--mut-d);
+      }
+      .mesa b {
+        color: #fff;
+        font-weight: 500;
+      }
+
       /* ---------- overlays ------------------------------------------------ */
       #hint {
         position: fixed;
@@ -903,41 +1056,6 @@
       #hint b {
         color: #fff;
         font-weight: 500;
-      }
-      #notes {
-        position: fixed;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 30;
-        background: #0a0a0b;
-        border-top: 1px solid rgba(70, 235, 126, 0.35);
-        color: #dfe3e6;
-        height: 42vh;
-        overflow: auto;
-        padding: 22px 5vw 28px;
-        transform: translateY(102%);
-        transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-        font-size: 15.5px;
-        line-height: 1.55;
-      }
-      #notes.open {
-        transform: none;
-      }
-      #notes .goal {
-        color: var(--green);
-        font-size: 13px;
-        letter-spacing: 0.05em;
-        font-weight: 500;
-        margin-bottom: 10px;
-      }
-      #notes p {
-        margin-bottom: 10px;
-        max-width: 68ch;
-      }
-      #notes .cue {
-        color: var(--mut-d);
-        font-style: italic;
       }
 
       @media (prefers-reduced-motion: reduce) {
@@ -1346,6 +1464,55 @@
           Se parte dos seus clientes pagasse por um novo produto digital,
           <strong>o que valeria a pena construir?</strong>
         </p>
+      </section>
+
+      <!-- ======================================= S6b · simulador (interativo) -->
+      <section class="slide s6b">
+        <p class="note" data-b style="--d: 0.4s">Simulação — números da sua empresa</p>
+        <p class="eyebrow" data-b>Nova Receita Digital · Simulador</p>
+        <h1 data-b style="--d: 0.1s">Quanto isso representa <span class="g">na prática?</span></h1>
+        <div class="calc">
+          <div class="in" data-b style="--d: 0.3s">
+            <div class="field">
+              <label for="c-cli">Clientes na base</label>
+              <input id="c-cli" type="number" min="0" step="10" value="500" inputmode="numeric" />
+            </div>
+            <div class="field">
+              <label for="c-tkt">Assinatura mensal (R$)</label>
+              <input id="c-tkt" type="number" min="0" step="10" value="149" inputmode="numeric" />
+            </div>
+            <div class="field">
+              <label>Adesão da base</label>
+              <div class="seg" id="c-seg">
+                <button data-a="0.3" class="on">30%</button>
+                <button data-a="0.7">70%</button>
+                <button data-a="1">100%</button>
+              </div>
+            </div>
+            <p class="hint2">Edite ao vivo com os números do cliente.</p>
+          </div>
+          <div class="out" data-b style="--d: 0.5s">
+            <div class="stats">
+              <div class="stat mrr">
+                <div class="k">Receita recorrente mensal</div>
+                <div class="v"><span id="o-mrr">R$&nbsp;0</span><small>/mês</small></div>
+              </div>
+              <div class="stat">
+                <div class="k">Novo faturamento anual</div>
+                <div class="v"><span id="o-ano">+ R$&nbsp;0</span><small>/ano</small></div>
+              </div>
+            </div>
+            <div class="charthead">
+              <span class="t">Rampa de adesão em 12 meses</span><span class="cum" id="o-cum"></span>
+            </div>
+            <div class="bars" id="c-bars"></div>
+            <div class="months">
+              <span>mês 1</span><span></span><span></span><span></span><span></span><span>mês 6</span><span></span
+              ><span></span><span></span><span></span><span></span><span>mês 12</span>
+            </div>
+            <p class="mesa">Cada mês sem o produto no ar: <b id="o-mesa">R$ 0</b> que ficam na mesa.</p>
+          </div>
+        </div>
       </section>
 
       <!-- =========================================== S7 · Sistemas Sob Medida -->
@@ -1799,12 +1966,8 @@
     </div>
 
     <div id="hint">
-      <b>←&nbsp;→</b> navegar &nbsp;·&nbsp; <b>F</b> tela cheia &nbsp;·&nbsp; <b>N</b> roteiro &nbsp;·&nbsp; clique
-      avança
-    </div>
-    <div id="notes">
-      <div class="goal"></div>
-      <div class="body"></div>
+      <b>←&nbsp;→</b> navegar &nbsp;·&nbsp; <b>F</b> tela cheia &nbsp;·&nbsp; <b>N</b> roteiro em janela separada
+      &nbsp;·&nbsp; clique avança
     </div>
 
     <script>
@@ -1835,6 +1998,10 @@
           "Primeira frente.\n\nA sua empresa já conquistou o mais difícil: clientes, confiança, conhecimento, distribuição. Isso levou anos. A pergunta que a gente faz é: o que MAIS essas pessoas comprariam de você?\n\nPode ser um portal, uma assinatura, uma ferramenta que resolve uma dor do seu cliente. Cada produto nasce da base que já existe — por isso esse gráfico é conceitual, sem números: os números vêm do diagnóstico, do SEU caso, não de uma promessa genérica minha.\n\nMas leva essa pergunta para casa: se uma parte dos seus clientes pagasse por um novo produto digital seu... o que valeria a pena construir?",
         ],
         [
+          "Tornar o valor tangível com os números do PRÓPRIO cliente. Conduza — não leia. ≈ 90s",
+          "Vamos sair do conceito e ir para o seu número.\n\n[pergunte e digite na hora] Quantos clientes ativos vocês têm hoje? E quanto seria uma assinatura razoável para algo que resolvesse uma dor deles — R$ 99? R$ 149?\n\nAgora o cenário conservador: só 30% da base aderindo. [clique em 30%] Isso já é esse valor aí na tela — todo mês, receita nova, sem conquistar um cliente novo sequer.\n\n[pausa — deixe o número falar; suba para 70% se a conversa esquentar]\n\nE a linha de baixo é a que dói: cada mês que esse produto não está no ar, esse valor fica na mesa.\n\nImportante: isso é uma simulação com os SEUS dados. O diagnóstico é onde a gente valida o que é real.",
+        ],
+        [
           "Inverter a lógica 'empresa se adapta ao software' e reforçar a parceria. ≈ 50s",
           "Segunda frente.\n\nHoje, a informação da sua operação mora em lugares demais — está aí no slide: planilha, ERP, e-mail, documento... e na cabeça de gente boa. Software genérico obriga a SUA empresa a se adaptar a ELE. A gente inverte isso: constrói o sistema em volta do seu processo.\n\nO resultado é um lugar só, com a informação consolidada — e decisão com visibilidade, não no feeling.\n\nE vale repetir: você não precisa trazer a solução pronta. Você conhece o seu negócio; nós conhecemos tecnologia. O desenho a gente faz junto.",
         ],
@@ -1863,13 +2030,10 @@
       /* ------------------------------------------------------------ escala */
       const stage = document.getElementById("stage");
       function fit() {
-        const open = document.body.classList.contains("notes-open");
-        const availH = open ? innerHeight * 0.58 : innerHeight;
-        const s = Math.min(innerWidth / 1280, availH / 720);
+        const s = Math.min(innerWidth / 1280, innerHeight / 720);
         stage.style.transform = `translate(-50%,-50%) scale(${s})`;
         stage.style.left = "50%";
-        stage.style.top = availH / 2 + "px";
-        stage.style.transition = "transform .35s cubic-bezier(.22,1,.36,1), top .35s cubic-bezier(.22,1,.36,1)";
+        stage.style.top = "50%";
       }
       addEventListener("resize", fit);
       fit();
@@ -1879,7 +2043,6 @@
       const fill = document.querySelector("#chrome .fill");
       const knob = document.querySelector("#chrome .knob");
       const idx = document.querySelector("#chrome .idx");
-      const notesEl = document.getElementById("notes");
       let cur = -1;
       function go(i) {
         i = Math.max(0, Math.min(slides.length - 1, i));
@@ -1894,17 +2057,15 @@
         knob.style.left = pct;
         idx.textContent = String(cur + 1).padStart(2, "0") + " / " + slides.length;
         history.replaceState(null, "", "#" + (cur + 1));
-        renderNotes();
+        renderPresenter();
       }
-      function renderNotes() {
-        const [goal, speech] = NOTES[cur];
-        notesEl.querySelector(".goal").textContent = "Slide " + (cur + 1) + " · " + goal;
-        notesEl.querySelector(".body").innerHTML = speech
-          .split("\n\n")
-          .map((p) => (p.startsWith("[") ? `<p class="cue">${p}</p>` : `<p>${p}</p>`))
-          .join("");
-      }
+
       addEventListener("keydown", (e) => {
+        const t = e.target;
+        if (t && (t.tagName === "INPUT" || t.tagName === "BUTTON")) {
+          if (e.key === "Enter" || e.key === "Escape") t.blur();
+          return;
+        }
         if (["ArrowRight", "ArrowDown", "PageDown", " ", "Spacebar"].includes(e.key)) {
           e.preventDefault();
           go(cur + 1);
@@ -1916,22 +2077,162 @@
         else if (e.key.toLowerCase() === "f") {
           document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
         } else if (e.key.toLowerCase() === "n") {
-          notesEl.classList.toggle("open");
-          document.body.classList.toggle("notes-open", notesEl.classList.contains("open"));
-          fit();
-        } else if (e.key === "Escape") {
-          notesEl.classList.remove("open");
-          document.body.classList.remove("notes-open");
-          fit();
+          openPresenter();
         }
       });
       addEventListener("click", (e) => {
-        if (notesEl.contains(e.target)) return;
+        if (e.target.closest("input,button,.calc,label")) return;
         go(e.shiftKey ? cur - 1 : cur + 1);
       });
       const hash = parseInt(location.hash.slice(1), 10);
       go(isNaN(hash) ? 0 : hash - 1);
       setTimeout(() => document.getElementById("hint").classList.add("gone"), 6000);
+
+      /* --------------------------------------------- janela do apresentador */
+      const TITLES = [
+        "Capa",
+        "O problema",
+        "A virada",
+        "Diagnóstico",
+        "Três soluções",
+        "Nova Receita Digital",
+        "Simulador",
+        "Sistemas Sob Medida",
+        "Agentes de IA",
+        "Onde os agentes atuam",
+        "Como trabalhamos",
+        "Para quem",
+        "Fechamento",
+      ];
+      var pwin = null,
+        t0 = null;
+      function openPresenter() {
+        if (pwin && !pwin.closed) {
+          pwin.focus();
+          renderPresenter();
+          return;
+        }
+        pwin = window.open("", "dreamy-roteiro", "width=540,height=780");
+        if (!pwin) {
+          toast("Permita pop-ups neste site para abrir o roteiro.");
+          return;
+        }
+        t0 = t0 || Date.now();
+        pwin.document
+          .write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Roteiro — Dreamy</title><style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:#0b0b0c;color:#dfe3e6;font-family:ui-sans-serif,system-ui,sans-serif;padding:26px 30px;font-size:16.5px;line-height:1.6}
+    #hd{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid rgba(70,235,126,.35);padding-bottom:14px;margin-bottom:18px}
+    #ix{font-weight:700;font-size:20px;color:#fff}
+    #tm{font-variant-numeric:tabular-nums;color:#46eb7e;font-size:20px;font-weight:600}
+    #goal{color:#46eb7e;font-size:13.5px;letter-spacing:.04em;margin-bottom:14px}
+    #body p{margin-bottom:12px}
+    #body .cue{color:#9ba1a6;font-style:italic}
+    #nx{margin-top:22px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);color:#9ba1a6;font-size:14px}
+    #nx b{color:#dfe3e6}
+    #kb{margin-top:10px;color:#575c61;font-size:12px}
+  </style></head><body>
+    <div id="hd"><span id="ix"></span><span id="tm">00:00</span></div>
+    <div id="goal"></div><div id="body"></div><div id="nx"></div>
+    <div id="kb">&larr; &rarr; avançam os slides daqui também</div>
+  </body></html>`);
+        pwin.document.close();
+        pwin.document.addEventListener("keydown", (e) => {
+          if (["ArrowRight", "ArrowDown", "PageDown", " "].includes(e.key)) {
+            e.preventDefault();
+            go(cur + 1);
+          } else if (["ArrowLeft", "ArrowUp", "PageUp"].includes(e.key)) {
+            e.preventDefault();
+            go(cur - 1);
+          }
+        });
+        renderPresenter();
+      }
+      function renderPresenter() {
+        if (!pwin || pwin.closed) return;
+        const d = pwin.document;
+        const [goal, speech] = NOTES[cur];
+        d.getElementById("ix").textContent = `${String(cur + 1).padStart(2, "0")} / ${slides.length} · ${TITLES[cur]}`;
+        d.getElementById("goal").textContent = goal;
+        d.getElementById("body").innerHTML = speech
+          .split("\n\n")
+          .map((p) => (p.startsWith("[") ? `<p class="cue">${p}</p>` : `<p>${p}</p>`))
+          .join("");
+        d.getElementById("nx").innerHTML =
+          cur < slides.length - 1 ? `Próximo: <b>${TITLES[cur + 1]}</b>` : "Último slide.";
+      }
+      setInterval(() => {
+        if (pwin && !pwin.closed && t0) {
+          const s = Math.floor((Date.now() - t0) / 1000);
+          pwin.document.getElementById("tm").textContent =
+            `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+        }
+      }, 1000);
+      addEventListener("beforeunload", () => {
+        if (pwin && !pwin.closed) pwin.close();
+      });
+      function toast(msg) {
+        const h = document.createElement("div");
+        h.id = "hint";
+        h.textContent = msg;
+        document.body.appendChild(h);
+        setTimeout(() => h.classList.add("gone"), 3500);
+        setTimeout(() => h.remove(), 4200);
+      }
+
+      /* ------------------------------------------------------- simulador */
+      const fmt = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+      const elCli = document.getElementById("c-cli"),
+        elTkt = document.getElementById("c-tkt");
+      const barsEl = document.getElementById("c-bars");
+      for (let i = 0; i < 12; i++) {
+        const b = document.createElement("div");
+        b.className = "bar";
+        barsEl.appendChild(b);
+      }
+      let adoption = 0.3;
+      document.querySelectorAll("#c-seg button").forEach((b) =>
+        b.addEventListener("click", () => {
+          document.querySelectorAll("#c-seg button").forEach((x) => x.classList.remove("on"));
+          b.classList.add("on");
+          adoption = parseFloat(b.dataset.a);
+          b.blur();
+          calc();
+        }),
+      );
+      [elCli, elTkt].forEach((el) => el.addEventListener("input", calc));
+      const shown = {};
+      function tween(id, target, prefix) {
+        const el = document.getElementById(id);
+        const from = shown[id] || 0,
+          dt = 420,
+          start = performance.now();
+        (function step(now) {
+          const k = Math.min(1, (now - start) / dt),
+            v = from + (target - from) * (1 - Math.pow(1 - k, 3));
+          el.textContent = prefix + fmt.format(v);
+          if (k < 1) requestAnimationFrame(step);
+          else shown[id] = target;
+        })(performance.now());
+      }
+      function calc() {
+        const c = Math.max(0, +elCli.value || 0),
+          t = Math.max(0, +elTkt.value || 0);
+        const mrr = c * adoption * t;
+        tween("o-mrr", mrr, "");
+        tween("o-ano", mrr * 12, "+ ");
+        document.getElementById("o-mesa").textContent = fmt.format(mrr);
+        let cum = 0;
+        const cums = [];
+        for (let m = 1; m <= 12; m++) {
+          cum += mrr * Math.min(m / 6, 1);
+          cums.push(cum);
+        }
+        const max = cums[11] || 1;
+        [...barsEl.children].forEach((b, i) => (b.style.height = Math.max(4, (cums[i] / max) * 100) + "%"));
+        document.getElementById("o-cum").textContent = fmt.format(cums[11]) + " acumulados em 12 meses";
+      }
+      calc();
 
       /* --------------------------------------------------------- partículas */
       const cv = document.getElementById("dust"),
