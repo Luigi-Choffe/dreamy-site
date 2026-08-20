@@ -312,7 +312,7 @@ notes(s, 0)
 
 # ============================================================ S2 · problema
 s = slide_new()
-ey = eyebrow(s, "O problema", color=MUT_D)
+ey = eyebrow(s, "O problema")
 h1 = txt(s, MARGIN, 155, 470, 230, "Nem todo problema da sua empresa cabe em um software pronto.",
          DISPLAY, 48, WHITE, bold=True, spacing=-1.4, accents=[("software pronto.", MUT_D)])
 fx, fy = 520, 130
@@ -499,7 +499,7 @@ dg.append(pill(s, box_x + 276, y0 + 102, 210, 36, "Decisão com visibilidade",
                fill=GREEN, line_color=None, text_color=BLACK_INK, size=12.5))
 dgg = group(s, dg)
 ask = txt(s, MARGIN, 458, 700, 24, "Você conhece seu negócio; nós conhecemos tecnologia.",
-          SANS, 14, WHITE)
+          SANS, 14, MUT_D, accents=[("Você conhece seu negócio;", WHITE)])
 progress(s, 7)
 fade(s, head, 0.0, 0.5)
 fade(s, dgg, 0.35, 0.7)
