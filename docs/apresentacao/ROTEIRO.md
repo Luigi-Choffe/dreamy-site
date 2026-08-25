@@ -14,7 +14,19 @@ Antes de qualquer slide bonito, uma promessa: nos próximos dez minutos eu não 
 
 A Dreamy constrói software sob medida e agentes de IA. Mas o nosso ponto de partida é sempre o mesmo, e está aí embaixo no slide: começamos pelo problema. A tecnologia vem depois.
 
-## Slide 02 — O problema
+## Slide 02 — Por que agora
+
+_Urgência com dados de mercado — deixe os números falarem e não se alongue. ≈ 40s_
+
+Antes de falar da Dreamy, trinta segundos sobre o momento.
+
+88% das empresas no mundo já usam IA em pelo menos uma função — eram 78% há um ano. Só em 2024, foram 252 bilhões de dólares investidos em IA. E quem investe está tendo retorno: em média, 3,7 dólares de volta para cada 1 investido.
+
+> [pausa curta]
+
+Ou seja: a pergunta deixou de ser SE vale a pena. A pergunta agora é ONDE — no seu negócio. E é exatamente isso que a gente veio responder.
+
+## Slide 03 — O problema
 
 _Objetivo: gerar identificação — a plateia precisa se reconhecer na cena. ≈ 60s_
 
@@ -26,7 +38,7 @@ A empresa cresce. Os processos vão ficando cada vez mais específicos. Os siste
 
 Nada disso é falta de competência. É que a empresa cresceu mais rápido do que a tecnologia dela. E software pronto, de prateleira, não foi feito para o SEU processo — foi feito para a média.
 
-## Slide 03 — É nesse ponto que entramos
+## Slide 04 — É nesse ponto que entramos
 
 _Objetivo: a virada. Slide quase vazio de propósito — a força está na pausa. ≈ 15s_
 
@@ -36,7 +48,7 @@ E é exatamente nesse ponto que a gente entra.
 
 Quando o software pronto acaba e o seu problema continua — esse é o nosso território.
 
-## Slide 04 — Diagnóstico
+## Slide 05 — Diagnóstico
 
 _Objetivo: remover a maior objeção ('não sei o que pedir') e mostrar honestidade. ≈ 50s_
 
@@ -46,7 +58,7 @@ Nenhum cliente nosso chegou com uma especificação técnica. Eles chegam com um
 
 O nosso trabalho começa aí — nessa régua do slide: entender a dor, medir o impacto, achar a oportunidade, desenhar a solução, e só então escolher a tecnologia. E às vezes a resposta honesta do diagnóstico é: não vale a pena construir nada. Essa honestidade faz parte do serviço — ninguém aqui quer vender software que não devolve resultado.
 
-## Slide 05 — As três soluções
+## Slide 06 — As três soluções
 
 _Objetivo: dar o mapa da conversa e convidar a interrupção (engajamento). ≈ 40s_
 
@@ -56,7 +68,7 @@ Um: receita nova — transformar o que a empresa já tem em um produto digital q
 
 Vou passar rápido pelas três. E pode me interromper na hora em que alguma fizer clique com algo que vocês vivem aí dentro — essa é a parte boa da conversa.
 
-## Slide 06 — 01 · Nova Receita Digital
+## Slide 07 — 01 · Nova Receita Digital
 
 _Objetivo: plantar a pergunta que fica na cabeça depois da reunião. ≈ 60s_
 
@@ -68,7 +80,7 @@ Pode ser um portal, uma assinatura, uma ferramenta que resolve uma dor do seu cl
 
 Mas leva essa pergunta para casa: se uma parte dos seus clientes pagasse por um novo produto digital seu... o que valeria a pena construir?
 
-## Slide 07 — 02 · Sistemas Sob Medida
+## Slide 08 — 02 · Sistemas Sob Medida
 
 _Objetivo: inverter a lógica 'empresa se adapta ao software' e reforçar a parceria. ≈ 50s_
 
@@ -80,7 +92,7 @@ O resultado é um lugar só, com a informação consolidada — e decisão com v
 
 E vale repetir: você não precisa trazer a solução pronta. Você conhece o seu negócio; nós conhecemos tecnologia. O desenho a gente faz junto.
 
-## Slide 08 — 03 · Agentes de IA
+## Slide 09 — 03 · Agentes de IA
 
 _Objetivo: desfazer o mal-entendido 'agente = chatbot' e tranquilizar sobre controle. ≈ 50s_
 
@@ -92,7 +104,7 @@ Com escopo definido, com regras, com permissões. E quando o assunto precisa de 
 
 Autonomia com controle. Sempre nessa ordem.
 
-## Slide 09 — Onde os agentes atuam
+## Slide 10 — Onde os agentes atuam
 
 _Objetivo: tornar concreto — três cenas do dia a dia que a plateia reconhece. ≈ 50s_
 
@@ -106,7 +118,7 @@ Na operação: ele lê sistemas e documentos, consolida, analisa e age.
 
 Repara no padrão das três colunas: o agente fica com o trabalho repetitivo; as pessoas ficam com o que exige gente.
 
-## Slide 10 — Como trabalhamos
+## Slide 11 — Como trabalhamos
 
 _Objetivo: reduzir o risco percebido — processo claro, ciclos curtos, sem sumiço. ≈ 45s_
 
@@ -116,7 +128,7 @@ Entender: a gente senta junto e mapeia problema, impacto e contexto. Desenhar: s
 
 Em cada ciclo você sabe o que está sendo feito, por quê, e o que vem depois.
 
-## Slide 11 — Para quem
+## Slide 12 — Para quem
 
 _Objetivo: qualificar com franqueza — quem tem fit se reconhece e se inclina. ≈ 40s_
 
@@ -126,7 +138,7 @@ Que já tem operação, clientes, time — e sente que a tecnologia virou o frei
 
 Se, enquanto eu falava, você lembrou de um processo que não escala, de sistemas que não conversam, de dados espalhados por aí... provavelmente existe algo que a gente pode construir juntos.
 
-## Slide 12 — Fechamento
+## Slide 13 — Fechamento
 
 _Objetivo: uma única pergunta + próximo passo simples. Termine e deixe a plateia falar. ≈ 40s_
 

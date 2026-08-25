@@ -239,7 +239,7 @@ def fade(s, shape, delay, dur=0.45, effect=None, direction=None):
 
 
 def progress(s, n, dark=True):
-    total = 12
+    total = 13
     track_l, track_r = MARGIN, 853
     y = 518
     col = GREEN if dark else GREEN_DEEP
@@ -310,6 +310,37 @@ fade(s, og, 0.55, 0.7)
 transition(s)
 notes(s, 0)
 
+# ============================================================ S1b · por que agora
+s = slide_new()
+ey = eyebrow(s, "Por que agora")
+h1 = txt(s, MARGIN, 76, 740, 60, "IA deixou de ser aposta. É o novo padrão.",
+         DISPLAY, 40, WHITE, bold=True, spacing=-1.2, accents=[("É o novo padrão.", GREEN)])
+stats1b = [
+    ("88%", "das empresas do mundo já usam IA em pelo menos uma função — eram 78% um ano antes.", "McKinsey · State of AI 2025", False),
+    ("US$ 252 bi", "investidos em IA no mundo só em 2024 — alta de 44% sobre o ano anterior.", "Stanford · AI Index 2025", False),
+    ("3,7×", "de retorno médio para cada US$ 1 investido em IA generativa.", "IDC / Microsoft · 2024", True),
+]
+top1b = 205
+sgs1b = []
+for i, (num, lab, src, acc) in enumerate(stats1b):
+    x = MARGIN + i * 284 + (30 if i > 0 else 0)
+    g = [txt(s, x, top1b, 245, 56, num, DISPLAY, 42, GREEN if acc else WHITE, bold=True, spacing=-0.8)]
+    g.append(txt(s, x, top1b + 62, 214, 70, lab, SANS, 12, LIGHT, line=1.4))
+    g.append(txt(s, x, top1b + 148, 230, 14, src.upper(), SANS, 8, MUT_D, spacing=0.9))
+    sgs1b.append(group(s, g))
+for dx in (338, 622):
+    line(s, dx, top1b, dx, top1b + 165, WHITE, 0.86, 1.0)
+clo1b = txt(s, MARGIN, 442, 740, 24, "A pergunta deixou de ser “se”. Agora é “onde” — no seu negócio.",
+            SANS, 15, MUT_D, accents=[("“onde” — no seu negócio.", WHITE)])
+progress(s, 2)
+fade(s, ey, 0.0)
+fade(s, h1, 0.12, 0.5)
+for i, sg in enumerate(sgs1b):
+    fade(s, sg, 0.4 + i * 0.15, 0.45)
+fade(s, clo1b, 0.95, 0.5)
+transition(s)
+notes(s, 1)
+
 # ============================================================ S2 · problema
 s = slide_new()
 ey = eyebrow(s, "O problema")
@@ -331,29 +362,32 @@ dg.append(pill(s, fx + 96, fy + 282, 192, 33, "Leads sem acompanhamento", size=1
 for (dx, dy) in [(30, 160), (337, 208), (82, 6), (307, 6), (360, 313), (12, 246)]:
     dg.append(oval(s, fx + dx, fy + dy, 3.5, fill=WHITE, fill_t=0.68))
 dgg = group(s, dg)
-progress(s, 2)
+progress(s, 3)
 fade(s, ey, 0.0)
 fade(s, h1, 0.15, 0.55)
 fade(s, dgg, 0.5, 0.7)
 transition(s)
-notes(s, 1)
+notes(s, 2)
 
 # ============================================================ S3 · punchline
 s = slide_new()
 discs(s, 105, 465, [262, 180, 105], [0.06, 0.07, 0.08])
 h1 = txt(s, MARGIN, 200, 810, 220, "É nesse ponto que entramos.",
          DISPLAY, 92, WHITE, bold=True, spacing=-2.7, accents=[("entramos.", GREEN)])
-progress(s, 3)
+progress(s, 4)
+sup3 = txt(s, MARGIN, 392, 700, 24, "A Dreamy resolve gargalos de negócio que o software de prateleira não resolve.",
+           SANS, 15, MUT_D)
 fade(s, h1, 0.25, 0.8)
+fade(s, sup3, 0.95, 0.5)
 transition(s)
-notes(s, 2)
+notes(s, 3)
 
 # ============================================================ S4 · diagnóstico (claro)
 s = slide_new(dark=False)
 ey = eyebrow(s, "Diagnóstico", color=GREEN_DEEP)
 h1 = txt(s, MARGIN, 76, 690, 120, "Você não precisa saber o que construir.",
          DISPLAY, 48, BLACK_INK, bold=True, spacing=-1.4, accents=[("o que construir.", GREEN_DEEP)])
-sup = txt(s, MARGIN, 196, 540, 24, "Nossos clientes chegam com uma dor — não com uma especificação técnica.",
+sup = txt(s, MARGIN, 196, 720, 24, "Identificamos gargalos que consomem dinheiro ou limitam crescimento — e avaliamos como software ou IA pode resolvê-los.",
           SANS, 15, MUT_L)
 steps = ["Dor", "Impacto", "Oportunidade", "Solução", "Tecnologia", "Resultado"]
 railc_y = 330
@@ -369,14 +403,14 @@ for i, (name, x) in enumerate(zip(steps, xs)):
     g.append(num)
     g.append(txt(s, x - 60, railc_y + 34, 120, 18, name, SANS, 13, BLACK_INK, align="c"))
     sgs.append(group(s, g))
-progress(s, 4, dark=False)
+progress(s, 5, dark=False)
 fade(s, ey, 0.0)
 fade(s, h1, 0.15, 0.55)
 fade(s, sup, 0.4)
 for i, sg in enumerate(sgs):
     fade(s, sg, 0.55 + i * 0.12, 0.35)
 transition(s)
-notes(s, 3)
+notes(s, 4)
 
 # ============================================================ S5 · três soluções
 s = slide_new()
@@ -405,13 +439,13 @@ for i, (num, name, one) in enumerate(cols):
     colgs.append(group(s, g))
 for dx in (338, 622):
     line(s, dx, top, dx, top + 195, WHITE, 0.86, 1.0)
-progress(s, 5)
+progress(s, 6)
 fade(s, ey, 0.0)
 fade(s, h1, 0.12, 0.5)
 for i, cg in enumerate(colgs):
     fade(s, cg, 0.45 + i * 0.18, 0.45)
 transition(s)
-notes(s, 4)
+notes(s, 5)
 
 
 def prod_head(s, num, eyebrow_text, h1_text, accents):
@@ -463,7 +497,7 @@ chg = group(s, ch)
 ask = txt(s, MARGIN, 458, 800, 24,
           "Se parte dos seus clientes pagasse por um novo produto digital, o que valeria a pena construir?",
           SANS, 14, MUT_D, accents=[("o que valeria a pena construir?", WHITE)])
-progress(s, 6)
+progress(s, 7)
 fade(s, head, 0.0, 0.5)
 fade(s, note_tag, 0.2)
 try:
@@ -472,7 +506,7 @@ except Exception:
     fade(s, chg, 0.4, 0.7)
 fade(s, ask, 1.1, 0.5)
 transition(s)
-notes(s, 5)
+notes(s, 6)
 
 # ============================================================ S7 · Sistemas Sob Medida
 s = slide_new()
@@ -498,14 +532,14 @@ dg.append(oval(s, box_x + 246, y0 + 120, 3, fill=GREEN))
 dg.append(pill(s, box_x + 276, y0 + 102, 210, 36, "Decisão com visibilidade",
                fill=GREEN, line_color=None, text_color=BLACK_INK, size=12.5))
 dgg = group(s, dg)
-ask = txt(s, MARGIN, 458, 700, 24, "Você conhece seu negócio; nós conhecemos tecnologia.",
-          SANS, 14, MUT_D, accents=[("Você conhece seu negócio;", WHITE)])
-progress(s, 7)
+ask = txt(s, MARGIN, 458, 860, 24, "Tailor made: personalizado para a sua operação. Você conhece seu negócio; nós conhecemos tecnologia.",
+          SANS, 14, MUT_D, accents=[("Tailor made: personalizado para a sua operação.", WHITE)])
+progress(s, 8)
 fade(s, head, 0.0, 0.5)
 fade(s, dgg, 0.35, 0.7)
 fade(s, ask, 0.9, 0.5)
 transition(s)
-notes(s, 6)
+notes(s, 7)
 
 # ============================================================ S8 · Agentes de IA
 s = slide_new()
@@ -535,12 +569,12 @@ dgg = group(s, dg)
 ask = txt(s, MARGIN, 458, 760, 24,
           "Não é um chatbot. É software que executa etapas de processos — com escopo, regras e permissões.",
           SANS, 14, MUT_D, accents=[("Não é um chatbot.", WHITE)])
-progress(s, 8)
+progress(s, 9)
 fade(s, head, 0.0, 0.5)
 fade(s, dgg, 0.35, 0.7)
 fade(s, ask, 0.9, 0.5)
 transition(s)
-notes(s, 7)
+notes(s, 8)
 
 # ============================================================ S9 · onde os agentes atuam
 s = slide_new()
@@ -566,13 +600,13 @@ for i, (cap, items) in enumerate(data):
     colgs.append(group(s, g))
 for dx in (338, 622):
     line(s, dx, top, dx, top + 190, WHITE, 0.86, 1.0)
-progress(s, 9)
+progress(s, 10)
 fade(s, ey, 0.0)
 fade(s, h1, 0.12, 0.5)
 for i, cg in enumerate(colgs):
     fade(s, cg, 0.45 + i * 0.18, 0.45)
 transition(s)
-notes(s, 8)
+notes(s, 9)
 
 # ============================================================ S10 · como trabalhamos (claro)
 s = slide_new(dark=False)
@@ -596,13 +630,13 @@ for i, (tit, desc) in enumerate(steps10):
     g.append(txt(s, vx + 60, y + 4, 360, 22, tit, DISPLAY, 16.5, BLACK_INK, bold=True, spacing=-0.2))
     g.append(txt(s, vx + 60, y + 27, 360, 16, desc, SANS, 10.5, MUT_L))
     igs.append(group(s, g))
-progress(s, 10, dark=False)
+progress(s, 11, dark=False)
 fade(s, ey, 0.0)
 fade(s, h1, 0.12, 0.5)
 for i, ig in enumerate(igs):
     fade(s, ig, 0.4 + i * 0.12, 0.35)
 transition(s)
-notes(s, 9)
+notes(s, 10)
 
 # ============================================================ S11 · para quem
 s = slide_new()
@@ -619,14 +653,14 @@ for name, w in pdata:
 clo = txt(s, MARGIN, 430, 640, 48,
           "Se a empresa já funciona, mas a tecnologia começou a limitar o crescimento, provavelmente existe algo que podemos construir.",
           SANS, 15, MUT_D, line=1.3, accents=[("provavelmente existe algo que podemos construir.", GREEN)])
-progress(s, 11)
+progress(s, 12)
 fade(s, ey, 0.0)
 fade(s, h1, 0.12, 0.55)
 for i, pg in enumerate(pgs):
     fade(s, pg, 0.5 + i * 0.1, 0.35)
 fade(s, clo, 0.95, 0.5)
 transition(s)
-notes(s, 10)
+notes(s, 11)
 
 # ============================================================ S12 · fechamento
 s = slide_new()
@@ -639,13 +673,13 @@ p1 = pill(s, MARGIN, 360, 232, 38, "WhatsApp +55 11 94879-3233", fill=GREEN, lin
           text_color=BLACK_INK, size=13, bold=False)
 p2 = pill(s, MARGIN + 244, 360, 172, 38, "www.dreamy.app.br", size=13)
 mic = txt(s, MARGIN, 414, 400, 20, "Vamos falar sobre o seu negócio.", SANS, 12, MUT_D)
-progress(s, 12)
+progress(s, 13)
 fade(s, h1, 0.15, 0.7)
 fade(s, p1, 0.6, 0.45)
 fade(s, p2, 0.72, 0.45)
 fade(s, mic, 0.9)
 transition(s)
-notes(s, 11)
+notes(s, 12)
 
 # ============================================================ salvar
 pres.Slides(1).SlideShowTransition.EntryEffect = 0  # capa entra sem transição

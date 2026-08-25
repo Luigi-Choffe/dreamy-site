@@ -28,6 +28,17 @@ NOTES = [
         "A Dreamy constrói software sob medida e agentes de IA. Mas o nosso ponto de partida é sempre o mesmo, e está aí embaixo no slide: começamos pelo problema. A tecnologia vem depois.",
     ),
     (
+        "Por que agora",
+        "Urgência com dados de mercado — deixe os números falarem e não se alongue. ≈ 40s",
+        "Antes de falar da Dreamy, trinta segundos sobre o momento.\n\n"
+        "88% das empresas no mundo já usam IA em pelo menos uma função — eram 78% há um ano. "
+        "Só em 2024, foram 252 bilhões de dólares investidos em IA. E quem investe está tendo retorno: "
+        "em média, 3,7 dólares de volta para cada 1 investido.\n\n"
+        "[pausa curta]\n\n"
+        "Ou seja: a pergunta deixou de ser SE vale a pena. A pergunta agora é ONDE — no seu negócio. "
+        "E é exatamente isso que a gente veio responder.",
+    ),
+    (
         "O problema",
         "Objetivo: gerar identificação — a plateia precisa se reconhecer na cena. ≈ 60s",
         "Deixa eu descrever uma empresa, e você me diz se soa familiar.\n\n"
@@ -117,7 +128,7 @@ NOTES = [
 
 def main():
     files = sorted(glob.glob(os.path.join(SHOTS, "slide-*.png")))
-    assert len(files) == len(NOTES) == 12, (len(files), len(NOTES))
+    assert len(files) == len(NOTES), (len(files), len(NOTES))
     
     # --- PPTX ---------------------------------------------------------------
     prs = Presentation()
