@@ -700,6 +700,149 @@
         font-size: 16px;
         color: var(--mut-d);
       }
+      /* ================================================================
+         S6b — simulação (exemplo ilustrativo)
+         ================================================================ */
+      .simx .note {
+        position: absolute;
+        right: 72px;
+        top: 66px;
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--mut-d);
+      }
+      .simx h1 {
+        font-size: 46px;
+        margin-bottom: 30px;
+      }
+      .simx .cols {
+        flex: 1;
+        display: flex;
+        gap: 56px;
+        margin-bottom: 18px;
+        min-height: 0;
+      }
+      .simx .params {
+        width: 300px;
+        flex: none;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .simx .param {
+        background: var(--ink-2);
+        border: 1px solid var(--line-d);
+        border-radius: 14px;
+        padding: 16px 20px;
+      }
+      .simx .param.acc {
+        border-color: rgba(70, 235, 126, 0.55);
+      }
+      .simx .param .k {
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--mut-d);
+        margin-bottom: 7px;
+      }
+      .simx .param .v {
+        font-family: var(--display);
+        font-weight: 700;
+        font-size: 30px;
+        letter-spacing: -0.01em;
+      }
+      .simx .param.acc .v {
+        color: var(--green);
+      }
+      .simx .out {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+      .simx .stats {
+        display: flex;
+        gap: 52px;
+        margin-bottom: 20px;
+      }
+      .simx .stat .k {
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--mut-d);
+        margin-bottom: 7px;
+      }
+      .simx .stat .v {
+        font-family: var(--display);
+        font-weight: 700;
+        font-size: 46px;
+        letter-spacing: -0.02em;
+        white-space: nowrap;
+      }
+      .simx .stat .v small {
+        font-size: 18px;
+        color: var(--mut-d);
+        font-family: var(--sans);
+        font-weight: 500;
+      }
+      .simx .stat.mrr .v {
+        color: var(--green);
+      }
+      .simx .charthead {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 6px;
+      }
+      .simx .charthead .t {
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--mut-d);
+      }
+      .simx .charthead .cum {
+        font-size: 14px;
+        color: #e8eaec;
+      }
+      .simx .bars {
+        flex: 1;
+        display: flex;
+        align-items: flex-end;
+        gap: 9px;
+        border-bottom: 1.5px solid var(--line-d);
+        min-height: 120px;
+      }
+      .simx .bars .bar {
+        flex: 1;
+        background: linear-gradient(180deg, rgba(70, 235, 126, 0.85), rgba(70, 235, 126, 0.2));
+        border-radius: 5px 5px 0 0;
+      }
+      .simx .months {
+        display: flex;
+        gap: 9px;
+        margin-top: 7px;
+      }
+      .simx .months span {
+        flex: 1;
+        text-align: center;
+        font-size: 11px;
+        color: var(--mut-d);
+      }
+      .simx .mesa {
+        margin-top: 14px;
+        font-size: 18px;
+        color: var(--mut-d);
+      }
+      .simx .mesa b {
+        color: #fff;
+        font-weight: 500;
+      }
+      .simx .foot {
+        margin-bottom: 40px;
+        font-size: 13px;
+        color: var(--mut-d);
+      }
     </style>
   </head>
   <body>
@@ -756,10 +899,10 @@
       </div>
       <div class="progress">
         <div class="track">
-          <div class="fill" style="width: 7.7%"></div>
-          <div class="knob" style="left: 7.7%"></div>
+          <div class="fill" style="width: 7.1%"></div>
+          <div class="knob" style="left: 7.1%"></div>
         </div>
-        <span class="idx">01 / 13</span>
+        <span class="idx">01 / 14</span>
       </div>
     </section>
 
@@ -787,10 +930,10 @@
       <p class="closing">A pergunta deixou de ser “se”. Agora é <strong>“onde” — no seu negócio.</strong></p>
       <div class="progress">
         <div class="track">
-          <div class="fill" style="width: 15.4%"></div>
-          <div class="knob" style="left: 15.4%"></div>
+          <div class="fill" style="width: 14.3%"></div>
+          <div class="knob" style="left: 14.3%"></div>
         </div>
-        <span class="idx">02 / 13</span>
+        <span class="idx">02 / 14</span>
       </div>
     </section>
 
@@ -838,10 +981,10 @@
       </div>
       <div class="progress">
         <div class="track">
-          <div class="fill" style="width: 23.1%"></div>
-          <div class="knob" style="left: 23.1%"></div>
+          <div class="fill" style="width: 21.4%"></div>
+          <div class="knob" style="left: 21.4%"></div>
         </div>
-        <span class="idx">03 / 13</span>
+        <span class="idx">03 / 14</span>
       </div>
     </section>
 
@@ -858,10 +1001,10 @@
       </p>
       <div class="progress">
         <div class="track">
-          <div class="fill" style="width: 30.8%"></div>
-          <div class="knob" style="left: 30.8%"></div>
+          <div class="fill" style="width: 28.6%"></div>
+          <div class="knob" style="left: 28.6%"></div>
         </div>
-        <span class="idx">04 / 13</span>
+        <span class="idx">04 / 14</span>
       </div>
     </section>
 
@@ -906,10 +1049,10 @@
       </div>
       <div class="progress">
         <div class="track">
-          <div class="fill" style="width: 38.5%"></div>
-          <div class="knob" style="left: 38.5%"></div>
+          <div class="fill" style="width: 35.7%"></div>
+          <div class="knob" style="left: 35.7%"></div>
         </div>
-        <span class="idx">05 / 13</span>
+        <span class="idx">05 / 14</span>
       </div>
     </section>
 
@@ -936,10 +1079,10 @@
       </div>
       <div class="progress">
         <div class="track">
-          <div class="fill" style="width: 46.2%"></div>
-          <div class="knob" style="left: 46.2%"></div>
+          <div class="fill" style="width: 42.9%"></div>
+          <div class="knob" style="left: 42.9%"></div>
         </div>
-        <span class="idx">06 / 13</span>
+        <span class="idx">06 / 14</span>
       </div>
     </section>
 
@@ -1008,10 +1151,75 @@
       </p>
       <div class="progress">
         <div class="track">
-          <div class="fill" style="width: 53.8%"></div>
-          <div class="knob" style="left: 53.8%"></div>
+          <div class="fill" style="width: 50%"></div>
+          <div class="knob" style="left: 50%"></div>
         </div>
-        <span class="idx">07 / 13</span>
+        <span class="idx">07 / 14</span>
+      </div>
+    </section>
+
+    <!-- ============================================================ S6b · simulação (exemplo) -->
+    <section class="slide simx">
+      <p class="note">Exemplo ilustrativo</p>
+      <p class="eyebrow">Nova Receita Digital · Simulação</p>
+      <h1>Quanto isso representa <span class="g">na prática?</span></h1>
+      <div class="cols">
+        <div class="params">
+          <div class="param">
+            <div class="k">Clientes na base</div>
+            <div class="v">500</div>
+          </div>
+          <div class="param">
+            <div class="k">Assinatura mensal</div>
+            <div class="v">R$ 149</div>
+          </div>
+          <div class="param acc">
+            <div class="k">Adesão conservadora</div>
+            <div class="v">30%</div>
+          </div>
+        </div>
+        <div class="out">
+          <div class="stats">
+            <div class="stat mrr">
+              <div class="k">Receita recorrente mensal</div>
+              <div class="v">R$ 22.350<small> /mês</small></div>
+            </div>
+            <div class="stat">
+              <div class="k">Novo faturamento anual</div>
+              <div class="v">+ R$ 268.200<small> /ano</small></div>
+            </div>
+          </div>
+          <div class="charthead">
+            <span class="t">Rampa de adesão em 12 meses</span><span class="cum">R$ 212.325 acumulados em 12 meses</span>
+          </div>
+          <div class="bars">
+            <div class="bar" style="height: 1.8%"></div>
+            <div class="bar" style="height: 5.3%"></div>
+            <div class="bar" style="height: 10.5%"></div>
+            <div class="bar" style="height: 17.5%"></div>
+            <div class="bar" style="height: 26.3%"></div>
+            <div class="bar" style="height: 36.8%"></div>
+            <div class="bar" style="height: 47.4%"></div>
+            <div class="bar" style="height: 57.9%"></div>
+            <div class="bar" style="height: 68.4%"></div>
+            <div class="bar" style="height: 78.9%"></div>
+            <div class="bar" style="height: 89.5%"></div>
+            <div class="bar" style="height: 100%"></div>
+          </div>
+          <div class="months">
+            <span>mês 1</span><span></span><span></span><span></span><span></span><span>mês 6</span><span></span
+            ><span></span><span></span><span></span><span></span><span>mês 12</span>
+          </div>
+          <p class="mesa">Cada mês sem o produto no ar: <b>R$ 22.350</b> que ficam na mesa.</p>
+        </div>
+      </div>
+      <p class="foot">Exemplo com números redondos — no diagnóstico, simulamos com os números reais da sua empresa.</p>
+      <div class="progress">
+        <div class="track">
+          <div class="fill" style="width: 57.1%"></div>
+          <div class="knob" style="left: 57.1%"></div>
+        </div>
+        <span class="idx">08 / 14</span>
       </div>
     </section>
 
@@ -1083,10 +1291,10 @@
       </p>
       <div class="progress">
         <div class="track">
-          <div class="fill" style="width: 61.5%"></div>
-          <div class="knob" style="left: 61.5%"></div>
+          <div class="fill" style="width: 64.3%"></div>
+          <div class="knob" style="left: 64.3%"></div>
         </div>
-        <span class="idx">08 / 13</span>
+        <span class="idx">09 / 14</span>
       </div>
     </section>
 
@@ -1155,10 +1363,10 @@
       </p>
       <div class="progress">
         <div class="track">
-          <div class="fill" style="width: 69.2%"></div>
-          <div class="knob" style="left: 69.2%"></div>
+          <div class="fill" style="width: 71.4%"></div>
+          <div class="knob" style="left: 71.4%"></div>
         </div>
-        <span class="idx">09 / 13</span>
+        <span class="idx">10 / 14</span>
       </div>
     </section>
 
@@ -1197,10 +1405,10 @@
       </div>
       <div class="progress">
         <div class="track">
-          <div class="fill" style="width: 76.9%"></div>
-          <div class="knob" style="left: 76.9%"></div>
+          <div class="fill" style="width: 78.6%"></div>
+          <div class="knob" style="left: 78.6%"></div>
         </div>
-        <span class="idx">10 / 13</span>
+        <span class="idx">11 / 14</span>
       </div>
     </section>
 
@@ -1251,10 +1459,10 @@
       </div>
       <div class="progress">
         <div class="track">
-          <div class="fill" style="width: 84.6%"></div>
-          <div class="knob" style="left: 84.6%"></div>
+          <div class="fill" style="width: 85.7%"></div>
+          <div class="knob" style="left: 85.7%"></div>
         </div>
-        <span class="idx">11 / 13</span>
+        <span class="idx">12 / 14</span>
       </div>
     </section>
 
@@ -1274,10 +1482,10 @@
       </p>
       <div class="progress">
         <div class="track">
-          <div class="fill" style="width: 92.3%"></div>
-          <div class="knob" style="left: 92.3%"></div>
+          <div class="fill" style="width: 92.9%"></div>
+          <div class="knob" style="left: 92.9%"></div>
         </div>
-        <span class="idx">12 / 13</span>
+        <span class="idx">13 / 14</span>
       </div>
     </section>
 
@@ -1290,6 +1498,10 @@
       </svg>
       <img class="logo" src="../../public/brand/dreamy-logo-dark-bg.png" alt="Dreamy" />
       <h1>Qual problema da sua empresa valeria a pena <span class="g">resolver agora?</span></h1>
+      <p class="support" style="margin-top: -14px; margin-bottom: 34px; max-width: 900px">
+        Conte o contexto. Vamos entender a oportunidade e avaliar se existe uma solução tecnológica capaz de gerar
+        impacto relevante.
+      </p>
       <div class="contact">
         <span class="pill solid">WhatsApp +55 11 94879-3233</span>
         <span class="pill">www.dreamy.app.br</span>
@@ -1300,7 +1512,7 @@
           <div class="fill" style="width: 100%"></div>
           <div class="knob" style="left: 100%"></div>
         </div>
-        <span class="idx">13 / 13</span>
+        <span class="idx">14 / 14</span>
       </div>
     </section>
   </body>

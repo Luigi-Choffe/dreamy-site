@@ -239,7 +239,7 @@ def fade(s, shape, delay, dur=0.45, effect=None, direction=None):
 
 
 def progress(s, n, dark=True):
-    total = 13
+    total = 14
     track_l, track_r = MARGIN, 853
     y = 518
     col = GREEN if dark else GREEN_DEEP
@@ -508,6 +508,56 @@ fade(s, ask, 1.1, 0.5)
 transition(s)
 notes(s, 6)
 
+# ============================================================ S6b · simulação (exemplo)
+s = slide_new()
+note_tag = txt(s, 736, 52, 170, 14, "EXEMPLO ILUSTRATIVO", SANS, 8.5, MUT_D, spacing=1.4, align="r")
+ey = eyebrow(s, "Nova Receita Digital · Simulação")
+h1 = txt(s, MARGIN, 72, 700, 50, "Quanto isso representa na prática?",
+         DISPLAY, 36, WHITE, bold=True, spacing=-1.0, accents=[("na prática?", GREEN)])
+params_sx = [("Clientes na base", "500", False), ("Assinatura mensal", "R$ 149", False), ("Adesão conservadora", "30%", True)]
+pg_sx = []
+for i, (k, v, acc) in enumerate(params_sx):
+    y = 148 + i * 80
+    pg_sx.append(rect(s, MARGIN, y, 225, 64, fill=INK2, line_color=GREEN if acc else WHITE,
+                      line_t=0.45 if acc else 0.8, line_w=1.0, round_=0.22))
+    pg_sx.append(txt(s, MARGIN + 16, y + 11, 200, 12, k.upper(), SANS, 8, MUT_D, spacing=1.0))
+    pg_sx.append(txt(s, MARGIN + 16, y + 27, 200, 30, v, DISPLAY, 22, GREEN if acc else WHITE, bold=True))
+pgg_sx = group(s, pg_sx)
+ox = 330
+st_sx = [txt(s, ox, 148, 270, 12, "RECEITA RECORRENTE MENSAL", SANS, 8, MUT_D, spacing=1.0)]
+st_sx.append(txt(s, ox, 164, 290, 44, "R$ 22.350", DISPLAY, 36, GREEN, bold=True, spacing=-0.8))
+st_sx.append(txt(s, ox + 300, 148, 270, 12, "NOVO FATURAMENTO ANUAL", SANS, 8, MUT_D, spacing=1.0))
+st_sx.append(txt(s, ox + 300, 164, 300, 44, "+ R$ 268.200", DISPLAY, 36, WHITE, bold=True, spacing=-0.8))
+stg_sx = group(s, st_sx)
+ch_sx = [txt(s, ox, 234, 280, 12, "RAMPA DE ADESÃO EM 12 MESES", SANS, 8, MUT_D, spacing=1.0)]
+ch_sx.append(txt(s, ox + 276, 234, 300, 12, "R$ 212.325 acumulados em 12 meses", SANS, 9.5, LIGHT, align="r"))
+base_y_sx, maxh_sx = 390, 122
+heights_sx = [1.8, 5.3, 10.5, 17.5, 26.3, 36.8, 47.4, 57.9, 68.4, 78.9, 89.5, 100]
+bw_sx, gap_sx = 40, 8
+for i, hpct in enumerate(heights_sx):
+    hh = max(5, hpct / 100 * maxh_sx)
+    ch_sx.append(rect(s, ox + i * (bw_sx + gap_sx), base_y_sx - hh, bw_sx, hh, fill=GREEN, fill_t=0.35))
+ch_sx.append(line(s, ox, base_y_sx, ox + 12 * (bw_sx + gap_sx) - gap_sx, base_y_sx, WHITE, 0.86, 1.2))
+ch_sx.append(txt(s, ox, base_y_sx + 6, 60, 12, "mês 1", SANS, 8, MUT_D))
+ch_sx.append(txt(s, ox + 5 * (bw_sx + gap_sx), base_y_sx + 6, 60, 12, "mês 6", SANS, 8, MUT_D))
+ch_sx.append(txt(s, ox + 11 * (bw_sx + gap_sx) - 12, base_y_sx + 6, 60, 12, "mês 12", SANS, 8, MUT_D))
+chg_sx = group(s, ch_sx)
+mesa_sx = txt(s, ox, base_y_sx + 28, 560, 22, "Cada mês sem o produto no ar: R$ 22.350 que ficam na mesa.",
+              SANS, 13, MUT_D, accents=[("R$ 22.350", WHITE)])
+foot_sx = txt(s, MARGIN, 472, 820, 18, "Exemplo com números redondos — no diagnóstico, simulamos com os números reais da sua empresa.",
+              SANS, 11, MUT_D)
+progress(s, 8)
+fade(s, ey, 0.0)
+fade(s, h1, 0.1, 0.5)
+fade(s, note_tag, 0.3)
+fade(s, pgg_sx, 0.35, 0.5)
+fade(s, stg_sx, 0.55, 0.5)
+fade(s, chg_sx, 0.75, 0.6)
+fade(s, mesa_sx, 1.0, 0.5)
+fade(s, foot_sx, 1.1, 0.5)
+transition(s)
+notes(s, 7)
+
 # ============================================================ S7 · Sistemas Sob Medida
 s = slide_new()
 head = prod_head(s, "02", "Sistemas Sob Medida",
@@ -534,12 +584,12 @@ dg.append(pill(s, box_x + 276, y0 + 102, 210, 36, "Decisão com visibilidade",
 dgg = group(s, dg)
 ask = txt(s, MARGIN, 458, 860, 24, "Tailor made: personalizado para a sua operação. Você conhece seu negócio; nós conhecemos tecnologia.",
           SANS, 14, MUT_D, accents=[("Tailor made: personalizado para a sua operação.", WHITE)])
-progress(s, 8)
+progress(s, 9)
 fade(s, head, 0.0, 0.5)
 fade(s, dgg, 0.35, 0.7)
 fade(s, ask, 0.9, 0.5)
 transition(s)
-notes(s, 7)
+notes(s, 8)
 
 # ============================================================ S8 · Agentes de IA
 s = slide_new()
@@ -569,12 +619,12 @@ dgg = group(s, dg)
 ask = txt(s, MARGIN, 458, 760, 24,
           "Não é um chatbot. É software que executa etapas de processos — com escopo, regras e permissões.",
           SANS, 14, MUT_D, accents=[("Não é um chatbot.", WHITE)])
-progress(s, 9)
+progress(s, 10)
 fade(s, head, 0.0, 0.5)
 fade(s, dgg, 0.35, 0.7)
 fade(s, ask, 0.9, 0.5)
 transition(s)
-notes(s, 8)
+notes(s, 9)
 
 # ============================================================ S9 · onde os agentes atuam
 s = slide_new()
@@ -600,13 +650,13 @@ for i, (cap, items) in enumerate(data):
     colgs.append(group(s, g))
 for dx in (338, 622):
     line(s, dx, top, dx, top + 190, WHITE, 0.86, 1.0)
-progress(s, 10)
+progress(s, 11)
 fade(s, ey, 0.0)
 fade(s, h1, 0.12, 0.5)
 for i, cg in enumerate(colgs):
     fade(s, cg, 0.45 + i * 0.18, 0.45)
 transition(s)
-notes(s, 9)
+notes(s, 10)
 
 # ============================================================ S10 · como trabalhamos (claro)
 s = slide_new(dark=False)
@@ -630,13 +680,13 @@ for i, (tit, desc) in enumerate(steps10):
     g.append(txt(s, vx + 60, y + 4, 360, 22, tit, DISPLAY, 16.5, BLACK_INK, bold=True, spacing=-0.2))
     g.append(txt(s, vx + 60, y + 27, 360, 16, desc, SANS, 10.5, MUT_L))
     igs.append(group(s, g))
-progress(s, 11, dark=False)
+progress(s, 12, dark=False)
 fade(s, ey, 0.0)
 fade(s, h1, 0.12, 0.5)
 for i, ig in enumerate(igs):
     fade(s, ig, 0.4 + i * 0.12, 0.35)
 transition(s)
-notes(s, 10)
+notes(s, 11)
 
 # ============================================================ S11 · para quem
 s = slide_new()
@@ -653,14 +703,14 @@ for name, w in pdata:
 clo = txt(s, MARGIN, 430, 640, 48,
           "Se a empresa já funciona, mas a tecnologia começou a limitar o crescimento, provavelmente existe algo que podemos construir.",
           SANS, 15, MUT_D, line=1.3, accents=[("provavelmente existe algo que podemos construir.", GREEN)])
-progress(s, 12)
+progress(s, 13)
 fade(s, ey, 0.0)
 fade(s, h1, 0.12, 0.55)
 for i, pg in enumerate(pgs):
     fade(s, pg, 0.5 + i * 0.1, 0.35)
 fade(s, clo, 0.95, 0.5)
 transition(s)
-notes(s, 11)
+notes(s, 12)
 
 # ============================================================ S12 · fechamento
 s = slide_new()
@@ -669,17 +719,20 @@ logo = s.Shapes.AddPicture(LOGO, False, True, MARGIN, 42, -1, -1)
 logo.Height = 24
 h1 = txt(s, MARGIN, 165, 780, 180, "Qual problema da sua empresa valeria a pena resolver agora?",
          DISPLAY, 55, WHITE, bold=True, spacing=-1.6, accents=[("resolver agora?", GREEN)])
+sup12 = txt(s, MARGIN, 292, 700, 40, "Conte o contexto. Vamos entender a oportunidade e avaliar se existe uma solução tecnológica capaz de gerar impacto relevante.",
+            SANS, 14, MUT_D, line=1.35)
 p1 = pill(s, MARGIN, 360, 232, 38, "WhatsApp +55 11 94879-3233", fill=GREEN, line_color=None,
           text_color=BLACK_INK, size=13, bold=False)
 p2 = pill(s, MARGIN + 244, 360, 172, 38, "www.dreamy.app.br", size=13)
 mic = txt(s, MARGIN, 414, 400, 20, "Vamos falar sobre o seu negócio.", SANS, 12, MUT_D)
-progress(s, 13)
+progress(s, 14)
 fade(s, h1, 0.15, 0.7)
+fade(s, sup12, 0.45, 0.5)
 fade(s, p1, 0.6, 0.45)
 fade(s, p2, 0.72, 0.45)
 fade(s, mic, 0.9)
 transition(s)
-notes(s, 12)
+notes(s, 13)
 
 # ============================================================ salvar
 pres.Slides(1).SlideShowTransition.EntryEffect = 0  # capa entra sem transição

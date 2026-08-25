@@ -76,6 +76,14 @@ NOTES = [
         "Mas leva essa pergunta para casa: se uma parte dos seus clientes pagasse por um novo produto digital seu... o que valeria a pena construir?",
     ),
     (
+        "Simulação — exemplo prático",
+        "No material enviado, este slide se explica sozinho. Ao vivo, prefira o simulador interativo do pitch HTML. ≈ 30s",
+        "Um exemplo com números redondos: uma empresa com 500 clientes ativos, um produto digital de R$ 149 por mês, "
+        "e um cenário conservador — só 30% da base aderindo.\n\n"
+        "Isso já significa R$ 22.350 novos por mês — R$ 268.200 por ano. E cada mês sem o produto no ar é esse valor que fica na mesa.\n\n"
+        "No diagnóstico, a simulação é refeita com os números reais da empresa.",
+    ),
+    (
         "02 · Sistemas Sob Medida",
         "Objetivo: inverter a lógica 'empresa se adapta ao software' e reforçar a parceria. ≈ 50s",
         "Segunda frente.\n\n"

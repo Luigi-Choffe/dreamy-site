@@ -80,7 +80,17 @@ Pode ser um portal, uma assinatura, uma ferramenta que resolve uma dor do seu cl
 
 Mas leva essa pergunta para casa: se uma parte dos seus clientes pagasse por um novo produto digital seu... o que valeria a pena construir?
 
-## Slide 08 — 02 · Sistemas Sob Medida
+## Slide 08 — Simulação — exemplo prático
+
+_No material enviado, este slide se explica sozinho. Ao vivo, prefira o simulador interativo do pitch HTML. ≈ 30s_
+
+Um exemplo com números redondos: uma empresa com 500 clientes ativos, um produto digital de R$ 149 por mês, e um cenário conservador — só 30% da base aderindo.
+
+Isso já significa R$ 22.350 novos por mês — R$ 268.200 por ano. E cada mês sem o produto no ar é esse valor que fica na mesa.
+
+No diagnóstico, a simulação é refeita com os números reais da empresa.
+
+## Slide 09 — 02 · Sistemas Sob Medida
 
 _Objetivo: inverter a lógica 'empresa se adapta ao software' e reforçar a parceria. ≈ 50s_
 
@@ -92,7 +102,7 @@ O resultado é um lugar só, com a informação consolidada — e decisão com v
 
 E vale repetir: você não precisa trazer a solução pronta. Você conhece o seu negócio; nós conhecemos tecnologia. O desenho a gente faz junto.
 
-## Slide 09 — 03 · Agentes de IA
+## Slide 10 — 03 · Agentes de IA
 
 _Objetivo: desfazer o mal-entendido 'agente = chatbot' e tranquilizar sobre controle. ≈ 50s_
 
@@ -104,7 +114,7 @@ Com escopo definido, com regras, com permissões. E quando o assunto precisa de 
 
 Autonomia com controle. Sempre nessa ordem.
 
-## Slide 10 — Onde os agentes atuam
+## Slide 11 — Onde os agentes atuam
 
 _Objetivo: tornar concreto — três cenas do dia a dia que a plateia reconhece. ≈ 50s_
 
@@ -118,7 +128,7 @@ Na operação: ele lê sistemas e documentos, consolida, analisa e age.
 
 Repara no padrão das três colunas: o agente fica com o trabalho repetitivo; as pessoas ficam com o que exige gente.
 
-## Slide 11 — Como trabalhamos
+## Slide 12 — Como trabalhamos
 
 _Objetivo: reduzir o risco percebido — processo claro, ciclos curtos, sem sumiço. ≈ 45s_
 
@@ -128,7 +138,7 @@ Entender: a gente senta junto e mapeia problema, impacto e contexto. Desenhar: s
 
 Em cada ciclo você sabe o que está sendo feito, por quê, e o que vem depois.
 
-## Slide 12 — Para quem
+## Slide 13 — Para quem
 
 _Objetivo: qualificar com franqueza — quem tem fit se reconhece e se inclina. ≈ 40s_
 
@@ -138,7 +148,7 @@ Que já tem operação, clientes, time — e sente que a tecnologia virou o frei
 
 Se, enquanto eu falava, você lembrou de um processo que não escala, de sistemas que não conversam, de dados espalhados por aí... provavelmente existe algo que a gente pode construir juntos.
 
-## Slide 13 — Fechamento
+## Slide 14 — Fechamento
 
 _Objetivo: uma única pergunta + próximo passo simples. Termine e deixe a plateia falar. ≈ 40s_
 
