@@ -1,0 +1,11 @@
+import { readFileSync } from "node:fs";
+import { prepareImport } from "../../src/lib/outbound/import-core";
+import { parseXlsx } from "../../src/lib/outbound/parse";
+import { CLAY_HEADER_MAP } from "../outbound/import-map";
+const { headers, rows } = parseXlsx(readFileSync(process.argv[2] as string), { sheet: process.argv[3] });
+const r = prepareImport({ headers, rows, mapping: CLAY_HEADER_MAP, batchId: "probe", existingEmails: new Set(), suppressedEmails: new Set() });
+const excluded = r.contacts.filter((c) => c.status === "excluded" && c.excludedReason === "cargo-fora-icp");
+const counts = new Map<string, number>();
+for (const c of excluded) counts.set(c.cargo ?? "(sem cargo)", (counts.get(c.cargo ?? "(sem cargo)") ?? 0) + 1);
+console.log(`Excluídos por cargo (${excluded.length}):`);
+for (const [cargo, n] of [...counts.entries()].sort((a, b) => b[1] - a[1])) console.log(`  ${n}× ${cargo}`);
