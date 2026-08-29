@@ -90,9 +90,15 @@ async function main() {
         window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
       });
       await page.waitForTimeout(600);
-      const overflow = await page.evaluate(
-        () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
-      );
+      // Overflow REAL (a página rola de lado?), não scrollWidth bruto: com `overflow-x: clip`
+      // no body, o Chromium reporta scrollWidth inflado por conteúdo DENTRO de scroll
+      // containers aninhados (falso positivo — visualViewport e rolagem ficam em 390).
+      const overflow = await page.evaluate(() => {
+        window.scrollTo(100_000, 0);
+        const scrolled = window.scrollX > 1;
+        window.scrollTo(0, 0);
+        return scrolled;
+      });
       if (overflow) problems.push(`[${vp.name}] ${route} HORIZONTAL OVERFLOW`);
       const h1s = await page.locator("h1").count();
       if (h1s !== 1) problems.push(`[${vp.name}] ${route} h1 count = ${h1s}`);
