@@ -10,6 +10,7 @@ Atualizado em 2026-08-18 (sessão 3). Leia isto primeiro ao retomar o projeto (j
 - **Vercel: projeto ainda não existe.** A criação via integração (time "Rafael Lang's projects") falhou com `403 forbidden` — importar pelo painel (passo a passo em `docs/DEPLOY.md`). Sem `NEXT_PUBLIC_SITE_ENV=production` qualquer deploy sai `noindex` (ADR-017), inclusive o ambiente Production da Vercel em `*.vercel.app`.
 - **Design pass 2026-08-18 (ADR-018)**: hero "sistema vivo" derivado do logo, `FlowDiagram` em rail/pílulas, cards de solução com subgrid alinhado, tokens de tipografia mais apertados. Skills instaladas pelo usuário em `.agents/skills/` e `.claude/skills/` (`frontend-design`, `copywriting`) — usar `frontend-design` para novas telas.
 - Servidores locais parados. Para subir: `pnpm dev` (3000). E2E sobe sozinho `next start` em 3100. Verificação rápida de qualquer URL publicada: `pnpm smoke --base <url>`.
+- **Outbound (2026-08-27)**: subsistema de campanhas de cold e-mail por indústria **implementado** (V1 local — `docs/PRD-EMAIL-OUTBOUND.md` §28, ADR-019…022). Comandos `pnpm outbound:*` (import/verify/campaign/arm/plan/send/sync/auto/reply/report/demo); copy-modelo + guia em `src/content/outbound/`. **Console completo** em `/interno/outbound` (`pnpm dev`): visão geral, campanha (funil + prévia da copy com lint), contatos, respostas, atividade, supressão; ações conservadoras por Server Actions (pausar/classificar/suprimir/desarmar — armar/disparar só na CLI); **modo demo**: `pnpm outbound:demo` + `/interno/outbound?demo=1` (dados simulados). Screenshots: `docs/qa/outbound-console/`. **Lote construção importado** (2026-08-27): `docs/CONTATOS/Luigi_CONSTRUCAO.xlsx` (abas Empresas/Pessoas — gitignored), 99 empresas segmentadas + 42 contatos ativos no store real, 99 aberturas personalizadas, campanha `construcao-nova-receita` em draft (mira 16 incorporadoras). Chave Resend em `.env.local`; domínio `bedreamy.com.br` verificado (DKIM/SPF). Aguardando do usuário: verificação dos 42 e-mails, `OUTBOUND_FROM`/`OUTBOUND_REPLY_TO`, DMARC, aprovação da copy, CNPJ/razão social e `outbound:arm`.
 
 ## Mapa rápido
 
@@ -28,6 +29,8 @@ Atualizado em 2026-08-18 (sessão 3). Leia isto primeiro ao retomar o projeto (j
 | Migração SEO/domínio                              | `docs/SEO-MIGRATION.md`, `docs/redirect-map.csv`      |
 | Deploy (Vercel/host), preview × produção, go-live | `docs/DEPLOY.md`                                      |
 | Apresentação institucional (PDF + fonte HTML)     | `docs/apresentacao/`                                  |
+| Campanhas de e-mail outbound (PRD)                | `docs/PRD-EMAIL-OUTBOUND.md`                          |
+| MORK (agente de outbound: identidade + playbook)  | `.agents/mork/MORK.md`, `.agents/mork/PLAYBOOK.md`    |
 | Checklist de lançamento                           | `docs/LAUNCH-CHECKLIST.md`                            |
 | Variáveis de ambiente                             | `.env.example`, README                                |
 
@@ -54,6 +57,7 @@ Atualizado em 2026-08-18 (sessão 3). Leia isto primeiro ao retomar o projeto (j
 3. Preencher variáveis do preview: GTM (validar eventos no Preview do GTM), CRM webhook e Resend com lead de teste; `CONTENT_PREVIEW=true` para revisar insights/cases não publicados.
 4. Revisar decisões acima; publicar Insights quando ≥ 3 aprovados; adicionar cases quando aprovados.
 5. Avaliar `CSP_ENFORCE=true` após validar tags no browser.
+6. **Outbound**: fornecer chave Resend dedicada + domínio de envio (DNS: DKIM/SPF/MX/DMARC) + CNPJ/razão social; enviar a lista do Clay; rodar o fluxo do PRD-EMAIL-OUTBOUND §28.2 (import → verify → copy por indústria → approve/enroll → arm → install-schedule.ps1).
 6. Fase 8: `NEXT_PUBLIC_SITE_ENV=production` + `NEXT_PUBLIC_SITE_URL` no ambiente de produção, domínios/DNS conforme `docs/SEO-MIGRATION.md`, depois `pnpm smoke --base https://www.dreamy.app.br --expect production --redirects`; Fase 9: monitoramento (`docs/LAUNCH-CHECKLIST.md`).
 
 ## Armadilhas conhecidas (ambiente/dev)

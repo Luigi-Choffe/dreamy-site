@@ -349,3 +349,79 @@ Date:
 
 Status:
 Accepted. Lighthouse mobile home ≥ 94–95 (LCP simulado ~3,0 s vs baseline medida nas mesmas condições 3,1–3,6 s); e2e 56 passed; axe limpo.
+
+---
+
+# ADR-019
+
+Decision:
+V1 do Dreamy Outbound opera 100% local: store em arquivos JSON (`.outbound/`, gitignored, escrita atômica) e sincronização de eventos por polling da API do Resend (`GET /emails/:id`), sem banco de dados e sem webhooks até a fase de deploy. Interfaces (`OutboundStore`, `ResendClient`) isolam a troca futura por Postgres + webhooks (PRD-EMAIL-OUTBOUND §22, fases de produção).
+
+Reason:
+O usuário quer operar assim que entregar a lista, sem provisionar infra externa (Vercel ainda sem projeto; Neon exigiria conta). Os volumes da rampa (15–80 envios/dia, PRD-EMAIL-OUTBOUND §17) cabem com folga em arquivos JSON; o polling cobre delivered/bounced/complained/opened/clicked sem URL pública.
+
+Alternatives:
+Postgres gerenciado (Neon/Vercel — exige conta + deploy antes do primeiro envio); Upstash Redis (inadequado para consultas analíticas); SQLite (`better-sqlite3` = dependência nativa nova; `node:sqlite` experimental).
+
+Date:
+2026-08-27
+
+Status:
+Accepted. Reavaliar na fase de produção (dashboard com auth + webhooks exigem banco compartilhado).
+
+---
+
+# ADR-020
+
+Decision:
+Automação armada: após (a) aprovação de copy por campanha (`outbound:campaign approve --confirm`, com lint bloqueante) e (b) arming explícito único do usuário (`outbound:arm arm --confirm`, registrado no store), `outbound:auto` (tarefa agendada local, dias úteis 09:05) dispara e-mails reais sem confirmação por envio. Emenda o protocolo do PRD-EMAIL-OUTBOUND §20 (que previa confirmação por disparo), a pedido explícito do usuário (2026-08-27).
+
+Reason:
+O usuário pediu operação automática ("eu só envio a lista"). As salvaguardas que permanecem são estruturais, não processuais: rampa/caps e janela aplicados pelo motor, lint de copy bloqueante, verificação de lista obrigatória (override só com `--assume-ok --confirm`), supressão checada a cada plano, e circuit breaker automático (bounce ≥ 3% pausa a campanha; 1 complaint pausa tudo; religar exige `reset-breaker --confirm` humano).
+
+Alternatives:
+Confirmação por disparo (fluxo original do PRD §20 — rejeitado pelo usuário); envio via cron remoto (não há deploy).
+
+Date:
+2026-08-27
+
+Status:
+Accepted.
+
+---
+
+# ADR-021
+
+Decision:
+Descadastro na V1 local: opt-out por resposta (processado no dia com `outbound:reply --suppress`, supressão global permanente) + header `List-Unsubscribe: <mailto:...>` em todo envio. One-click RFC 8058 (endpoint HTTPS + `List-Unsubscribe-Post`) fica obrigatório na fase de deploy — antes de escalar além da rampa.
+
+Reason:
+Sem URL pública não existe endpoint HTTPS. Abaixo de 5.000 msgs/dia o one-click não é exigido por Gmail/Yahoo; a LGPD exige opt-out fácil e honrado — atendido por resposta + supressão permanente + parada imediata da sequência. O e-mail final da sequência carrega linha humana de opt-out.
+
+Alternatives:
+Esperar o deploy para começar (atrasa o objetivo); serviço externo de unsubscribe (dependência e domínio de terceiros em cold e-mail).
+
+Date:
+2026-08-27
+
+Status:
+Accepted. Superseder parcial planejado: one-click HTTPS na fase de produção.
+
+---
+
+# ADR-022
+
+Decision:
+Parsers próprios de CSV (RFC 4180, autodetecção `,`/`;`) e XLSX (ZIP + `node:zlib`, sharedStrings/inlineStr) em `src/lib/outbound/parse.ts`, zero dependências novas. Fallback documentado: exportar CSV do Clay se um `.xlsx` específico não parsear (o parser falha com mensagem orientando isso).
+
+Reason:
+Cultura do repo (ADR-007/011): dependência nova só com justificativa forte. `exceljs`/`xlsx` trazem árvore grande para ler uma planilha tabular simples; o formato exportado pelo Clay/Excel é previsível e os testes cobrem stored/deflate, entidades e colunas puladas.
+
+Alternatives:
+`exceljs` (pesado), `xlsx`/SheetJS (histórico de CVEs, licenciamento da versão OSS), exigir só CSV (atrito para o usuário, que recebe .xlsx).
+
+Date:
+2026-08-27
+
+Status:
+Accepted.
