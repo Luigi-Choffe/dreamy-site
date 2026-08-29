@@ -50,6 +50,13 @@ next-env.d.ts
 # local lead store (dev only)
 /.leads/
 
+# outbound: store local (contatos/envios/eventos — PII, nunca commitar)
+/.outbound/
+# outbound: store de demonstração (dados simulados do console)
+/.outbound-demo/
+# outbound: planilhas de contatos recebidas (PII — nunca commitar)
+/docs/CONTATOS/
+
 # arquivos temporários do Word / originais na raiz (cópias oficiais em docs/source)
 ~$*.docx
 /PRD v2.docx

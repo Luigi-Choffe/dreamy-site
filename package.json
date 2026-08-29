@@ -24,6 +24,18 @@
     "audit:screenshots": "tsx scripts/audit-screenshots.ts",
     "qa:screenshots": "tsx scripts/qa-screenshots.ts",
     "smoke": "tsx scripts/smoke.ts",
+    "outbound:import": "tsx scripts/outbound/import.ts",
+    "outbound:verify": "tsx scripts/outbound/verify.ts",
+    "outbound:plan": "tsx scripts/outbound/plan.ts",
+    "outbound:send": "tsx scripts/outbound/send.ts",
+    "outbound:sync": "tsx scripts/outbound/sync.ts",
+    "outbound:auto": "tsx scripts/outbound/auto.ts",
+    "outbound:reply": "tsx scripts/outbound/reply.ts",
+    "outbound:report": "tsx scripts/outbound/report.ts",
+    "outbound:campaign": "tsx scripts/outbound/campaign.ts",
+    "outbound:arm": "tsx scripts/outbound/arm.ts",
+    "outbound:demo": "tsx scripts/outbound/demo.ts",
+    "outbound:companies": "tsx scripts/outbound/companies.ts",
     "check": "pnpm typecheck && pnpm lint && pnpm content:check && pnpm test && pnpm build"
   },
   "dependencies": {
