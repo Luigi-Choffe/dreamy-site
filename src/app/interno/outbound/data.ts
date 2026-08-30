@@ -60,18 +60,17 @@ export interface DashboardData {
 
 export async function loadDashboardData(isDemo: boolean): Promise<DashboardData> {
   const store = isDemo ? openStore(demoDir()) : openStore();
-  const [contacts, enrollments, sends, suppressions, replies, events, runtimes, imports, state] =
-    await Promise.all([
-      store.contacts(),
-      store.enrollments(),
-      store.sends(),
-      store.suppressions(),
-      store.replies(),
-      store.events(),
-      store.campaignRuntimes(),
-      store.imports(),
-      store.state(),
-    ]);
+  const [contacts, enrollments, sends, suppressions, replies, events, runtimes, imports, state] = await Promise.all([
+    store.contacts(),
+    store.enrollments(),
+    store.sends(),
+    store.suppressions(),
+    store.replies(),
+    store.events(),
+    store.campaignRuntimes(),
+    store.imports(),
+    store.state(),
+  ]);
   return {
     isDemo,
     defs: [...campaigns].sort((a, b) => a.slug.localeCompare(b.slug)),

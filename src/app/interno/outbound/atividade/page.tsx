@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { IS_PRODUCTION_SITE } from "@/config/env";
+import { requireSession } from "@/lib/outbound/auth";
 import type { OutboundEvent, OutboundEventType } from "@/lib/outbound/types";
 import { consoleHref, demoRequested, loadDashboardData, type SearchParams } from "../data";
 import { ConsoleShell } from "../shell";
@@ -64,8 +63,7 @@ function firstString(value: string | string[] | undefined): string | undefined {
  * Agrupada por dia, filtrável por tipo e campanha via GET (preservando o modo demo).
  */
 export default async function OutboundActivityPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  // V1 é 100% local (sem deploy) — em produção o console nem renderiza (PRD §16).
-  if (IS_PRODUCTION_SITE) notFound();
+  const session = await requireSession();
 
   const sp = await searchParams;
   const isDemo = demoRequested(sp);
@@ -101,6 +99,7 @@ export default async function OutboundActivityPage({ searchParams }: { searchPar
 
   return (
     <ConsoleShell
+      sessionEmail={session.email}
       active="atividade"
       data={data}
       title="Atividade"
@@ -162,7 +161,12 @@ export default async function OutboundActivityPage({ searchParams }: { searchPar
             <EmptyState>Nenhum evento com esses filtros.</EmptyState>
           ) : (
             <>
-              <div tabIndex={0} role="region" aria-label="Linha do tempo de eventos" className="overflow-x-auto rounded-lg border border-border bg-surface">
+              <div
+                tabIndex={0}
+                role="region"
+                aria-label="Linha do tempo de eventos"
+                className="overflow-x-auto rounded-lg border border-border bg-surface"
+              >
                 <table className="w-full min-w-[44rem] text-small">
                   <thead>
                     <tr>

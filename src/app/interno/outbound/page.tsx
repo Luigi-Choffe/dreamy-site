@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { IS_PRODUCTION_SITE } from "@/config/env";
+import { requireSession } from "@/lib/outbound/auth";
 import { getOutboundEnv, rampCap } from "@/lib/outbound/config";
 import { dailyCap, usedTodayCount } from "@/lib/outbound/engine";
 import { evaluateGuardRails } from "@/lib/outbound/guardrails";
@@ -52,9 +51,7 @@ const CARD_LABEL = "text-xs font-semibold tracking-wide text-foreground-subtle u
 
 /** Visão geral do console: resultado primeiro, depois campanhas, contatos e operação. */
 export default async function OutboundOverviewPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  // V1 é 100% local (sem deploy). A versão em produção só chega junto com a auth
-  // do dashboard (senha de time + cookie assinado + guard) — PRD-EMAIL-OUTBOUND §16.
-  if (IS_PRODUCTION_SITE) notFound();
+  const session = await requireSession();
 
   const sp = await searchParams;
   const isDemo = demoRequested(sp);
@@ -70,7 +67,13 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
   // ── Estado vazio global: convite à ação com os comandos exatos ─────────────
   if (!hasData) {
     return (
-      <ConsoleShell active="visao-geral" data={data} title="Visão geral" subtitle={subtitle}>
+      <ConsoleShell
+        active="visao-geral"
+        data={data}
+        title="Visão geral"
+        subtitle={subtitle}
+        sessionEmail={session.email}
+      >
         <div className="flex flex-col gap-8">
           <section aria-labelledby="comece-title">
             <Card padding="md" className="max-w-3xl">
@@ -190,7 +193,7 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
     .sort();
 
   return (
-    <ConsoleShell active="visao-geral" data={data} title="Visão geral" subtitle={subtitle}>
+    <ConsoleShell active="visao-geral" data={data} title="Visão geral" subtitle={subtitle} sessionEmail={session.email}>
       <div className="flex flex-col gap-8">
         {/* 1. Linha de resultado — a métrica norte primeiro. */}
         <section aria-labelledby="resultado-title">

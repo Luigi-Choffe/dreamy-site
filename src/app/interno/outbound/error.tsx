@@ -9,10 +9,8 @@ export default function ConsoleError({ error, reset }: { error: Error & { digest
   return (
     <div className="mx-auto max-w-2xl px-6 py-16">
       <p className="text-xs font-semibold tracking-widest text-brand-strong uppercase">Dreamy Outbound</p>
-      <h1 className="font-display mt-2 text-2xl font-bold">A ação não foi concluída</h1>
-      <p className="mt-3 text-sm break-words text-foreground-muted">
-        {error.message || "Erro inesperado no console."}
-      </p>
+      <h1 className="mt-2 font-display text-2xl font-bold">A ação não foi concluída</h1>
+      <p className="mt-3 text-sm break-words text-foreground-muted">{error.message || "Erro inesperado no console."}</p>
       <p className="mt-2 text-xs text-foreground-subtle">
         Se a mensagem falar em lock: um comando <code>outbound:*</code> está rodando no terminal — espere terminar e
         tente de novo. Nada foi parcialmente aplicado.

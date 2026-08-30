@@ -32,6 +32,12 @@ export default defineConfig({
         url: baseURL,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,
-        env: { NEXT_PUBLIC_SITE_ENV: "test", NODE_ENV: "production" },
+        env: {
+          NEXT_PUBLIC_SITE_ENV: "test",
+          NODE_ENV: "production",
+          // Auth do console interno (tests/e2e/outbound-console.spec.ts assina o cookie com o mesmo segredo).
+          OUTBOUND_SESSION_SECRET: process.env.OUTBOUND_SESSION_SECRET ?? "e2e-secret-nao-use-em-producao",
+          OUTBOUND_TEAM_EMAILS: "e2e@dreamy.test",
+        },
       },
 });

@@ -30,6 +30,8 @@ export interface ConsoleShellProps {
   subtitle?: string;
   /** Ações contextuais da página (botões/links), exibidas no cabeçalho. */
   headerExtra?: ReactNode;
+  /** E-mail da sessão autenticada (retorno de `requireSession`); exibe o chip e o botão "Sair". */
+  sessionEmail?: string;
   children: ReactNode;
 }
 
@@ -57,7 +59,15 @@ function HealthPill({ tone, title, children }: { tone: PillTone; title?: string;
   );
 }
 
-export function ConsoleShell({ active, data, title, subtitle, headerExtra, children }: ConsoleShellProps) {
+export function ConsoleShell({
+  active,
+  data,
+  title,
+  subtitle,
+  headerExtra,
+  sessionEmail,
+  children,
+}: ConsoleShellProps) {
   const now = new Date();
   const env = getOutboundEnv();
   const rails = evaluateGuardRails(data.sends);
@@ -73,6 +83,26 @@ export function ConsoleShell({ active, data, title, subtitle, headerExtra, child
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-8">
+      {sessionEmail ? (
+        <div className="mb-4 flex flex-wrap items-center justify-end gap-2 text-xs">
+          <span
+            title="Sessão autenticada do console"
+            className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border px-2.5 py-1 font-medium text-foreground-muted"
+          >
+            <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-current text-success" />
+            <span className="truncate">{sessionEmail}</span>
+          </span>
+          <form action="/interno/logout" method="post">
+            <button
+              type="submit"
+              className="rounded-full px-2.5 py-1 font-semibold text-foreground-muted underline-offset-2 transition-colors hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            >
+              Sair
+            </button>
+          </form>
+        </div>
+      ) : null}
+
       {data.isDemo ? (
         <div className="mb-5 flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-lg border border-warning/60 bg-warning/10 px-4 py-2.5 text-small text-foreground">
           <span className="rounded-full bg-warning px-2 py-0.5 text-xs font-bold tracking-wide text-background uppercase">

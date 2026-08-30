@@ -1,21 +1,11 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { Card } from "@/components/ui/Card";
-import { IS_PRODUCTION_SITE } from "@/config/env";
+import { requireSession } from "@/lib/outbound/auth";
 import type { SuppressionReason } from "@/lib/outbound/types";
 import { suppressContactAction } from "../actions";
 import { demoRequested, loadDashboardData, type SearchParams } from "../data";
 import { ConsoleShell } from "../shell";
-import {
-  Chip,
-  type ChipTone,
-  Code,
-  countBy,
-  EmptyState,
-  fmtDateTime,
-  fmtInt,
-  SUPPRESSION_REASON_LABELS,
-} from "../ui";
+import { Chip, type ChipTone, Code, countBy, EmptyState, fmtDateTime, fmtInt, SUPPRESSION_REASON_LABELS } from "../ui";
 
 /** Sempre dinâmico: lê o store local (`.outbound/` ou demo) a cada request. */
 export const dynamic = "force-dynamic";
@@ -68,8 +58,7 @@ function maskEmail(email: string): string {
 
 /** Lista de supressão: permanente e global (LGPD) — contagens, registros e supressão manual. */
 export default async function OutboundSuppressionPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  // V1 é 100% local (sem deploy) — em produção o console nem renderiza (PRD §16).
-  if (IS_PRODUCTION_SITE) notFound();
+  const session = await requireSession();
 
   const sp = await searchParams;
   const isDemo = demoRequested(sp);
@@ -91,6 +80,7 @@ export default async function OutboundSuppressionPage({ searchParams }: { search
 
   return (
     <ConsoleShell
+      sessionEmail={session.email}
       active="supressao"
       data={data}
       title="Supressão"
@@ -129,20 +119,37 @@ export default async function OutboundSuppressionPage({ searchParams }: { search
               </EmptyState>
             </div>
           ) : (
-            <div tabIndex={0} role="region" aria-label="Lista de supressões" className="mt-4 overflow-x-auto rounded-lg border border-border">
+            <div
+              tabIndex={0}
+              role="region"
+              aria-label="Lista de supressões"
+              className="mt-4 overflow-x-auto rounded-lg border border-border"
+            >
               <table className="w-full min-w-[38rem] border-collapse text-small">
                 <thead>
                   <tr className="border-b border-border bg-background-secondary/60 text-left">
-                    <th scope="col" className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase">
+                    <th
+                      scope="col"
+                      className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase"
+                    >
                       E-mail
                     </th>
-                    <th scope="col" className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase">
+                    <th
+                      scope="col"
+                      className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase"
+                    >
                       Motivo
                     </th>
-                    <th scope="col" className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase">
+                    <th
+                      scope="col"
+                      className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase"
+                    >
                       Origem
                     </th>
-                    <th scope="col" className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase">
+                    <th
+                      scope="col"
+                      className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase"
+                    >
                       Quando
                     </th>
                   </tr>
@@ -223,8 +230,8 @@ export default async function OutboundSuppressionPage({ searchParams }: { search
             )}
             {activeContacts.length > SELECT_LIMIT ? (
               <p className="text-xs text-foreground-subtle">
-                Listando {fmtInt(SELECT_LIMIT)} de {fmtInt(activeContacts.length)} contatos ativos (ordem por empresa)
-                — para os demais, use a aba Contatos ou a CLI.
+                Listando {fmtInt(SELECT_LIMIT)} de {fmtInt(activeContacts.length)} contatos ativos (ordem por empresa) —
+                para os demais, use a aba Contatos ou a CLI.
               </p>
             ) : null}
             <p className="text-xs text-foreground-subtle">

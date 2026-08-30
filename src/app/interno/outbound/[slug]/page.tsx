@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { IS_PRODUCTION_SITE } from "@/config/env";
+import { requireSession } from "@/lib/outbound/auth";
 import { evaluateGuardRails } from "@/lib/outbound/guardrails";
 import { stepFunnel } from "@/lib/outbound/metrics";
 import { campaignContentHash } from "@/lib/outbound/render";
@@ -64,9 +64,7 @@ export default async function OutboundCampaignPage({
   params: Promise<Params>;
   searchParams: Promise<SearchParams>;
 }) {
-  // V1 é 100% local (sem deploy). A versão em produção só chega junto com a auth
-  // do dashboard (senha de time + cookie assinado + guard) — PRD-EMAIL-OUTBOUND §16.
-  if (IS_PRODUCTION_SITE) notFound();
+  const session = await requireSession();
 
   const { slug } = await params;
   const sp = await searchParams;
@@ -163,6 +161,7 @@ export default async function OutboundCampaignPage({
 
   return (
     <ConsoleShell
+      sessionEmail={session.email}
       active="campanha"
       data={data}
       title={campaign.industria}

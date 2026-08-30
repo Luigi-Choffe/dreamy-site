@@ -98,7 +98,9 @@ export function StepCopyPreview({ step, isFirst, industria, sampleCustom }: Step
           <span className="text-foreground-subtle">Assunto:</span>{" "}
           <span className="font-semibold text-foreground">{subject.value}</span>
         </p>
-        <div className="mt-3 text-small leading-relaxed break-words whitespace-pre-wrap text-foreground">{body.value}</div>
+        <div className="mt-3 text-small leading-relaxed break-words whitespace-pre-wrap text-foreground">
+          {body.value}
+        </div>
         {/* Assinatura anexada pelo motor em todo envio (src/lib/outbound/signature.ts) */}
         <div className="mt-4 border-t border-border pt-3 text-xs leading-relaxed break-words whitespace-pre-wrap text-foreground-muted">
           {SIGNATURE_TEXT}

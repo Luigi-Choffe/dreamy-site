@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { Card } from "@/components/ui/Card";
-import { IS_PRODUCTION_SITE } from "@/config/env";
+import { requireSession } from "@/lib/outbound/auth";
 import { contactStats } from "@/lib/outbound/metrics";
 import type { ContactStatus, SendRecord, VerificationStatus } from "@/lib/outbound/types";
 import { suppressContactAction } from "../actions";
@@ -92,8 +91,7 @@ function sendRefTime(send: SendRecord): number {
 
 /** Base de contatos: filtro, auditoria e supressão contato a contato. */
 export default async function OutboundContactsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  // V1 é 100% local (sem deploy) — em produção o console nem renderiza (PRD §16).
-  if (IS_PRODUCTION_SITE) notFound();
+  const session = await requireSession();
 
   const sp = await searchParams;
   const isDemo = demoRequested(sp);
@@ -121,9 +119,7 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
     if (industriaFilter && (contact.industria?.trim() || SEM_INDUSTRIA) !== industriaFilter) return false;
     if (qFold) {
       // Busca por nome/empresa; o e-mail pode casar no filtro, mas nunca vira texto visível.
-      const haystack = fold(
-        [contact.nome, contact.sobrenome ?? "", contact.empresa ?? "", contact.email].join(" "),
-      );
+      const haystack = fold([contact.nome, contact.sobrenome ?? "", contact.empresa ?? "", contact.email].join(" "));
       if (!haystack.includes(qFold)) return false;
     }
     return true;
@@ -161,6 +157,7 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
 
   return (
     <ConsoleShell
+      sessionEmail={session.email}
       active="contatos"
       data={data}
       title="Contatos"
@@ -179,7 +176,10 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
             {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(14rem,2fr)_1fr_1fr_1fr_auto]">
               <div className="flex flex-col gap-1">
-                <label htmlFor="filtro-q" className="text-xs font-semibold tracking-wide text-foreground-subtle uppercase">
+                <label
+                  htmlFor="filtro-q"
+                  className="text-xs font-semibold tracking-wide text-foreground-subtle uppercase"
+                >
                   Busca
                 </label>
                 <input
@@ -319,8 +319,8 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
           {data.contacts.length === 0 ? (
             <EmptyState>
               Nenhum contato importado ainda — rode{" "}
-              <Code>pnpm outbound:import --file lista.xlsx --origin &quot;Clay run X&quot;</Code> para trazer a
-              primeira lista.
+              <Code>pnpm outbound:import --file lista.xlsx --origin &quot;Clay run X&quot;</Code> para trazer a primeira
+              lista.
             </EmptyState>
           ) : filtered.length === 0 ? (
             <EmptyState>
@@ -332,29 +332,55 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
             </EmptyState>
           ) : (
             <>
-              <div tabIndex={0} role="region" aria-label="Tabela de contatos" className="overflow-x-auto rounded-lg border border-border">
+              <div
+                tabIndex={0}
+                role="region"
+                aria-label="Tabela de contatos"
+                className="overflow-x-auto rounded-lg border border-border"
+              >
                 <table className="w-full min-w-[56rem] border-collapse text-small">
                   <thead>
                     <tr className="border-b border-border bg-background-secondary/60 text-left">
-                      <th scope="col" className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase">
+                      <th
+                        scope="col"
+                        className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase"
+                      >
                         Contato
                       </th>
-                      <th scope="col" className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase">
+                      <th
+                        scope="col"
+                        className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase"
+                      >
                         Cargo
                       </th>
-                      <th scope="col" className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase">
+                      <th
+                        scope="col"
+                        className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase"
+                      >
                         Indústria
                       </th>
-                      <th scope="col" className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase">
+                      <th
+                        scope="col"
+                        className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase"
+                      >
                         Verificação
                       </th>
-                      <th scope="col" className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase">
+                      <th
+                        scope="col"
+                        className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase"
+                      >
                         Status
                       </th>
-                      <th scope="col" className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase">
+                      <th
+                        scope="col"
+                        className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase"
+                      >
                         Campanha ativa
                       </th>
-                      <th scope="col" className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase">
+                      <th
+                        scope="col"
+                        className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase"
+                      >
                         Último envio
                       </th>
                       <th scope="col" className="px-3 py-2">

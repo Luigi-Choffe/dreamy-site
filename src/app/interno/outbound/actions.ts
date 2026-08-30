@@ -1,9 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { IS_PRODUCTION_SITE } from "@/config/env";
 import { campaigns } from "@/content/outbound";
 import { logger } from "@/lib/observability/logger";
+import { requireSession } from "@/lib/outbound/auth";
 import { cancelScheduledSends } from "@/lib/outbound/cancel";
 import { getOutboundEnv } from "@/lib/outbound/config";
 import { applyOptOut, applyReply } from "@/lib/outbound/ops-core";
@@ -17,19 +17,13 @@ import { demoDir } from "./data";
  * retomar campanha, registrar/classificar resposta, suprimir contato, desarmar.
  * Armar e disparar continuam EXCLUSIVOS da CLI (gates do §20/ADR-020).
  *
- * Toda action revalida o gate local (actions são alcançáveis por POST direto) e
- * roda sob o lock do store (mesma serialização dos CLIs). Em modo demo, opera no
- * store `.outbound-demo/` e NUNCA toca a API do Resend.
+ * Toda action exige sessão do console (`requireSession` — actions são alcançáveis
+ * por POST direto, e o proxy é só a checagem otimista) e roda sob o lock do store
+ * (mesma serialização dos CLIs). Em modo demo, opera no store `.outbound-demo/`
+ * e NUNCA toca a API do Resend.
  */
 
-const REPLY_CLASSES: ReadonlySet<string> = new Set([
-  "interested",
-  "not_now",
-  "referral",
-  "negative",
-  "ooo",
-  "other",
-]);
+const REPLY_CLASSES: ReadonlySet<string> = new Set(["interested", "not_now", "referral", "negative", "ooo", "other"]);
 
 interface ActionContext {
   store: OutboundStore;
@@ -43,13 +37,9 @@ interface ActionContext {
   client: ResendClient | null;
 }
 
-function assertLocalConsole(): void {
-  // V1 local: em produção o console nem renderiza (notFound) e as actions recusam.
-  if (IS_PRODUCTION_SITE) throw new Error("Console indisponível em produção (PRD §16 — fase de deploy terá auth).");
-}
-
 async function withContext<T>(formData: FormData, label: string, fn: (ctx: ActionContext) => Promise<T>): Promise<T> {
-  assertLocalConsole();
+  // Sem sessão: redirect para o login ANTES de pegar o lock do store.
+  await requireSession();
   const isDemo = formData.get("demo") === "1";
   const dir = isDemo ? demoDir() : undefined;
   return runExclusive(

@@ -2,7 +2,8 @@ import { spawnSync } from "node:child_process";
 import { statSync } from "node:fs";
 import path from "node:path";
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type BrowserContext, type Page } from "@playwright/test";
+import { SESSION_COOKIE, signSession } from "../../src/lib/outbound/auth";
 import { presetConsent } from "./helpers";
 
 /**
@@ -11,7 +12,27 @@ import { presetConsent } from "./helpers";
  * `.outbound-demo/` — o store real (`.outbound/`) nunca é tocado. O teste de
  * mutação (pausar campanha) só altera o store de demo; o seed do próximo run
  * reseta tudo.
+ *
+ * Auth: o console exige cookie de sessão assinado (PRD-EMAIL-OUTBOUND §16). O
+ * servidor do e2e sobe com OUTBOUND_SESSION_SECRET/OUTBOUND_TEAM_EMAILS fixos
+ * (playwright.config.ts) e cada teste injeta o cookie assinado com o mesmo segredo.
  */
+
+const SESSION_SECRET = process.env.OUTBOUND_SESSION_SECRET ?? "e2e-secret-nao-use-em-producao";
+const TEAM_EMAIL = "e2e@dreamy.test";
+
+/** Injeta a sessão do console (mesmo segredo do webServer). */
+async function presetSession(context: BrowserContext, baseURL: string) {
+  await context.addCookies([
+    {
+      name: SESSION_COOKIE,
+      value: signSession(TEAM_EMAIL, SESSION_SECRET),
+      url: baseURL,
+      httpOnly: true,
+      sameSite: "Lax",
+    },
+  ]);
+}
 
 // Mantém os testes deste arquivo em ordem no mesmo worker (por projeto): o seed do
 // beforeAll roda uma vez por worker e o teste de mutação fica por último.
@@ -59,6 +80,7 @@ test.describe("Console de outbound — modo demonstração (?demo=1)", () => {
 
   test.beforeEach(async ({ context, baseURL }) => {
     await presetConsent(context, baseURL!);
+    await presetSession(context, baseURL!);
   });
 
   test("visão geral: banner de demonstração e cards das 3 campanhas", async ({ page }) => {
@@ -135,5 +157,58 @@ test.describe("Console de outbound — modo demonstração (?demo=1)", () => {
       .first()
       .click();
     await expect(page.getByText("pausada").first()).toBeVisible({ timeout: 15_000 });
+  });
+});
+
+test.describe("Console de outbound — autenticação (proxy + login)", () => {
+  test.beforeEach(async ({ context, baseURL }) => {
+    await presetConsent(context, baseURL!);
+  });
+
+  test("sem cookie de sessão, /interno/outbound redireciona para /interno/login com next", async ({ page }) => {
+    await page.goto("/interno/outbound");
+    await expect(page).toHaveURL(/\/interno\/login\?next=%2Finterno%2Foutbound$/);
+    await expect(page.getByRole("heading", { name: "Entrar no console" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Enviar link de acesso" })).toBeVisible();
+  });
+
+  // E-mail FORA da allowlist: exercita a Server Action (after + redirect) sem enviar
+  // nada pelo Resend, e confirma a mensagem única (sem enumeração de e-mails).
+  test("pedir link de acesso mostra a mesma mensagem, autorizado ou não", async ({ page }) => {
+    await page.goto("/interno/login?next=%2Finterno%2Foutbound%3Fdemo%3D1");
+    await page.getByLabel("E-mail").fill("ninguem@example.com");
+    await page.getByRole("button", { name: "Enviar link de acesso" }).click();
+    await expect(page).toHaveURL(/\/interno\/login\?sent=1&next=%2Finterno%2Foutbound%3Fdemo%3D1$/);
+    await expect(page.getByRole("status")).toContainText("Se o e-mail estiver autorizado, o link chega em instantes");
+  });
+
+  test("API interna sem sessão responde 401 JSON", async ({ request }) => {
+    const res = await request.get("/api/outbound/qualquer-coisa");
+    expect(res.status()).toBe(401);
+    expect(await res.json()).toMatchObject({ ok: false, code: "unauthorized" });
+  });
+
+  test("cookie assinado com outro segredo é recusado (e limpo)", async ({ context, page, baseURL }) => {
+    await context.addCookies([
+      { name: SESSION_COOKIE, value: signSession(TEAM_EMAIL, "segredo-errado"), url: baseURL!, httpOnly: true },
+    ]);
+    await page.goto("/interno/outbound");
+    await expect(page).toHaveURL(/\/interno\/login/);
+    const cookies = await context.cookies(baseURL!);
+    expect(cookies.find((c) => c.name === SESSION_COOKIE)).toBeUndefined();
+  });
+
+  test("com sessão válida, o console mostra o e-mail e o botão Sair encerra a sessão", async ({
+    context,
+    page,
+    baseURL,
+  }) => {
+    await presetSession(context, baseURL!);
+    await page.goto("/interno/outbound?demo=1");
+    await expect(page.getByText(TEAM_EMAIL)).toBeVisible();
+    await page.getByRole("button", { name: "Sair" }).click();
+    await expect(page).toHaveURL(/\/interno\/login/);
+    await page.goto("/interno/outbound");
+    await expect(page).toHaveURL(/\/interno\/login\?next=/);
   });
 });

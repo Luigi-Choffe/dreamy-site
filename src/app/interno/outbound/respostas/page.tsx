@@ -1,11 +1,10 @@
 import { Fragment } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Checkbox } from "@/components/ui/Field";
-import { IS_PRODUCTION_SITE } from "@/config/env";
+import { requireSession } from "@/lib/outbound/auth";
 import { getOutboundEnv } from "@/lib/outbound/config";
 import { wasSent } from "@/lib/outbound/metrics";
 import { replyStepId } from "@/lib/outbound/ops-core";
@@ -63,8 +62,7 @@ function contactOptionLabel(contact: Contact): string {
  * Registro e classificação manuais (a caixa de respostas é lida por humano — §16).
  */
 export default async function OutboundRepliesPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  // V1 é 100% local (sem deploy) — em produção o console nem renderiza (PRD §16).
-  if (IS_PRODUCTION_SITE) notFound();
+  const session = await requireSession();
 
   const sp = await searchParams;
   const isDemo = demoRequested(sp);
@@ -96,6 +94,7 @@ export default async function OutboundRepliesPage({ searchParams }: { searchPara
 
   return (
     <ConsoleShell
+      sessionEmail={session.email}
       active="respostas"
       data={data}
       title="Respostas"
@@ -159,7 +158,12 @@ export default async function OutboundRepliesPage({ searchParams }: { searchPara
                 </EmptyState>
               </div>
             ) : (
-              <div tabIndex={0} role="region" aria-label="Lista de respostas" className="mt-4 overflow-x-auto rounded-lg border border-border bg-surface">
+              <div
+                tabIndex={0}
+                role="region"
+                aria-label="Lista de respostas"
+                className="mt-4 overflow-x-auto rounded-lg border border-border bg-surface"
+              >
                 <table className="w-full min-w-[44rem] text-small">
                   <thead>
                     <tr>
