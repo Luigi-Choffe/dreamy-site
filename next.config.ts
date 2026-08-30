@@ -33,6 +33,12 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // Plataforma de vendas (pivô 2026-08-29): com OUTBOUND_PLATFORM_ONLY=true o
+      // deploy é só o console — a raiz leva ao login/console; o site institucional
+      // vive em outro deploy (com o sócio). Temporário (307) para não grudar em cache.
+      ...(process.env.OUTBOUND_PLATFORM_ONLY === "true"
+        ? [{ source: "/", destination: "/interno/outbound", permanent: false }]
+        : []),
       // apex → www (redundância; a regra principal fica no host/DNS — PRD §52)
       {
         source: "/:path*",

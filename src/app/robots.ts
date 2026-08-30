@@ -7,7 +7,8 @@ export default function robots(): MetadataRoute.Robots {
     return { rules: [{ userAgent: "*", disallow: "/" }] };
   }
   return {
-    rules: [{ userAgent: "*", allow: "/", disallow: ["/api/", "/dev/"] }],
+    // /interno = plataforma de vendas (console do MORK) — nunca indexável, mesmo em produção.
+    rules: [{ userAgent: "*", allow: "/", disallow: ["/api/", "/dev/", "/interno/"] }],
     sitemap: `${SITE_URL}/sitemap.xml`,
     host: SITE_URL,
   };
