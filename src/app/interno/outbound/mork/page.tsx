@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { requireSession } from "@/lib/outbound/auth";
 import type { AgentActivity } from "@/lib/outbound/types";
+import { Aquario } from "../aquario";
 import { consoleHref, demoRequested, loadDashboardData, type SearchParams } from "../data";
 import { ConsoleShell } from "../shell";
 import {
@@ -93,6 +94,11 @@ export default async function MorkPage({ searchParams }: { searchParams: Promise
               <Stat label="Ações (7d)" value={fmtInt(atividadesSemana)} hint="tudo que ficou registrado" />
             </dl>
           </Card>
+        </section>
+
+        {/* Aquário para telas menores (nas largas ele mora fixo à direita do console). */}
+        <section aria-label="Aquário do time" className="flex justify-center 2xl:hidden">
+          <Aquario data={data} />
         </section>
 
         <section aria-labelledby="mork-timeline-title">

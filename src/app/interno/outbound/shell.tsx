@@ -4,6 +4,7 @@ import { getOutboundEnv } from "@/lib/outbound/config";
 import { dailyCap, usedTodayCount } from "@/lib/outbound/engine";
 import { evaluateGuardRails } from "@/lib/outbound/guardrails";
 import { orphanScheduled } from "@/lib/outbound/metrics";
+import { Aquario } from "./aquario";
 import { consoleHref, type DashboardData } from "./data";
 import { Code, fmtDateTime, fmtInt, fmtPct } from "./ui";
 
@@ -99,140 +100,150 @@ export function ConsoleShell({
     rails.sent === 0 ? "neutral" : rails.bounceRate < 0.02 ? "ok" : rails.bounceRate < 0.03 ? "warn" : "crit";
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-8">
-      {sessionEmail ? (
-        <div className="mb-4 flex flex-wrap items-center justify-end gap-2 text-xs">
-          <span
-            title="Sessão autenticada do console"
-            className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border px-2.5 py-1 font-medium text-foreground-muted"
-          >
-            <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-current text-success" />
-            <span className="truncate">{sessionEmail}</span>
-          </span>
-          <form action="/interno/logout" method="post">
-            <button
-              type="submit"
-              className="rounded-full px-2.5 py-1 font-semibold text-foreground-muted underline-offset-2 transition-colors hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+    <div className="mx-auto flex max-w-[105rem] justify-center gap-10 px-6 py-8">
+      <div className="w-full max-w-6xl min-w-0">
+        {sessionEmail ? (
+          <div className="mb-4 flex flex-wrap items-center justify-end gap-2 text-xs">
+            <span
+              title="Sessão autenticada do console"
+              className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border px-2.5 py-1 font-medium text-foreground-muted"
             >
-              Sair
-            </button>
-          </form>
-        </div>
-      ) : null}
-
-      {data.isDemo ? (
-        <div className="mb-5 flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-lg border border-warning/60 bg-warning/10 px-4 py-2.5 text-small text-foreground">
-          <span className="rounded-full bg-warning px-2 py-0.5 text-xs font-bold tracking-wide text-background uppercase">
-            Demo
-          </span>
-          <span>
-            Dados simulados por <Code>pnpm outbound:demo</Code> — nenhum número aqui é real.
-          </span>
-          <Link
-            href="/interno/outbound"
-            className="font-semibold text-foreground underline underline-offset-2 hover:text-brand-strong"
-          >
-            Sair do modo demo
-          </Link>
-        </div>
-      ) : null}
-
-      <header className="mb-5 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="eyebrow">{data.settings.empresaNome} · plataforma de vendas</p>
-          <h1 className="mt-1.5 font-display text-h3 font-bold tracking-tight">{title}</h1>
-          {subtitle ? <p className="mt-1 text-small text-foreground-muted">{subtitle}</p> : null}
-        </div>
-        {headerExtra ? <div className="flex flex-wrap items-center gap-2">{headerExtra}</div> : null}
-      </header>
-
-      {/* Fio de saúde: estado operacional sempre visível (assinatura do console). */}
-      <div role="group" aria-label="Saúde da operação" className="mb-5 flex flex-wrap items-center gap-1.5">
-        <HealthPill
-          tone={data.state.armed ? "ok" : "neutral"}
-          title={
-            data.state.armed
-              ? `Automação armada${data.state.armedAt ? ` em ${fmtDateTime(data.state.armedAt)}` : ""} — desarmar pelo console é sempre seguro.`
-              : "Envio real exige armar pela CLI: pnpm outbound:arm arm --confirm (PRD §20)."
-          }
-        >
-          {data.state.armed ? "automação armada" : "automação desarmada"}
-        </HealthPill>
-
-        <HealthPill
-          tone={breakerAt ? "crit" : "neutral"}
-          title={
-            breakerAt
-              ? `${data.state.breakerReason ?? "sem motivo registrado"} · desde ${fmtDateTime(breakerAt)} · religar: pnpm outbound:arm reset-breaker --confirm`
-              : "Pausa automática por complaint ou bounce fora da faixa (PRD §21)."
-          }
-        >
-          {breakerAt ? "breaker disparado" : "breaker ok"}
-        </HealthPill>
-
-        <HealthPill
-          tone={cap > 0 && usados >= cap ? "warn" : "neutral"}
-          title="Envios agendados/feitos hoje sobre o cap do dia (rampa do PRD §17)."
-        >
-          envios hoje {fmtInt(usados)}/{fmtInt(cap)}
-        </HealthPill>
-
-        <HealthPill
-          tone={bounceTone}
-          title="Taxa de bounce global — verde < 2% · âmbar 2–3% · vermelho ≥ 3% (PRD §21)."
-        >
-          bounce {rails.sent > 0 ? `${fmtPct(rails.bounceRate)} · ${fmtInt(rails.bounced)}/${fmtInt(rails.sent)}` : "—"}
-        </HealthPill>
-
-        {rails.complained > 0 ? (
-          <HealthPill tone="crit" title="Qualquer complaint dispara o breaker global (PRD §21).">
-            complaints {fmtInt(rails.complained)}
-          </HealthPill>
+              <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-current text-success" />
+              <span className="truncate">{sessionEmail}</span>
+            </span>
+            <form action="/interno/logout" method="post">
+              <button
+                type="submit"
+                className="rounded-full px-2.5 py-1 font-semibold text-foreground-muted underline-offset-2 transition-colors hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              >
+                Sair
+              </button>
+            </form>
+          </div>
         ) : null}
 
-        {pendings > 0 ? (
+        {data.isDemo ? (
+          <div className="mb-5 flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-lg border border-warning/60 bg-warning/10 px-4 py-2.5 text-small text-foreground">
+            <span className="rounded-full bg-warning px-2 py-0.5 text-xs font-bold tracking-wide text-background uppercase">
+              Demo
+            </span>
+            <span>
+              Dados simulados por <Code>pnpm outbound:demo</Code> — nenhum número aqui é real.
+            </span>
+            <Link
+              href="/interno/outbound"
+              className="font-semibold text-foreground underline underline-offset-2 hover:text-brand-strong"
+            >
+              Sair do modo demo
+            </Link>
+          </div>
+        ) : null}
+
+        <header className="mb-5 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="eyebrow">{data.settings.empresaNome} · plataforma de vendas</p>
+            <h1 className="mt-1.5 font-display text-h3 font-bold tracking-tight">{title}</h1>
+            {subtitle ? <p className="mt-1 text-small text-foreground-muted">{subtitle}</p> : null}
+          </div>
+          {headerExtra ? <div className="flex flex-wrap items-center gap-2">{headerExtra}</div> : null}
+        </header>
+
+        {/* Fio de saúde: estado operacional sempre visível (assinatura do console). */}
+        <div role="group" aria-label="Saúde da operação" className="mb-5 flex flex-wrap items-center gap-1.5">
           <HealthPill
-            tone="crit"
-            title="Run interrompido — resolva com pnpm outbound:send --resolve-pending antes de qualquer envio."
-          >
-            {fmtInt(pendings)} pending
-          </HealthPill>
-        ) : null}
-
-        {orphans > 0 ? (
-          <HealthPill
-            tone="crit"
-            title="E-mails agendados no Resend para contato suprimido ou sequência parada — o cancelamento falhou ou OUTBOUND_RESEND_API_KEY estava ausente. Cancele no painel do Resend (busque pelo destinatário) ou defina a chave e repita a supressão."
-          >
-            {fmtInt(orphans)} agendado(s) órfão(s)
-          </HealthPill>
-        ) : null}
-
-        {demandasPendentes > 0 ? (
-          <HealthPill tone="warn" title="Demandas do time aguardando o MORK assumir (aba Demandas).">
-            {fmtInt(demandasPendentes)} demanda(s) pendente(s)
-          </HealthPill>
-        ) : null}
-      </div>
-
-      <nav aria-label="Seções do console" className="mb-8 flex flex-wrap gap-1 border-b border-border text-small">
-        {TABS.map((tab) => (
-          <Link
-            key={tab.id}
-            href={consoleHref(tab.href, data.isDemo)}
-            aria-current={tab.id === active ? "page" : undefined}
-            className={
-              tab.id === active
-                ? "-mb-px border-b-2 border-brand-strong px-3 py-2 font-semibold text-brand-strong"
-                : "-mb-px border-b-2 border-transparent px-3 py-2 text-foreground-muted hover:text-foreground"
+            tone={data.state.armed ? "ok" : "neutral"}
+            title={
+              data.state.armed
+                ? `Automação armada${data.state.armedAt ? ` em ${fmtDateTime(data.state.armedAt)}` : ""} — desarmar pelo console é sempre seguro.`
+                : "Envio real exige armar pela CLI: pnpm outbound:arm arm --confirm (PRD §20)."
             }
           >
-            {tab.label}
-          </Link>
-        ))}
-      </nav>
+            {data.state.armed ? "automação armada" : "automação desarmada"}
+          </HealthPill>
 
-      <div>{children}</div>
+          <HealthPill
+            tone={breakerAt ? "crit" : "neutral"}
+            title={
+              breakerAt
+                ? `${data.state.breakerReason ?? "sem motivo registrado"} · desde ${fmtDateTime(breakerAt)} · religar: pnpm outbound:arm reset-breaker --confirm`
+                : "Pausa automática por complaint ou bounce fora da faixa (PRD §21)."
+            }
+          >
+            {breakerAt ? "breaker disparado" : "breaker ok"}
+          </HealthPill>
+
+          <HealthPill
+            tone={cap > 0 && usados >= cap ? "warn" : "neutral"}
+            title="Envios agendados/feitos hoje sobre o cap do dia (rampa do PRD §17)."
+          >
+            envios hoje {fmtInt(usados)}/{fmtInt(cap)}
+          </HealthPill>
+
+          <HealthPill
+            tone={bounceTone}
+            title="Taxa de bounce global — verde < 2% · âmbar 2–3% · vermelho ≥ 3% (PRD §21)."
+          >
+            bounce{" "}
+            {rails.sent > 0 ? `${fmtPct(rails.bounceRate)} · ${fmtInt(rails.bounced)}/${fmtInt(rails.sent)}` : "—"}
+          </HealthPill>
+
+          {rails.complained > 0 ? (
+            <HealthPill tone="crit" title="Qualquer complaint dispara o breaker global (PRD §21).">
+              complaints {fmtInt(rails.complained)}
+            </HealthPill>
+          ) : null}
+
+          {pendings > 0 ? (
+            <HealthPill
+              tone="crit"
+              title="Run interrompido — resolva com pnpm outbound:send --resolve-pending antes de qualquer envio."
+            >
+              {fmtInt(pendings)} pending
+            </HealthPill>
+          ) : null}
+
+          {orphans > 0 ? (
+            <HealthPill
+              tone="crit"
+              title="E-mails agendados no Resend para contato suprimido ou sequência parada — o cancelamento falhou ou OUTBOUND_RESEND_API_KEY estava ausente. Cancele no painel do Resend (busque pelo destinatário) ou defina a chave e repita a supressão."
+            >
+              {fmtInt(orphans)} agendado(s) órfão(s)
+            </HealthPill>
+          ) : null}
+
+          {demandasPendentes > 0 ? (
+            <HealthPill tone="warn" title="Demandas do time aguardando o MORK assumir (aba Demandas).">
+              {fmtInt(demandasPendentes)} demanda(s) pendente(s)
+            </HealthPill>
+          ) : null}
+        </div>
+
+        <nav aria-label="Seções do console" className="mb-8 flex flex-wrap gap-1 border-b border-border text-small">
+          {TABS.map((tab) => (
+            <Link
+              key={tab.id}
+              href={consoleHref(tab.href, data.isDemo)}
+              aria-current={tab.id === active ? "page" : undefined}
+              className={
+                tab.id === active
+                  ? "-mb-px border-b-2 border-brand-strong px-3 py-2 font-semibold text-brand-strong"
+                  : "-mb-px border-b-2 border-transparent px-3 py-2 text-foreground-muted hover:text-foreground"
+              }
+            >
+              {tab.label}
+            </Link>
+          ))}
+        </nav>
+
+        <div>{children}</div>
+      </div>
+
+      {/* Aquário: o time do MORK ao vivo (telas largas; a aba MORK cobre as demais). */}
+      <aside className="hidden w-[19.5rem] shrink-0 pt-14 2xl:block">
+        <div className="sticky top-6">
+          <Aquario data={data} />
+        </div>
+      </aside>
     </div>
   );
 }
