@@ -5,6 +5,7 @@ import type {
   CampaignDefinition,
   Contact,
   ContactStatus,
+  Deal,
   Enrollment,
   Reply,
   ReplyClass,
@@ -162,4 +163,109 @@ export function contactStats(contacts: Contact[]): ContactStats {
     byIndustry.set(industria, (byIndustry.get(industria) ?? 0) + 1);
   }
   return { total: contacts.length, byStatus, byVerification, byIndustry };
+}
+
+/* ─── Funil de valor e métricas de reunião (CRM piloto, PRD §29) ─────────────── */
+
+export interface ValueFunnelStage {
+  key: string;
+  label: string;
+  value: number;
+}
+
+/**
+ * A história completa em 8 degraus, por CONTATO único (reuniões por negócio):
+ * Importados → Verificados → Inscritos → Enviados → Entregues → Responderam →
+ * Interessados → Reuniões (negócios que passaram por reuniao_marcada).
+ */
+export function valueFunnel(data: {
+  contacts: Contact[];
+  enrollments: Enrollment[];
+  sends: SendRecord[];
+  replies: Reply[];
+  deals: Deal[];
+}): ValueFunnelStage[] {
+  const uniq = <T>(rows: T[], key: (row: T) => string) => new Set(rows.map(key)).size;
+  return [
+    { key: "importados", label: "Importados", value: data.contacts.length },
+    { key: "verificados", label: "Verificados", value: data.contacts.filter((c) => c.verification === "ok").length },
+    { key: "inscritos", label: "Inscritos", value: uniq(data.enrollments, (e) => e.contactId) },
+    { key: "enviados", label: "Enviados", value: uniq(data.sends.filter(wasSent), (s) => s.contactId) },
+    {
+      key: "entregues",
+      label: "Entregues",
+      value: uniq(
+        data.sends.filter((s) => s.status === "delivered"),
+        (s) => s.contactId,
+      ),
+    },
+    {
+      key: "responderam",
+      label: "Responderam",
+      value: uniq(
+        data.replies.filter((r) => r.classification !== "ooo"),
+        (r) => r.contactId,
+      ),
+    },
+    {
+      key: "interessados",
+      label: "Interessados",
+      value: uniq(
+        data.replies.filter((r) => r.classification === "interested"),
+        (r) => r.contactId,
+      ),
+    },
+    {
+      key: "reunioes",
+      label: "Reuniões",
+      value: data.deals.filter((d) => d.stageHistory.some((h) => h.stage === "reuniao_marcada")).length,
+    },
+  ];
+}
+
+export interface ReplyTimeStats {
+  count: number;
+  meanHours: number;
+  medianHours: number;
+}
+
+/** Horas entre o 1º toque da campanha e a 1ª resposta real de cada contato. */
+export function replyTimeStats(sends: SendRecord[], replies: Reply[]): ReplyTimeStats | null {
+  const firstRealByContact = new Map<string, Reply>();
+  for (const r of replies) {
+    if (r.classification === "ooo") continue;
+    const prev = firstRealByContact.get(r.contactId);
+    if (!prev || r.receivedAt < prev.receivedAt) firstRealByContact.set(r.contactId, r);
+  }
+  const deltas: number[] = [];
+  for (const reply of firstRealByContact.values()) {
+    const first = sends
+      .filter((s) => s.contactId === reply.contactId && s.campaignSlug === reply.campaignSlug && s.sentAt)
+      .map((s) => s.sentAt as string)
+      .sort()[0];
+    if (!first) continue;
+    const hours = (Date.parse(reply.receivedAt) - Date.parse(first)) / 3_600_000;
+    if (hours >= 0) deltas.push(hours);
+  }
+  if (deltas.length === 0) return null;
+  deltas.sort((a, b) => a - b);
+  const mean = deltas.reduce((sum, v) => sum + v, 0) / deltas.length;
+  const mid = Math.floor(deltas.length / 2);
+  const median = deltas.length % 2 === 1 ? deltas[mid]! : (deltas[mid - 1]! + deltas[mid]!) / 2;
+  return { count: deltas.length, meanHours: mean, medianHours: median };
+}
+
+export interface MeetingStats {
+  /** Negócios que passaram por reuniao_marcada (métrica norte). */
+  geradas: number;
+  realizadas: number;
+  /** geradas / contatos interessados; null sem interessados. */
+  taxaInteressadoReuniao: number | null;
+}
+
+export function meetingStats(deals: Deal[], replies: Reply[]): MeetingStats {
+  const geradas = deals.filter((d) => d.stageHistory.some((h) => h.stage === "reuniao_marcada")).length;
+  const realizadas = deals.filter((d) => d.stageHistory.some((h) => h.stage === "reuniao_realizada")).length;
+  const interessados = new Set(replies.filter((r) => r.classification === "interested").map((r) => r.contactId)).size;
+  return { geradas, realizadas, taxaInteressadoReuniao: interessados > 0 ? geradas / interessados : null };
 }

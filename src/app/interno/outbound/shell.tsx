@@ -13,14 +13,30 @@ import { Code, fmtDateTime, fmtInt, fmtPct } from "./ui";
  * Contrato estável — as páginas passam `data` e a aba ativa.
  */
 
-export type ConsoleTab = "visao-geral" | "campanha" | "contatos" | "respostas" | "atividade" | "supressao";
+export type ConsoleTab =
+  | "visao-geral"
+  | "hoje"
+  | "pipeline"
+  | "campanha"
+  | "contatos"
+  | "respostas"
+  | "atividade"
+  | "demandas"
+  | "mork"
+  | "supressao"
+  | "configuracao";
 
 const TABS: Array<{ id: ConsoleTab; label: string; href: string }> = [
   { id: "visao-geral", label: "Visão geral", href: "/interno/outbound" },
+  { id: "hoje", label: "Hoje", href: "/interno/outbound/hoje" },
+  { id: "pipeline", label: "Pipeline", href: "/interno/outbound/pipeline" },
   { id: "contatos", label: "Contatos", href: "/interno/outbound/contatos" },
   { id: "respostas", label: "Respostas", href: "/interno/outbound/respostas" },
   { id: "atividade", label: "Atividade", href: "/interno/outbound/atividade" },
+  { id: "demandas", label: "Demandas", href: "/interno/outbound/demandas" },
+  { id: "mork", label: "MORK", href: "/interno/outbound/mork" },
   { id: "supressao", label: "Supressão", href: "/interno/outbound/supressao" },
+  { id: "configuracao", label: "Configuração", href: "/interno/outbound/configuracao" },
 ];
 
 export interface ConsoleShellProps {
@@ -75,6 +91,7 @@ export function ConsoleShell({
   const usados = usedTodayCount(data.sends, now, env.utcOffset);
   const pendings = data.sends.filter((s) => s.status === "pending").length;
   const orphans = orphanScheduled(data.sends, data.contacts, data.enrollments).length;
+  const demandasPendentes = data.demands.filter((d) => d.status === "pendente").length;
   const breakerAt = data.state.breakerTrippedAt;
 
   // Faixas do PRD §21 (mesmas do BounceChip): verde < 2% · âmbar 2–3% · vermelho ≥ 3%.
@@ -122,7 +139,7 @@ export function ConsoleShell({
 
       <header className="mb-5 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="eyebrow">Dreamy Outbound</p>
+          <p className="eyebrow">{data.settings.empresaNome} · plataforma de vendas</p>
           <h1 className="mt-1.5 font-display text-h3 font-bold tracking-tight">{title}</h1>
           {subtitle ? <p className="mt-1 text-small text-foreground-muted">{subtitle}</p> : null}
         </div>
@@ -188,6 +205,12 @@ export function ConsoleShell({
             title="E-mails agendados no Resend para contato suprimido ou sequência parada — o cancelamento falhou ou OUTBOUND_RESEND_API_KEY estava ausente. Cancele no painel do Resend (busque pelo destinatário) ou defina a chave e repita a supressão."
           >
             {fmtInt(orphans)} agendado(s) órfão(s)
+          </HealthPill>
+        ) : null}
+
+        {demandasPendentes > 0 ? (
+          <HealthPill tone="warn" title="Demandas do time aguardando o MORK assumir (aba Demandas).">
+            {fmtInt(demandasPendentes)} demanda(s) pendente(s)
           </HealthPill>
         ) : null}
       </div>

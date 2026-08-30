@@ -6,6 +6,7 @@ import { logger } from "@/lib/observability/logger";
 import { requireSession } from "@/lib/outbound/auth";
 import { cancelScheduledSends } from "@/lib/outbound/cancel";
 import { getOutboundEnv } from "@/lib/outbound/config";
+import { ensureFollowUpTask, reconcileDeals } from "@/lib/outbound/crm-core";
 import { applyOptOut, applyReply } from "@/lib/outbound/ops-core";
 import { createResendClient, type ResendClient } from "@/lib/outbound/resend";
 import { openStore, runExclusive, type OutboundStore } from "@/lib/outbound/store";
@@ -153,6 +154,16 @@ export async function registerReplyAction(formData: FormData): Promise<void> {
   if (!REPLY_CLASSES.has(classification)) throw new Error(`Classificação inválida: ${classification}.`);
   const notes = (formData.get("notes") as string | null)?.trim() || undefined;
   const suppress = formData.get("suppress") === "1";
+  // Registro retroativo (opcional): "YYYY-MM-DDTHH:MM" do datetime-local vira ISO no fuso de envio.
+  const receivedAtRaw = (formData.get("receivedAt") as string | null)?.trim() || undefined;
+  let receivedAt = new Date().toISOString();
+  if (receivedAtRaw) {
+    const iso = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(receivedAtRaw) ? `${receivedAtRaw}:00-03:00` : receivedAtRaw;
+    const parsed = new Date(iso);
+    if (Number.isNaN(parsed.getTime())) throw new Error("Data de recebimento inválida.");
+    receivedAt = parsed.toISOString();
+  }
+  const campaignSlug = (formData.get("campaignSlug") as string | null)?.trim() || undefined;
   await withContext(formData, "console-reply", async ({ store, isDemo, client }) => {
     const contacts = await store.contacts();
     const contact = contacts.find((c) => c.id === contactId);
@@ -163,7 +174,8 @@ export async function registerReplyAction(formData: FormData): Promise<void> {
       enrollments,
       classification: classification as ReplyClass,
       notes,
-      receivedAt: new Date().toISOString(),
+      receivedAt,
+      campaignSlug,
     });
     const replies = await store.replies();
     replies.push(result.reply);
@@ -195,6 +207,20 @@ export async function registerReplyAction(formData: FormData): Promise<void> {
       });
       await store.saveSends(sends);
       await store.saveEnrollments(finalEnrollments);
+    }
+    // CRM piloto (PRD §29): interessado ganha tarefa de follow-up; o pipeline acompanha a resposta.
+    if (classification === "interested") {
+      const tasks = await store.tasks();
+      const task = ensureFollowUpTask(tasks, { contactId: contact.id });
+      if (task) {
+        tasks.push(task);
+        await store.saveTasks(tasks);
+      }
+    }
+    if (classification !== "ooo") {
+      const deals = await store.deals();
+      const crm = reconcileDeals({ contacts, enrollments: finalEnrollments, sends, replies, deals });
+      if (crm.created > 0 || crm.advanced > 0) await store.saveDeals(crm.deals);
     }
     logger.info("outbound.console.reply", { contactId, classification, suppress, isDemo });
   });

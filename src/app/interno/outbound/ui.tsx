@@ -2,10 +2,14 @@ import type { ReactNode } from "react";
 import type { DailySendPoint } from "@/lib/outbound/metrics";
 import { cn } from "@/lib/utils/cn";
 import type {
+  AgentActivityKind,
   CampaignDefinition,
   CampaignRuntime,
   Contact,
   ContactStatus,
+  DealStage,
+  DemandKind,
+  DemandStatus,
   OutboundEventType,
   ReplyClass,
   SendRecord,
@@ -47,6 +51,12 @@ export function fmtInt(n: number): string {
 
 export function fmtPct(rate: number): string {
   return pctFmt.format(rate);
+}
+
+const brlFmt = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+
+export function fmtBRL(value: number): string {
+  return brlFmt.format(value);
 }
 
 export function fmtDateTime(iso: string): string {
@@ -193,6 +203,65 @@ export const REPLY_CLASS_TONES: Record<ReplyClass, ChipTone> = {
   negative: "error",
   ooo: "outline",
   other: "neutral",
+};
+
+// ─── Pipeline de negócios (CRM piloto, PRD §29) ──────────────────────────────
+
+export const DEAL_STAGE_LABELS: Record<DealStage, string> = {
+  novo: "novo",
+  contatado: "contatado",
+  respondeu: "respondeu",
+  reuniao_marcada: "reunião marcada",
+  reuniao_realizada: "reunião realizada",
+  proposta: "proposta",
+  ganho: "ganho",
+  perdido: "perdido",
+};
+
+export const DEAL_STAGE_TONES: Record<DealStage, ChipTone> = {
+  novo: "outline",
+  contatado: "neutral",
+  respondeu: "brand",
+  reuniao_marcada: "success",
+  reuniao_realizada: "success",
+  proposta: "brand",
+  ganho: "success",
+  perdido: "error",
+};
+
+// ─── Demandas e prestação de contas do MORK (PRD §29) ────────────────────────
+
+export const DEMAND_STATUS_LABELS: Record<DemandStatus, string> = {
+  pendente: "pendente",
+  em_andamento: "em andamento",
+  concluida: "concluída",
+  recusada: "recusada",
+  cancelada: "cancelada",
+};
+
+export const DEMAND_STATUS_TONES: Record<DemandStatus, ChipTone> = {
+  pendente: "warning",
+  em_andamento: "brand",
+  concluida: "success",
+  recusada: "neutral",
+  cancelada: "neutral",
+};
+
+export const DEMAND_KIND_LABELS: Record<DemandKind, string> = {
+  copy: "copy",
+  leads: "leads",
+  analise: "análise",
+  resposta: "respostas",
+  operacao: "operação",
+  outra: "outra",
+};
+
+export const AGENT_ACTIVITY_LABELS: Record<AgentActivityKind, string> = {
+  demanda: "demanda",
+  briefing: "briefing",
+  sugestao: "sugestão",
+  crm: "CRM",
+  observacao: "observação",
 };
 
 // ─── Status de campanha (definição versionada + runtime do store) ────────────
@@ -408,6 +477,39 @@ function BarRow({ label, value, max, color }: { label: string; value: number; ma
         {pct > 0 ? <rect x="0" y="0" width={pct} height="8" fill={color} /> : null}
       </svg>
       <span className="text-right text-xs font-semibold text-foreground tabular-nums">{fmtInt(value)}</span>
+    </div>
+  );
+}
+
+/** Funil de valor (8 degraus, visão geral): barras horizontais em SVG puro. */
+export function ValueFunnel({ stages }: { stages: Array<{ key: string; label: string; value: number }> }) {
+  const max = Math.max(1, ...stages.map((s) => s.value));
+  return (
+    <div className="flex flex-col gap-1.5">
+      {stages.map((stage, i) => (
+        <div key={stage.key} className="grid grid-cols-[7.5rem_1fr_3.5rem] items-center gap-3">
+          <span className="text-xs text-foreground-muted">{stage.label}</span>
+          <svg
+            viewBox="0 0 100 8"
+            preserveAspectRatio="none"
+            className="h-2.5 w-full"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <rect x="0" y="0" width="100" height="8" fill="var(--background-secondary)" />
+            {stage.value > 0 ? (
+              <rect
+                x="0"
+                y="0"
+                width={Math.max((stage.value / max) * 100, 1)}
+                height="8"
+                fill={i >= stages.length - 2 ? "var(--brand-strong)" : "var(--brand-primary)"}
+              />
+            ) : null}
+          </svg>
+          <span className="text-right text-xs font-semibold text-foreground tabular-nums">{fmtInt(stage.value)}</span>
+        </div>
+      ))}
     </div>
   );
 }

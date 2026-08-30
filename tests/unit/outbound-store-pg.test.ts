@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createPgliteSqlClient, ensureSchema, type SqlClient } from "../../src/lib/outbound/sql";
 import { acquireDbLock, createPgStore, releaseDbLock } from "../../src/lib/outbound/store-pg";
 import type { OutboundStore } from "../../src/lib/outbound/store";
-import type { Contact } from "../../src/lib/outbound/types";
+import type { Contact, Deal, Demand, WorkspaceSettings } from "../../src/lib/outbound/types";
 
 let db: PGlite;
 let client: SqlClient;
@@ -80,6 +80,47 @@ describe("store Postgres — coleções", () => {
   it("runtimes de campanha usam o slug como id", async () => {
     await store.saveCampaignRuntimes([{ slug: "x", approvedAt: "2026-09-01T12:00:00Z" }]);
     expect((await store.campaignRuntimes())[0]?.slug).toBe("x");
+  });
+
+  it("coleções do CRM fazem roundtrip e settings é singleton regravável", async () => {
+    const deal: Deal = {
+      id: "d1",
+      contactId: "c9",
+      campaignSlug: "construcao-nova-receita",
+      empresa: "Construtora X",
+      stage: "respondeu",
+      autoStage: "respondeu",
+      stageHistory: [{ stage: "novo", at: "2026-08-20T12:00:00Z", by: "sistema" }],
+      stageChangedAt: "2026-08-25T12:00:00Z",
+      stageChangedBy: "sistema",
+      createdAt: "2026-08-20T12:00:00Z",
+    };
+    await store.saveDeals([deal]);
+    expect((await store.deals())[0]?.stageHistory[0]?.stage).toBe("novo");
+
+    const demand: Demand = {
+      id: "dm1",
+      title: "Segmentar lista de obras",
+      kind: "leads",
+      status: "pendente",
+      priority: "alta",
+      createdBy: "console",
+      createdAt: "2026-08-30T12:00:00Z",
+    };
+    await store.saveDemands([demand]);
+    expect((await store.demands())[0]?.kind).toBe("leads");
+
+    const ws: WorkspaceSettings = {
+      id: "workspace",
+      empresaNome: "Dreamy",
+      ofertas: [{ anchor: "sistema", titulo: "Sistemas Sob Medida", descricao: "Sistema para o processo da casa." }],
+      atualizadoEm: "2026-08-30T12:00:00Z",
+    };
+    await store.saveWorkspaceSettings([ws]);
+    await store.saveWorkspaceSettings([{ ...ws, empresaNome: "Cliente Piloto" }]);
+    const rows = await store.workspaceSettings();
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.empresaNome).toBe("Cliente Piloto");
   });
 });
 

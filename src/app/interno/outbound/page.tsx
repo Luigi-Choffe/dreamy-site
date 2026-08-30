@@ -6,9 +6,17 @@ import { requireSession } from "@/lib/outbound/auth";
 import { getOutboundEnv, rampCap } from "@/lib/outbound/config";
 import { dailyCap, usedTodayCount } from "@/lib/outbound/engine";
 import { evaluateGuardRails } from "@/lib/outbound/guardrails";
-import { campaignMetrics, contactStats, dailySendSeries } from "@/lib/outbound/metrics";
+import {
+  campaignMetrics,
+  contactStats,
+  dailySendSeries,
+  meetingStats,
+  replyTimeStats,
+  valueFunnel,
+} from "@/lib/outbound/metrics";
 import type { ContactStatus, SuppressionReason, VerificationStatus } from "@/lib/outbound/types";
 import { disarmAction } from "./actions";
+import { BriefingCard } from "./briefing-card";
 import { consoleHref, demoRequested, loadDashboardData, type SearchParams } from "./data";
 import { ConsoleShell } from "./shell";
 import {
@@ -30,6 +38,7 @@ import {
   REPLY_CLASS_LABELS,
   Stat,
   SUPPRESSION_REASON_LABELS,
+  ValueFunnel,
   VERIFICATION_LABELS,
 } from "./ui";
 
@@ -186,6 +195,12 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
     m: campaignMetrics(def.slug, data),
   }));
 
+  // CRM piloto: funil de valor, reuniões e briefing (PRD §29).
+  const funil = valueFunnel(data);
+  const reunioes = meetingStats(data.deals, data.replies);
+  const tempoResposta = replyTimeStats(data.sends, data.replies);
+  const lastBriefing = [...data.briefings].sort((a, b) => b.generatedAt.localeCompare(a.generatedAt))[0];
+
   // Slugs presentes no store sem definição no registro (honestidade > silêncio).
   const knownSlugs = new Set(data.defs.map((c) => c.slug));
   const orphanSlugs = [...new Set([...data.enrollments, ...data.sends].map((row) => row.campaignSlug))]
@@ -209,6 +224,12 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
                 hint="respostas classificadas como interessado"
               />
               <Stat
+                label="Reuniões"
+                value={fmtInt(reunioes.geradas)}
+                tone={reunioes.geradas > 0 ? "success" : "default"}
+                hint="negócios que chegaram a reunião marcada"
+              />
+              <Stat
                 label="Taxa de resposta"
                 value={replyRate === null ? "—" : fmtPct(replyRate)}
                 hint={
@@ -225,6 +246,43 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
               <Metric label="Respostas" value={fmtInt(data.replies.length)} />
             </dl>
           </Card>
+        </section>
+
+        {/* 1b. Funil de valor + briefing do MORK (CRM piloto, PRD §29). */}
+        <section aria-labelledby="funil-valor-title">
+          <h2 id="funil-valor-title" className={SECTION_TITLE}>
+            Funil de valor
+          </h2>
+          <div className="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(18rem,2fr)] lg:items-start">
+            <Card padding="sm">
+              <ValueFunnel stages={funil} />
+              <p className="mt-3 border-t border-border pt-3 text-xs text-foreground-subtle tabular-nums">
+                Reuniões: {fmtInt(reunioes.geradas)} marcada(s) · {fmtInt(reunioes.realizadas)} realizada(s)
+                {reunioes.taxaInteressadoReuniao !== null
+                  ? ` · ${fmtPct(reunioes.taxaInteressadoReuniao)} dos interessados viram reunião`
+                  : ""}
+                {tempoResposta
+                  ? ` · 1ª resposta em ${
+                      tempoResposta.medianHours < 48
+                        ? `${Math.round(tempoResposta.medianHours)} h`
+                        : `${Math.round(tempoResposta.medianHours / 24)} d`
+                    } (mediana)`
+                  : ""}
+              </p>
+            </Card>
+            <BriefingCard
+              isDemo={isDemo}
+              initial={
+                lastBriefing
+                  ? {
+                      content: lastBriefing.content,
+                      label: `${fmtDateTime(lastBriefing.generatedAt)}${lastBriefing.demo ? " · exemplo" : ""}`,
+                      model: lastBriefing.model,
+                    }
+                  : null
+              }
+            />
+          </div>
         </section>
 
         {/* 2. Envios por dia. */}

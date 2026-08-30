@@ -2,9 +2,15 @@ import path from "node:path";
 import { campaigns } from "@/content/outbound";
 import { openStore } from "@/lib/outbound/store";
 import type {
+  AgentActivity,
+  AiBriefing,
   CampaignDefinition,
   CampaignRuntime,
   Contact,
+  CrmNote,
+  CrmTask,
+  Deal,
+  Demand,
   Enrollment,
   ImportBatch,
   OutboundEvent,
@@ -12,6 +18,7 @@ import type {
   Reply,
   SendRecord,
   Suppression,
+  WorkspaceSettings,
 } from "@/lib/outbound/types";
 
 /**
@@ -44,6 +51,33 @@ export function consoleHref(pathname: string, isDemo: boolean, extra?: Record<st
   return qs ? `${pathname}?${qs}` : pathname;
 }
 
+/** Defaults de marca quando o documento singleton ainda não existe no store. */
+export function defaultWorkspaceSettings(): WorkspaceSettings {
+  return {
+    id: "workspace",
+    empresaNome: "Dreamy",
+    operadorNome: "Luigi Choffe",
+    ofertas: [
+      {
+        anchor: "nova-receita",
+        titulo: "Nova Receita Digital",
+        descricao: "Produto digital que cria uma linha de receita nova para a operação.",
+      },
+      {
+        anchor: "sistema",
+        titulo: "Sistemas Sob Medida",
+        descricao: "Sistema feito para o processo da casa, no lugar de planilha e retrabalho.",
+      },
+      {
+        anchor: "agente-ia",
+        titulo: "Agentes de IA",
+        descricao: "Agentes que tiram trabalho repetitivo do time, sempre com controle humano.",
+      },
+    ],
+    atualizadoEm: new Date(0).toISOString(),
+  };
+}
+
 export interface DashboardData {
   isDemo: boolean;
   defs: CampaignDefinition[];
@@ -56,11 +90,35 @@ export interface DashboardData {
   runtimes: CampaignRuntime[];
   imports: ImportBatch[];
   state: OutboundState;
+  deals: Deal[];
+  notes: CrmNote[];
+  tasks: CrmTask[];
+  demands: Demand[];
+  agentActivities: AgentActivity[];
+  briefings: AiBriefing[];
+  settings: WorkspaceSettings;
 }
 
 export async function loadDashboardData(isDemo: boolean): Promise<DashboardData> {
   const store = isDemo ? openStore(demoDir()) : openStore();
-  const [contacts, enrollments, sends, suppressions, replies, events, runtimes, imports, state] = await Promise.all([
+  const [
+    contacts,
+    enrollments,
+    sends,
+    suppressions,
+    replies,
+    events,
+    runtimes,
+    imports,
+    state,
+    deals,
+    notes,
+    tasks,
+    demands,
+    agentActivities,
+    briefings,
+    settingsRows,
+  ] = await Promise.all([
     store.contacts(),
     store.enrollments(),
     store.sends(),
@@ -70,6 +128,13 @@ export async function loadDashboardData(isDemo: boolean): Promise<DashboardData>
     store.campaignRuntimes(),
     store.imports(),
     store.state(),
+    store.deals(),
+    store.notes(),
+    store.tasks(),
+    store.demands(),
+    store.agentActivities(),
+    store.briefings(),
+    store.workspaceSettings(),
   ]);
   return {
     isDemo,
@@ -83,5 +148,12 @@ export async function loadDashboardData(isDemo: boolean): Promise<DashboardData>
     runtimes,
     imports,
     state,
+    deals,
+    notes,
+    tasks,
+    demands,
+    agentActivities,
+    briefings,
+    settings: settingsRows[0] ?? defaultWorkspaceSettings(),
   };
 }

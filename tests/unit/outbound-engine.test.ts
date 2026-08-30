@@ -17,6 +17,7 @@ const NOW = new Date("2026-09-01T13:00:00Z");
 const ENV: OutboundEnv = {
   apiKey: null,
   from: null,
+  anthropicKey: null,
   replyTo: "vendas@dreamy.app.br",
   utcOffset: "-03:00",
   window: { startMin: 9 * 60, endMin: 17 * 60 + 30 },

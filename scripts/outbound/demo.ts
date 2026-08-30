@@ -13,12 +13,17 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { campaigns } from "../../src/content/outbound";
 import { isBusinessDay, isoAtLocalMinute, sendDateKey } from "../../src/lib/outbound/config";
+import { applyStageMove, reconcileDeals } from "../../src/lib/outbound/crm-core";
 import { campaignContentHash } from "../../src/lib/outbound/render";
 import { openStore, runExclusive } from "../../src/lib/outbound/store";
 import type {
+  AgentActivity,
   CampaignDefinition,
   CampaignRuntime,
   Contact,
+  CrmNote,
+  CrmTask,
+  Demand,
   Enrollment,
   EnrollmentStatus,
   ImportBatch,
@@ -170,6 +175,13 @@ async function main(): Promise<void> {
     "suppressions.json",
     "replies.json",
     "imports.json",
+    "deals.json",
+    "notes.json",
+    "tasks.json",
+    "demands.json",
+    "agent-activities.json",
+    "briefings.json",
+    "settings.json",
     "events.jsonl",
     "config.json",
   ];
@@ -540,6 +552,260 @@ async function main(): Promise<void> {
   }
   await store.saveState({ armed: false, firstSendAt });
 
+  // CRM piloto (PRD §29): a história completa por cima do outbound simulado ---
+  // IMPORTANTE: este bloco roda DEPOIS de toda a simulação acima e não consome o
+  // PRNG antes dela — a sequência dos dados existentes continua idêntica (e2e).
+  const { deals } = reconcileDeals({ contacts, enrollments: enrollmentRows, sends, replies, deals: [] }, now);
+  const interessadosIds = [
+    ...new Set(replies.filter((r) => r.classification === "interested").map((r) => r.contactId)),
+  ];
+  const [i0, i1, i2, i3, i4] = interessadosIds;
+  const dealBy = (cid?: string) => (cid ? deals.find((d) => d.contactId === cid) : undefined);
+
+  const d0 = dealBy(i0);
+  if (d0) {
+    // Reunião AGENDADA para os próximos dias úteis.
+    applyStageMove(d0, {
+      to: "reuniao_marcada",
+      by: "demo",
+      reuniaoEm: isoAtLocalMinute(businessDateKeyAfter(2), 10 * 60, UTC_OFFSET),
+      valorEstimado: 45_000,
+      now: dateAt(SIM_DAYS - 1),
+    });
+  }
+  const d1 = dealBy(i1);
+  if (d1) {
+    // Reunião realizada e proposta na mesa.
+    applyStageMove(d1, {
+      to: "reuniao_marcada",
+      by: "demo",
+      reuniaoEm: isoAt(SIM_DAYS - 4, 14 * 60),
+      now: dateAt(SIM_DAYS - 5),
+    });
+    applyStageMove(d1, { to: "reuniao_realizada", by: "demo", now: dateAt(SIM_DAYS - 4) });
+    applyStageMove(d1, { to: "proposta", by: "demo", valorEstimado: 80_000, now: dateAt(SIM_DAYS - 2) });
+  }
+  const d2 = dealBy(i2);
+  if (d2) {
+    // Ciclo completo até ganho.
+    applyStageMove(d2, {
+      to: "reuniao_marcada",
+      by: "demo",
+      reuniaoEm: isoAt(SIM_DAYS - 8, 11 * 60),
+      now: dateAt(SIM_DAYS - 9),
+    });
+    applyStageMove(d2, { to: "reuniao_realizada", by: "demo", now: dateAt(SIM_DAYS - 8) });
+    applyStageMove(d2, { to: "ganho", by: "demo", valorEstimado: 120_000, now: dateAt(SIM_DAYS - 3) });
+  }
+  const d3 = dealBy(i3);
+  if (d3) {
+    applyStageMove(d3, {
+      to: "perdido",
+      by: "demo",
+      motivo: "fechou com o fornecedor atual",
+      now: dateAt(SIM_DAYS - 2),
+    });
+  }
+  await store.saveDeals(deals);
+
+  const todayDemoKey = sendDateKey(now, UTC_OFFSET);
+  const tasks: CrmTask[] = [
+    {
+      id: "demo-task-01",
+      titulo: "Responder e propor reunião",
+      contactId: i4 ?? i0,
+      dueDate: sendDateKey(dateAt(SIM_DAYS - 2), UTC_OFFSET),
+      status: "aberta",
+      origin: "regra",
+      createdBy: "sistema",
+      createdAt: isoAt(SIM_DAYS - 2, 10 * 60),
+    },
+    {
+      id: "demo-task-02",
+      titulo: "Confirmar a reunião e enviar convite",
+      contactId: i0,
+      dueDate: todayDemoKey,
+      status: "aberta",
+      origin: "manual",
+      createdBy: "demo@dreamy.test",
+      createdAt: isoAt(SIM_DAYS, 9 * 60),
+    },
+    {
+      id: "demo-task-03",
+      titulo: "Enviar proposta comentada",
+      contactId: i1,
+      dueDate: businessDateKeyAfter(3),
+      status: "aberta",
+      origin: "manual",
+      createdBy: "demo@dreamy.test",
+      createdAt: isoAt(SIM_DAYS, 9 * 60 + 30),
+    },
+    {
+      id: "demo-task-04",
+      titulo: "Preparar estudo de caso do setor",
+      contactId: i2,
+      dueDate: sendDateKey(dateAt(SIM_DAYS - 3), UTC_OFFSET),
+      status: "concluida",
+      origin: "manual",
+      createdBy: "demo@dreamy.test",
+      createdAt: isoAt(SIM_DAYS - 5, 15 * 60),
+      doneAt: isoAt(SIM_DAYS - 3, 16 * 60),
+    },
+  ];
+  await store.saveTasks(tasks);
+
+  const notes: CrmNote[] = [];
+  if (i0) {
+    notes.push({
+      id: "demo-note-01",
+      contactId: i0,
+      dealId: d0?.id,
+      authorEmail: "demo@dreamy.test",
+      body: "quer ver casos parecidos antes da call; levar números de prazo",
+      origin: "manual",
+      createdAt: isoAt(SIM_DAYS - 1, 17 * 60),
+    });
+  }
+  if (i1) {
+    notes.push({
+      id: "demo-note-02",
+      contactId: i1,
+      dealId: d1?.id,
+      authorEmail: "demo@dreamy.test",
+      body: "decisor final é o sócio; proposta precisa caber no orçamento do trimestre",
+      origin: "ia",
+      createdAt: isoAt(SIM_DAYS - 4, 16 * 60),
+    });
+  }
+  await store.saveNotes(notes);
+
+  const demands: Demand[] = [
+    {
+      id: "demo-dem-01",
+      title: "Nova lista: obras para terceiros",
+      kind: "leads",
+      status: "pendente",
+      priority: "alta",
+      createdBy: "demo@dreamy.test",
+      createdAt: isoAt(SIM_DAYS, 9 * 60 + 5),
+    },
+    {
+      id: "demo-dem-02",
+      title: "Campanha para serviços de engenharia",
+      kind: "copy",
+      status: "em_andamento",
+      priority: "normal",
+      createdBy: "demo@dreamy.test",
+      createdAt: isoAt(SIM_DAYS - 2, 10 * 60),
+      claimedBy: "mork",
+      claimedAt: isoAt(SIM_DAYS - 1, 9 * 60),
+    },
+    {
+      id: "demo-dem-03",
+      title: "Relatório da primeira semana",
+      kind: "analise",
+      status: "concluida",
+      priority: "normal",
+      createdBy: "demo@dreamy.test",
+      createdAt: isoAt(SIM_DAYS - 6, 11 * 60),
+      claimedBy: "mork",
+      claimedAt: isoAt(SIM_DAYS - 6, 14 * 60),
+      doneAt: isoAt(SIM_DAYS - 5, 9 * 60),
+      resolution: "relatório entregue com recomendação do próximo segmento",
+    },
+    {
+      id: "demo-dem-04",
+      title: "Comprar lista pronta de e-mails",
+      kind: "leads",
+      status: "recusada",
+      priority: "normal",
+      createdBy: "demo@dreamy.test",
+      createdAt: isoAt(SIM_DAYS - 8, 15 * 60),
+      doneAt: isoAt(SIM_DAYS - 8, 16 * 60),
+      resolution: "lista comprada queima o domínio; leads só com trabalho de ICP",
+    },
+    {
+      id: "demo-dem-05",
+      title: "Post para redes sociais",
+      kind: "outra",
+      status: "cancelada",
+      priority: "normal",
+      createdBy: "demo@dreamy.test",
+      createdAt: isoAt(SIM_DAYS - 4, 10 * 60),
+      doneAt: isoAt(SIM_DAYS - 4, 12 * 60),
+    },
+  ];
+  await store.saveDemands(demands);
+
+  const activities: AgentActivity[] = [
+    {
+      id: "demo-act-01",
+      actor: "mork",
+      kind: "crm",
+      summary: `Pipeline sincronizado: ${deals.length} negócio(s) criados a partir do outbound.`,
+      at: isoAt(SIM_DAYS - 1, 9 * 60 + 10),
+    },
+    {
+      id: "demo-act-02",
+      actor: "mork",
+      kind: "demanda",
+      summary: "Assumiu a demanda: Campanha para serviços de engenharia",
+      refs: { demandId: "demo-dem-02" },
+      at: isoAt(SIM_DAYS - 1, 9 * 60 + 20),
+    },
+    {
+      id: "demo-act-03",
+      actor: "console",
+      kind: "demanda",
+      summary: "Demanda criada: Nova lista: obras para terceiros",
+      refs: { demandId: "demo-dem-01" },
+      at: isoAt(SIM_DAYS, 9 * 60 + 5),
+    },
+    {
+      id: "demo-act-04",
+      actor: "mork",
+      kind: "briefing",
+      summary: "Briefing do dia gerado (exemplo).",
+      at: isoAt(SIM_DAYS, 8 * 60 + 50),
+    },
+  ];
+  await store.saveAgentActivities(activities);
+
+  await store.saveBriefings([
+    {
+      id: "demo-brief-01",
+      dateKey: todayDemoKey,
+      generatedAt: isoAt(SIM_DAYS, 8 * 60 + 50),
+      generatedBy: "demo",
+      model: "exemplo",
+      demo: true,
+      content:
+        "Dia bom para vender: 2 reuniões no radar e 1 proposta aberta de R$ 80 mil. O funil segue saudável, com entregas altas e bounce controlado. Risco do dia: 1 follow-up vencido; interessado sem resposta esfria rápido. Ação mais importante: confirmar a reunião marcada e responder o interessado mais recente. (Conteúdo de demonstração, gerado sem IA.)",
+    },
+  ]);
+
+  await store.saveWorkspaceSettings([
+    {
+      id: "workspace",
+      empresaNome: "Construtora Demo",
+      operadorNome: "Equipe Demo",
+      ofertas: [
+        {
+          anchor: "nova-receita",
+          titulo: "Nova Receita Digital",
+          descricao: "Produto digital que cria linha de receita nova.",
+        },
+        {
+          anchor: "sistema",
+          titulo: "Sistemas Sob Medida",
+          descricao: "Sistema para o processo da casa, sem planilha.",
+        },
+        { anchor: "agente-ia", titulo: "Agentes de IA", descricao: "Agentes que tiram trabalho repetitivo do time." },
+      ],
+      atualizadoEm: isoAt(SIM_DAYS - 10, 12 * 60),
+    },
+  ]);
+
   // Resumo -------------------------------------------------------------------
   const count = (st: SendStatus) => sends.filter((s) => s.status === st).length;
   const contactCount = (st: Contact["status"]) => contacts.filter((c) => c.status === st).length;
@@ -558,6 +824,9 @@ async function main(): Promise<void> {
   console.log(`  respostas:   ${replies.length} (${interested} interessados)`);
   console.log(`  supressões:  ${suppressionEntries.length}`);
   console.log(`  eventos:     ${events.length}`);
+  console.log(
+    `  crm:         ${deals.length} negócios · ${tasks.length} tarefas · ${demands.length} demandas · 1 briefing de exemplo`,
+  );
   console.log("");
   console.log("Abra o console: pnpm dev e acesse /interno/outbound?demo=1");
 }

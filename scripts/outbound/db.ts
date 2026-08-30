@@ -39,6 +39,27 @@ async function copyStore(from: OutboundStore, to: OutboundStore): Promise<Record
   const imports = await from.imports();
   await to.saveImports(imports);
   counts.imports = imports.length;
+  const deals = await from.deals();
+  await to.saveDeals(deals);
+  counts.deals = deals.length;
+  const notes = await from.notes();
+  await to.saveNotes(notes);
+  counts.notes = notes.length;
+  const tasks = await from.tasks();
+  await to.saveTasks(tasks);
+  counts.tasks = tasks.length;
+  const demands = await from.demands();
+  await to.saveDemands(demands);
+  counts.demands = demands.length;
+  const agentActivities = await from.agentActivities();
+  await to.saveAgentActivities(agentActivities);
+  counts.agentActivities = agentActivities.length;
+  const briefings = await from.briefings();
+  await to.saveBriefings(briefings);
+  counts.briefings = briefings.length;
+  const settings = await from.workspaceSettings();
+  await to.saveWorkspaceSettings(settings);
+  counts.settings = settings.length;
   let suppressed = 0;
   for (const s of await from.suppressions()) {
     if (await to.suppress({ email: s.email, reason: s.reason, origin: s.origin })) suppressed += 1;
@@ -107,6 +128,13 @@ async function main(): Promise<void> {
       suppressions: (await pg.suppressions()).length,
       replies: (await pg.replies()).length,
       imports: (await pg.imports()).length,
+      deals: (await pg.deals()).length,
+      notes: (await pg.notes()).length,
+      tasks: (await pg.tasks()).length,
+      demands: (await pg.demands()).length,
+      agentActivities: (await pg.agentActivities()).length,
+      briefings: (await pg.briefings()).length,
+      settings: (await pg.workspaceSettings()).length,
       events: (await pg.events()).length,
     };
     printCounts("Banco (Postgres):", counts);

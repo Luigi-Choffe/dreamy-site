@@ -13,6 +13,8 @@ export interface OutboundEnv {
   apiKey: string | null;
   from: string | null;
   replyTo: string | null;
+  /** Copiloto de IA do console (briefing/triagem). Sem a chave, os recursos degradam com aviso. */
+  anthropicKey: string | null;
   /** offset fixo do fuso de envio (São Paulo, sem DST desde 2019) */
   utcOffset: string;
   window: SendWindow;
@@ -36,6 +38,7 @@ export function getOutboundEnv(): OutboundEnv {
     apiKey: process.env.OUTBOUND_RESEND_API_KEY?.trim() || null,
     from: process.env.OUTBOUND_FROM?.trim() || null,
     replyTo: process.env.OUTBOUND_REPLY_TO?.trim() || null,
+    anthropicKey: process.env.OUTBOUND_ANTHROPIC_API_KEY?.trim() || null,
     utcOffset: process.env.OUTBOUND_UTC_OFFSET?.trim() || "-03:00",
     window: parseWindow(process.env.OUTBOUND_SEND_WINDOW),
     dailyCapEnv: Number.isFinite(cap) && cap > 0 ? Math.floor(cap) : null,

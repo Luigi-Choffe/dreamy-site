@@ -7,9 +7,15 @@ import { createNeonSqlClient, type SqlClient } from "./sql";
 import { DEFAULT_STATE, LOCK_STALE_MS, LOCK_WAIT_MS, normalizeEmail } from "./store-common";
 import { acquireDbLock, createPgStore, releaseDbLock } from "./store-pg";
 import type {
+  AgentActivity,
+  AiBriefing,
   CampaignRuntime,
   Company,
   Contact,
+  CrmNote,
+  CrmTask,
+  Deal,
+  Demand,
   Enrollment,
   ImportBatch,
   OutboundEvent,
@@ -17,6 +23,7 @@ import type {
   Reply,
   SendRecord,
   Suppression,
+  WorkspaceSettings,
 } from "./types";
 
 export { DEFAULT_STATE, normalizeEmail };
@@ -41,6 +48,13 @@ const COLLECTIONS = {
   suppressions: "suppressions.json",
   replies: "replies.json",
   imports: "imports.json",
+  deals: "deals.json",
+  notes: "notes.json",
+  tasks: "tasks.json",
+  demands: "demands.json",
+  agentActivities: "agent-activities.json",
+  briefings: "briefings.json",
+  settings: "settings.json",
 } as const;
 
 type CollectionName = keyof typeof COLLECTIONS;
@@ -49,7 +63,7 @@ const EVENTS_FILE = "events.jsonl";
 const STATE_FILE = "config.json";
 
 export function outboundDir(): string {
-  return process.env.OUTBOUND_STORE_DIR ?? path.join(process.cwd(), ".outbound");
+  return process.env.OUTBOUND_STORE_DIR?.trim() || path.join(process.cwd(), ".outbound");
 }
 
 export function databaseUrl(): string | null {
@@ -107,6 +121,23 @@ export interface OutboundStore {
 
   imports(): Promise<ImportBatch[]>;
   saveImports(rows: ImportBatch[]): Promise<void>;
+
+  /* CRM piloto (aditivo; o motor de envio nunca lê estas coleções) */
+  deals(): Promise<Deal[]>;
+  saveDeals(rows: Deal[]): Promise<void>;
+  notes(): Promise<CrmNote[]>;
+  saveNotes(rows: CrmNote[]): Promise<void>;
+  tasks(): Promise<CrmTask[]>;
+  saveTasks(rows: CrmTask[]): Promise<void>;
+  demands(): Promise<Demand[]>;
+  saveDemands(rows: Demand[]): Promise<void>;
+  agentActivities(): Promise<AgentActivity[]>;
+  saveAgentActivities(rows: AgentActivity[]): Promise<void>;
+  briefings(): Promise<AiBriefing[]>;
+  saveBriefings(rows: AiBriefing[]): Promise<void>;
+  /** Singleton: lista com 0 ou 1 documento (id "workspace"). */
+  workspaceSettings(): Promise<WorkspaceSettings[]>;
+  saveWorkspaceSettings(rows: WorkspaceSettings[]): Promise<void>;
 
   events(): Promise<OutboundEvent[]>;
   /** Append-only com dedupe por sourceKey. Retorna true se registrou. */
@@ -180,6 +211,21 @@ export function openFileStore(dir = outboundDir()): OutboundStore {
 
     imports: () => collection<ImportBatch>("imports"),
     saveImports: (rows) => saveCollection("imports", rows),
+
+    deals: () => collection<Deal>("deals"),
+    saveDeals: (rows) => saveCollection("deals", rows),
+    notes: () => collection<CrmNote>("notes"),
+    saveNotes: (rows) => saveCollection("notes", rows),
+    tasks: () => collection<CrmTask>("tasks"),
+    saveTasks: (rows) => saveCollection("tasks", rows),
+    demands: () => collection<Demand>("demands"),
+    saveDemands: (rows) => saveCollection("demands", rows),
+    agentActivities: () => collection<AgentActivity>("agentActivities"),
+    saveAgentActivities: (rows) => saveCollection("agentActivities", rows),
+    briefings: () => collection<AiBriefing>("briefings"),
+    saveBriefings: (rows) => saveCollection("briefings", rows),
+    workspaceSettings: () => collection<WorkspaceSettings>("settings"),
+    saveWorkspaceSettings: (rows) => saveCollection("settings", rows),
 
     events: readEvents,
     async appendEvent(event) {

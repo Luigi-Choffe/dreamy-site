@@ -10,6 +10,7 @@ import { wasSent } from "@/lib/outbound/metrics";
 import { replyStepId } from "@/lib/outbound/ops-core";
 import type { Contact, ReplyClass } from "@/lib/outbound/types";
 import { classifyReplyAction, registerReplyAction } from "../actions";
+import { TriagemIA } from "./triagem-ia";
 import { consoleHref, demoRequested, loadDashboardData, type SearchParams } from "../data";
 import { ConsoleShell } from "../shell";
 import {
@@ -244,6 +245,17 @@ export default async function OutboundRepliesPage({ searchParams }: { searchPara
                               </td>
                             </tr>
                           ) : null}
+                          <tr>
+                            <td colSpan={5} className="px-3 pt-0 pb-2.5">
+                              <TriagemIA
+                                replyId={reply.id}
+                                contactId={contact?.id}
+                                textoInicial={reply.notes}
+                                isDemo={isDemo}
+                                replyTo={replyTo}
+                              />
+                            </td>
+                          </tr>
                         </Fragment>
                       );
                     })}
@@ -324,6 +336,31 @@ export default async function OutboundRepliesPage({ searchParams }: { searchPara
                     placeholder="ex.: pediu proposta para outubro"
                   />
                 </div>
+                <details className="text-xs">
+                  <summary className="cursor-pointer font-semibold text-brand-strong">Registro retroativo</summary>
+                  <div className="mt-2 flex flex-col gap-3">
+                    <div className="flex flex-col gap-1">
+                      <label htmlFor="registrar-recebida" className={LABEL}>
+                        Recebida em <span className="font-normal text-foreground-subtle">(vazio = agora)</span>
+                      </label>
+                      <input id="registrar-recebida" type="datetime-local" name="receivedAt" className={CONTROL} />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label htmlFor="registrar-campanha" className={LABEL}>
+                        Campanha{" "}
+                        <span className="font-normal text-foreground-subtle">(se o contato não tem sequência)</span>
+                      </label>
+                      <select id="registrar-campanha" name="campaignSlug" defaultValue="" className={CONTROL}>
+                        <option value="">automática</option>
+                        {defs.map((d) => (
+                          <option key={d.slug} value={d.slug}>
+                            {d.industria} ({d.slug})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </details>
                 <Checkbox id="registrar-suppress" name="suppress" value="1" label="pediu para não receber (opt-out)" />
                 <div>
                   <Button type="submit" size="sm">

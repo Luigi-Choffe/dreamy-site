@@ -37,7 +37,9 @@
     "outbound:demo": "tsx scripts/outbound/demo.ts",
     "outbound:companies": "tsx scripts/outbound/companies.ts",
     "outbound:db": "tsx scripts/outbound/db.ts",
-    "check": "pnpm typecheck && pnpm lint && pnpm content:check && pnpm test && pnpm build"
+    "check": "pnpm typecheck && pnpm lint && pnpm content:check && pnpm test && pnpm build",
+    "outbound:crm": "tsx scripts/outbound/crm.ts",
+    "outbound:demandas": "tsx scripts/outbound/demandas.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

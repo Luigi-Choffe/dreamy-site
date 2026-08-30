@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { openStore, runExclusive } from "../../src/lib/outbound/store";
+import type { CrmTask, Deal, WorkspaceSettings } from "../../src/lib/outbound/types";
 
 function tempDir(): string {
   return mkdtempSync(path.join(tmpdir(), "outbound-store-"));
@@ -99,5 +100,47 @@ describe("openStore — seleção por env", () => {
       if (prev === undefined) delete process.env.OUTBOUND_DATABASE_URL;
       else process.env.OUTBOUND_DATABASE_URL = prev;
     }
+  });
+});
+
+describe("coleções do CRM — store em arquivos", () => {
+  it("deals, tarefas e settings fazem roundtrip com default vazio", async () => {
+    const store = openStore(tempDir());
+    expect(await store.deals()).toEqual([]);
+    const deal: Deal = {
+      id: "d1",
+      contactId: "c1",
+      stage: "contatado",
+      autoStage: "contatado",
+      stageHistory: [{ stage: "novo", at: "2026-08-20T12:00:00Z", by: "sistema" }],
+      stageChangedAt: "2026-08-25T12:00:00Z",
+      stageChangedBy: "sistema",
+      createdAt: "2026-08-20T12:00:00Z",
+    };
+    await store.saveDeals([deal]);
+    expect((await store.deals())[0]?.stage).toBe("contatado");
+
+    const task: CrmTask = {
+      id: "t1",
+      titulo: "Propor horário de reunião",
+      contactId: "c1",
+      dueDate: "2026-09-01",
+      status: "aberta",
+      origin: "manual",
+      createdBy: "mork",
+      createdAt: "2026-08-30T12:00:00Z",
+    };
+    await store.saveTasks([task]);
+    expect((await store.tasks())[0]?.dueDate).toBe("2026-09-01");
+
+    expect(await store.workspaceSettings()).toEqual([]);
+    const ws: WorkspaceSettings = {
+      id: "workspace",
+      empresaNome: "Dreamy",
+      ofertas: [],
+      atualizadoEm: "2026-08-30T12:00:00Z",
+    };
+    await store.saveWorkspaceSettings([ws]);
+    expect((await store.workspaceSettings())[0]?.id).toBe("workspace");
   });
 });

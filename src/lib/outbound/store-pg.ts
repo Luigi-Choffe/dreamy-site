@@ -3,9 +3,15 @@ import type { SqlClient, SqlStatement } from "./sql";
 import { DEFAULT_STATE, normalizeEmail } from "./store-common";
 import type { OutboundStore } from "./store";
 import type {
+  AgentActivity,
+  AiBriefing,
   CampaignRuntime,
   Company,
   Contact,
+  CrmNote,
+  CrmTask,
+  Deal,
+  Demand,
   Enrollment,
   ImportBatch,
   OutboundEvent,
@@ -13,6 +19,7 @@ import type {
   Reply,
   SendRecord,
   Suppression,
+  WorkspaceSettings,
 } from "./types";
 
 /**
@@ -23,7 +30,21 @@ import type {
  */
 
 type CollectionName =
-  "contacts" | "companies" | "campaigns" | "enrollments" | "sends" | "suppressions" | "replies" | "imports";
+  | "contacts"
+  | "companies"
+  | "campaigns"
+  | "enrollments"
+  | "sends"
+  | "suppressions"
+  | "replies"
+  | "imports"
+  | "deals"
+  | "notes"
+  | "tasks"
+  | "demands"
+  | "agentActivities"
+  | "briefings"
+  | "settings";
 
 const INSERT_CHUNK = 200;
 
@@ -113,6 +134,21 @@ export function createPgStore(client: SqlClient, dir: string): OutboundStore {
 
     imports: () => collection<ImportBatch>("imports"),
     saveImports: (rows) => saveCollection("imports", rows),
+
+    deals: () => collection<Deal>("deals"),
+    saveDeals: (rows) => saveCollection("deals", rows),
+    notes: () => collection<CrmNote>("notes"),
+    saveNotes: (rows) => saveCollection("notes", rows),
+    tasks: () => collection<CrmTask>("tasks"),
+    saveTasks: (rows) => saveCollection("tasks", rows),
+    demands: () => collection<Demand>("demands"),
+    saveDemands: (rows) => saveCollection("demands", rows),
+    agentActivities: () => collection<AgentActivity>("agentActivities"),
+    saveAgentActivities: (rows) => saveCollection("agentActivities", rows),
+    briefings: () => collection<AiBriefing>("briefings"),
+    saveBriefings: (rows) => saveCollection("briefings", rows),
+    workspaceSettings: () => collection<WorkspaceSettings>("settings"),
+    saveWorkspaceSettings: (rows) => saveCollection("settings", rows),
 
     async events() {
       const rows = await client.query<{ data: OutboundEvent }>("SELECT data FROM outbound_events ORDER BY seq");

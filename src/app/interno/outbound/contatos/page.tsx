@@ -398,7 +398,13 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
                       return (
                         <tr key={contact.id} className="border-b border-border last:border-b-0">
                           <td className="px-3 py-2">
-                            <ContactCell contact={contact} />
+                            <Link
+                              href={consoleHref(`/interno/outbound/contatos/${contact.id}`, isDemo)}
+                              className="underline-offset-2 hover:text-brand-strong hover:underline"
+                              title="Abrir a conta do contato"
+                            >
+                              <ContactCell contact={contact} />
+                            </Link>
                           </td>
                           <td className="px-3 py-2 text-foreground-muted">{contact.cargo?.trim() || "—"}</td>
                           <td className="px-3 py-2 text-foreground-muted">{contact.industria?.trim() || "—"}</td>

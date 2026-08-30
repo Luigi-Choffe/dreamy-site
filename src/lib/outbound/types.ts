@@ -215,3 +215,154 @@ export interface PlanItem {
   /** ISO com offset — horário agendado dentro da janela. */
   scheduledAt: string;
 }
+
+/* ─── CRM piloto (PRD-EMAIL-OUTBOUND §29; aditivo: o motor de envio nunca lê estas coleções) ─── */
+
+/**
+ * Estágio do negócio. "novo"/"contatado"/"respondeu" são automáticos
+ * (reconcileDeals, só para frente); de "reuniao_marcada" em diante o movimento é
+ * exclusivamente manual.
+ */
+export type DealStage =
+  "novo" | "contatado" | "respondeu" | "reuniao_marcada" | "reuniao_realizada" | "proposta" | "ganho" | "perdido";
+
+export interface DealStageChange {
+  stage: DealStage;
+  at: string;
+  /** E-mail da sessão, "mork" ou "sistema". */
+  by: string;
+  /** Obrigatório ao mover para "perdido". */
+  motivo?: string;
+}
+
+export interface Deal {
+  id: string;
+  contactId: string;
+  /** Origem outbound, quando houver. */
+  campaignSlug?: string;
+  /** Snapshot para render sem join. */
+  empresa?: string;
+  stage: DealStage;
+  /** Piso automático do reconcile; nunca rebaixa estágio manual. */
+  autoStage?: "novo" | "contatado" | "respondeu";
+  /** BRL. */
+  valorEstimado?: number;
+  /** Oferta âncora (PRD §11). */
+  anchor?: SolutionAnchor;
+  /** E-mail do dono. */
+  owner?: string;
+  /** Data/hora da reunião quando o estágio é reuniao_marcada ou posterior. */
+  reuniaoEm?: string;
+  lostReason?: string;
+  /**
+   * Histórico append-only: alimenta a timeline da conta e as métricas
+   * (reuniões geradas = negócios que passaram por reuniao_marcada;
+   * realizadas = que passaram por reuniao_realizada).
+   */
+  stageHistory: DealStageChange[];
+  stageChangedAt: string;
+  stageChangedBy: string;
+  createdAt: string;
+}
+
+export interface CrmNote {
+  id: string;
+  contactId: string;
+  dealId?: string;
+  /** De requireSession; "mork" na CLI. */
+  authorEmail: string;
+  body: string;
+  /** Rascunho de IA salvo pelo humano marca "ia". */
+  origin: "manual" | "ia";
+  /** Append-only: sem editar nem excluir no v1. */
+  createdAt: string;
+}
+
+export type CrmTaskStatus = "aberta" | "concluida" | "cancelada";
+
+export interface CrmTask {
+  id: string;
+  titulo: string;
+  contactId?: string;
+  dealId?: string;
+  /** YYYY-MM-DD (comparação por dia no fuso OUTBOUND_UTC_OFFSET). */
+  dueDate: string;
+  assignee?: string;
+  status: CrmTaskStatus;
+  origin: "manual" | "regra" | "ia";
+  /** E-mail, "mork" ou "sistema". */
+  createdBy: string;
+  createdAt: string;
+  doneAt?: string;
+}
+
+/** "cancelada" = o autor desistiu antes do MORK assumir (só a partir de pendente). */
+export type DemandStatus = "pendente" | "em_andamento" | "concluida" | "recusada" | "cancelada";
+export type DemandKind = "copy" | "leads" | "analise" | "resposta" | "operacao" | "outra";
+
+/** Pedido do time para o MORK (criado no console, consumido pela CLI outbound:demandas). */
+export interface Demand {
+  id: string;
+  title: string;
+  details?: string;
+  kind: DemandKind;
+  status: DemandStatus;
+  priority: "normal" | "alta";
+  /** E-mail da sessão do console ou "mork" (CLI). */
+  createdBy: string;
+  createdAt: string;
+  claimedBy?: string;
+  claimedAt?: string;
+  doneAt?: string;
+  /** Obrigatório em concluida/recusada. */
+  resolution?: string;
+  campaignSlug?: string;
+  /** Vínculo por id, nunca por e-mail. */
+  contactId?: string;
+}
+
+export type AgentActivityKind = "demanda" | "briefing" | "sugestao" | "crm" | "observacao";
+
+/** Prestação de contas do MORK e dos agentes no console (sem PII de e-mail). */
+export interface AgentActivity {
+  id: string;
+  actor: "mork" | "console" | "sistema";
+  kind: AgentActivityKind;
+  summary: string;
+  refs?: {
+    demandId?: string;
+    dealId?: string;
+    campaignSlug?: string;
+    contactId?: string;
+    replyId?: string;
+  };
+  at: string;
+}
+
+export interface AiBriefing {
+  id: string;
+  /** YYYY-MM-DD no fuso de envio; 1 por dia, regenerar substitui. */
+  dateKey: string;
+  generatedAt: string;
+  /** E-mail da sessão ou "demo". */
+  generatedBy: string;
+  /** "claude-sonnet-5" ou "exemplo". */
+  model: string;
+  /** Texto pt-BR, sem PII. */
+  content: string;
+  demo?: boolean;
+}
+
+/**
+ * Documento singleton (id "workspace") na coleção settings. Só apresentação
+ * (eyebrow do shell, demo de replicabilidade); JAMAIS alimenta copy, assinatura
+ * ou motor de envio (ADR-020).
+ */
+export interface WorkspaceSettings {
+  id: "workspace";
+  empresaNome: string;
+  operadorNome?: string;
+  ofertas: Array<{ anchor: SolutionAnchor; titulo: string; descricao: string }>;
+  atualizadoEm: string;
+  atualizadoPor?: string;
+}
