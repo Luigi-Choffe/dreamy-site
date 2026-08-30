@@ -130,3 +130,92 @@ export function seatStatus(
   if (delivered) return { label: `entregou: ${delivered.title}`, live: false };
   return { label: "disponível; é só abrir uma demanda na aba Demandas.", live: false };
 }
+
+/* ─── Grafo da rede (Aquário v2: constelação neural) ─────────────────────── */
+
+export interface TeamGraphNode {
+  slug: SeatSlug;
+  /** Posição no palco em % (constelação orgânica, não uma linha). */
+  x: number;
+  y: number;
+  hired: boolean;
+  live: boolean;
+}
+
+export type TeamLinkKind = "comando" | "colaboracao" | "vaga";
+
+export interface TeamGraphLink {
+  from: SeatSlug;
+  to: SeatSlug;
+  kind: TeamLinkKind;
+  /** Sinapse acesa = trabalho REAL em andamento (nada de enfeite mentiroso). */
+  active: boolean;
+}
+
+const NODE_POS: Record<SeatSlug, { x: number; y: number }> = {
+  mork: { x: 50, y: 12 },
+  verbo: { x: 24, y: 31 },
+  garimpo: { x: 76, y: 39 },
+  trato: { x: 27, y: 56 },
+  forja: { x: 73, y: 67 },
+  mira: { x: 47, y: 80 },
+};
+
+/** Relações de trabalho reais: copy depende de leads, leads alimentam respostas, CRM pede plataforma. */
+const COLLAB_PAIRS: Array<[SeatSlug, SeatSlug]> = [
+  ["verbo", "garimpo"],
+  ["garimpo", "trato"],
+  ["trato", "forja"],
+];
+
+const COLLAB_RECENT_MS = 7 * 86_400_000;
+
+/**
+ * Grafo vivo do time: nós na constelação + sinapses. Comando (MORK → agente)
+ * acende quando o agente está numa demanda; colaboração (agente ↔ agente)
+ * acende quando os dois tocaram a MESMA campanha em demandas recentes.
+ */
+export function teamGraph(input: { demands: Demand[]; activities: AgentActivity[]; now?: Date }): {
+  nodes: TeamGraphNode[];
+  links: TeamGraphLink[];
+} {
+  const nowMs = (input.now ?? new Date()).getTime();
+  const statuses = new Map(TEAM.map((seat) => [seat.slug, seatStatus(seat, input)] as const));
+  const nodes: TeamGraphNode[] = TEAM.map((seat) => ({
+    slug: seat.slug,
+    ...NODE_POS[seat.slug],
+    hired: seat.hired,
+    live: seat.hired && (statuses.get(seat.slug)?.live ?? false),
+  }));
+
+  const links: TeamGraphLink[] = [];
+  for (const seat of TEAM) {
+    if (seat.slug === "mork") continue;
+    links.push({
+      from: "mork",
+      to: seat.slug,
+      kind: seat.hired ? "comando" : "vaga",
+      active: seat.hired && (statuses.get(seat.slug)?.live ?? false),
+    });
+  }
+
+  const seatsByCampaign = new Map<string, Set<SeatSlug>>();
+  for (const demand of input.demands) {
+    if (!demand.campaignSlug) continue;
+    if (demand.status !== "em_andamento" && demand.status !== "concluida") continue;
+    const ref = demand.doneAt ?? demand.claimedAt ?? demand.createdAt;
+    if (nowMs - Date.parse(ref) > COLLAB_RECENT_MS) continue;
+    for (const seat of TEAM) {
+      if (seat.slug === "mork" || !seat.hired || !seat.kinds.includes(demand.kind)) continue;
+      const set = seatsByCampaign.get(demand.campaignSlug) ?? new Set<SeatSlug>();
+      set.add(seat.slug);
+      seatsByCampaign.set(demand.campaignSlug, set);
+    }
+  }
+  for (const [a, b] of COLLAB_PAIRS) {
+    const active = [...seatsByCampaign.values()].some((set) => set.has(a) && set.has(b));
+    links.push({ from: a, to: b, kind: "colaboracao", active });
+  }
+
+  return { nodes, links };
+}

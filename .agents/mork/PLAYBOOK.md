@@ -107,7 +107,7 @@ como tendência; número ruim se reporta igual número bom.
 | Env (chave Resend, from/reply, banco) | `.env.local` no PC · Vercel → Settings → Environment Variables (nomes em `.env.example`)                                                                                                        |
 | Deploy da plataforma                  | `docs/DEPLOY-PLATAFORMA.md`                                                                                                                                                                     |
 | CRM piloto (núcleo, IA, demandas)     | `src/lib/outbound/crm-core.ts`, `demands-core.ts`, `ai.ts`, `agent-log.ts` · CLIs `outbound:crm`, `outbound:demandas` · páginas pipeline, hoje, contatos/[id], demandas, mork, configuracao     |
-| Aquário (organograma vivo do time)    | src/lib/outbound/team.ts (cadeiras + status derivado das demandas) · src/app/interno/outbound/aquario.tsx · fixo à direita em telas largas; aba MORK nas demais                                 |
+| Aquário (organograma vivo do time)    | src/lib/outbound/team.ts (cadeiras + status derivado das demandas) · src/app/interno/outbound/aquario.tsx + aquario-rede.tsx (canvas) · fixo à direita em telas largas; aba MORK nas demais     |
 | Time de agentes (subagentes do MORK)  | `.claude/agents/`: verbo (copy), garimpo (leads/ICP), trato (respostas/CRM), forja (plataforma); 5ª vaga MIRA reservada; demitir só com permissão do Luigi                                      |
 | Spec e decisões                       | `docs/PRD-EMAIL-OUTBOUND.md` (§28 operação, §29 plataforma) · ADR-019…024 em `docs/DECISIONS.md`                                                                                                |
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { seatStatus, TEAM } from "../../src/lib/outbound/team";
+import { seatStatus, TEAM, teamGraph } from "../../src/lib/outbound/team";
 import type { AgentActivity, Demand } from "../../src/lib/outbound/types";
 
 const NOW = new Date("2026-08-31T12:00:00Z");
@@ -96,5 +96,83 @@ describe("seatStatus", () => {
     const s = seatStatus(seat("mira"), { demands: [], activities: [], now: NOW });
     expect(s.label).toContain("cadeira vazia");
     expect(s.live).toBe(false);
+  });
+});
+describe("teamGraph (rede do Aquário)", () => {
+  it("tem 6 nós na constelação e 8 sinapses (4 comando, 1 vaga, 3 colaboração)", () => {
+    const graph = teamGraph({ demands: [], activities: [], now: NOW });
+    expect(graph.nodes).toHaveLength(6);
+    expect(graph.nodes[0]?.slug).toBe("mork");
+    const kinds = graph.links.map((l) => l.kind);
+    expect(kinds.filter((k) => k === "comando")).toHaveLength(4);
+    expect(kinds.filter((k) => k === "vaga")).toHaveLength(1);
+    expect(kinds.filter((k) => k === "colaboracao")).toHaveLength(3);
+    expect(graph.links.every((l) => !l.active)).toBe(true);
+  });
+
+  it("demanda em andamento acende o nó e a sinapse de comando do agente certo", () => {
+    const graph = teamGraph({
+      demands: [demand({ status: "em_andamento", kind: "copy", claimedAt: "2026-08-31T09:00:00Z" })],
+      activities: [],
+      now: NOW,
+    });
+    expect(graph.nodes.find((n) => n.slug === "verbo")?.live).toBe(true);
+    expect(graph.links.find((l) => l.to === "verbo" && l.kind === "comando")?.active).toBe(true);
+    expect(graph.links.find((l) => l.to === "garimpo" && l.kind === "comando")?.active).toBe(false);
+  });
+
+  it("dois agentes tocando a MESMA campanha acendem a sinapse de colaboração", () => {
+    const shared = [
+      demand({
+        id: "dm-copy",
+        status: "em_andamento",
+        kind: "copy",
+        campaignSlug: "obras",
+        claimedAt: "2026-08-31T09:00:00Z",
+      }),
+      demand({
+        id: "dm-leads",
+        status: "concluida",
+        kind: "leads",
+        campaignSlug: "obras",
+        doneAt: "2026-08-30T09:00:00Z",
+      }),
+    ];
+    const on = teamGraph({ demands: shared, activities: [], now: NOW });
+    expect(on.links.find((l) => l.kind === "colaboracao" && l.from === "verbo" && l.to === "garimpo")?.active).toBe(
+      true,
+    );
+
+    const separate = teamGraph({
+      demands: [
+        demand({
+          id: "dm-copy",
+          status: "em_andamento",
+          kind: "copy",
+          campaignSlug: "obras",
+          claimedAt: "2026-08-31T09:00:00Z",
+        }),
+        demand({
+          id: "dm-leads",
+          status: "concluida",
+          kind: "leads",
+          campaignSlug: "OUTRA",
+          doneAt: "2026-08-30T09:00:00Z",
+        }),
+      ],
+      activities: [],
+      now: NOW,
+    });
+    expect(
+      separate.links.find((l) => l.kind === "colaboracao" && l.from === "verbo" && l.to === "garimpo")?.active,
+    ).toBe(false);
+  });
+
+  it("a cadeira vaga entra como sinapse tracejada e nunca acende", () => {
+    const graph = teamGraph({ demands: [], activities: [], now: NOW });
+    const vaga = graph.links.find((l) => l.kind === "vaga");
+    expect(vaga?.to).toBe("mira");
+    expect(vaga?.active).toBe(false);
+    expect(graph.nodes.find((n) => n.slug === "mira")?.hired).toBe(false);
   });
 });
