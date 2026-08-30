@@ -242,7 +242,10 @@ function workbookSheets(entries: Map<string, Buffer>): SheetInfo[] {
   const sheetRe = /<sheet\b[^>]*>/g;
   let m: RegExpExecArray | null;
   while ((m = sheetRe.exec(workbook)) !== null) {
-    sheets.push({ name: decodeXml(attrValue(m[0], "name") ?? `sheet${sheets.length + 1}`), rid: attrValue(m[0], "r:id") });
+    sheets.push({
+      name: decodeXml(attrValue(m[0], "name") ?? `sheet${sheets.length + 1}`),
+      rid: attrValue(m[0], "r:id"),
+    });
   }
   if (sheets.length === 0) fail("nenhuma planilha declarada em xl/workbook.xml.");
   return sheets;

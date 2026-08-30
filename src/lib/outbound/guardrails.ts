@@ -22,12 +22,7 @@ export interface GuardRailStatus {
 }
 
 /** Status que contam como e-mail efetivamente processado pelo provedor. */
-const ATTEMPTED_STATUSES: ReadonlySet<SendRecord["status"]> = new Set([
-  "sent",
-  "delivered",
-  "bounced",
-  "complained",
-]);
+const ATTEMPTED_STATUSES: ReadonlySet<SendRecord["status"]> = new Set(["sent", "delivered", "bounced", "complained"]);
 
 export function evaluateGuardRails(sends: SendRecord[], campaignSlug?: string): GuardRailStatus {
   const scope = campaignSlug ? sends.filter((s) => s.campaignSlug === campaignSlug) : sends;

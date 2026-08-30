@@ -121,15 +121,11 @@ async function main() {
     return;
   }
   if (preview.items.length === 0) {
-    console.log(
-      `Nada a enviar agora (${preview.skipped.length} pulados — detalhe em pnpm outbound:plan).`,
-    );
+    console.log(`Nada a enviar agora (${preview.skipped.length} pulados — detalhe em pnpm outbound:plan).`);
     return;
   }
 
-  console.log(
-    `Plano: ${preview.items.length} e-mail(s) · cap ${preview.capInfo.usedToday}/${preview.capInfo.cap}.`,
-  );
+  console.log(`Plano: ${preview.items.length} e-mail(s) · cap ${preview.capInfo.usedToday}/${preview.capInfo.cap}.`);
   if (!values.confirm) {
     console.log("Dry-run — nenhum e-mail enviado. Use --confirm para disparo real.");
     return;

@@ -12,7 +12,9 @@ async function main() {
   console.log(`Contato de exemplo: ${contact.nome} · ${contact.cargo} · ${contact.empresa}`);
   for (const step of campaign.steps) {
     const built = buildEmail(contact, campaign, step, { replyTo: "contact@bedreamy.com.br" });
-    console.log(`\n============ ${step.id.toUpperCase()} (dia ${step.offsetDays === 0 ? "0" : "+" + step.offsetDays}) ============`);
+    console.log(
+      `\n============ ${step.id.toUpperCase()} (dia ${step.offsetDays === 0 ? "0" : "+" + step.offsetDays}) ============`,
+    );
     console.log(`Assunto: ${built.subject}\n`);
     console.log(built.text);
   }

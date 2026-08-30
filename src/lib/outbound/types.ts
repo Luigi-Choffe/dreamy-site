@@ -127,14 +127,7 @@ export type SendStatus =
   /** Registrado localmente ANTES da chamada ao Resend (write-ahead). Um "pending"
    *  remanescente = run interrompido; bloqueia novos envios até resolução
    *  (`outbound:send --resolve-pending`). */
-  | "pending"
-  | "scheduled"
-  | "sent"
-  | "delivered"
-  | "bounced"
-  | "complained"
-  | "failed"
-  | "canceled";
+  "pending" | "scheduled" | "sent" | "delivered" | "bounced" | "complained" | "failed" | "canceled";
 
 export interface SendRecord {
   id: string;

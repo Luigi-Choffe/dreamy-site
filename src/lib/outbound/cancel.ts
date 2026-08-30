@@ -106,10 +106,7 @@ export async function cancelScheduledSends(
       }
       if (rewind) {
         const enrollment = enrollmentById.get(send.enrollmentId);
-        if (
-          enrollment &&
-          rewindEnrollmentForCancel(enrollment, send, defsBySlug.get(send.campaignSlug), sends)
-        ) {
+        if (enrollment && rewindEnrollmentForCancel(enrollment, send, defsBySlug.get(send.campaignSlug), sends)) {
           rewound++;
         }
       }

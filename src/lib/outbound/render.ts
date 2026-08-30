@@ -76,10 +76,7 @@ export function textToMinimalHtml(text: string): string {
     .map((p) => p.trim())
     .filter(Boolean)
     .map((p) => {
-      const withLinks = escapeHtml(p).replace(
-        /(https?:\/\/[^\s<]+)/g,
-        (url) => `<a href="${url}">${url}</a>`,
-      );
+      const withLinks = escapeHtml(p).replace(/(https?:\/\/[^\s<]+)/g, (url) => `<a href="${url}">${url}</a>`);
       return `<p>${withLinks.replace(/\n/g, "<br>")}</p>`;
     });
   return `<div>${paragraphs.join("\n")}</div>`;
@@ -107,14 +104,11 @@ export function buildEmail(
   const body = renderTemplate(step.body, vars);
   const missing = [...new Set([...subject.missing, ...body.missing])];
   if (missing.length > 0) {
-    throw new Error(
-      `Variáveis ausentes para ${contact.email} em ${campaign.slug}/${step.id}: ${missing.join(", ")}`,
-    );
+    throw new Error(`Variáveis ausentes para ${contact.email} em ${campaign.slug}/${step.id}: ${missing.join(", ")}`);
   }
   // Placeholder malformado ({{nome} sem fechar, {nome} com chave simples) escaparia
   // do render e chegaria LITERAL ao prospect — nunca enviar.
-  const broken =
-    subject.value.match(BROKEN_PLACEHOLDER_RE)?.[0] ?? body.value.match(BROKEN_PLACEHOLDER_RE)?.[0];
+  const broken = subject.value.match(BROKEN_PLACEHOLDER_RE)?.[0] ?? body.value.match(BROKEN_PLACEHOLDER_RE)?.[0];
   if (broken) {
     throw new Error(
       `Placeholder malformado em ${campaign.slug}/${step.id} (sobrou "${broken}" após o render) — corrija o template.`,
@@ -307,9 +301,7 @@ export function lintEmail(subject: string, body: string, opts: LintOptions = {})
     issues.push({ level: "error", rule: "assunto", detail: "emoji no assunto" });
   }
   const capsSource = opts.subjectTemplate !== undefined ? opts.subjectTemplate.replace(VAR_RE, "") : subject;
-  const capsWords = capsSource
-    .split(/\s+/)
-    .filter((w) => w.length >= 3 && w === w.toUpperCase() && /[A-ZÀ-Ü]/.test(w));
+  const capsWords = capsSource.split(/\s+/).filter((w) => w.length >= 3 && w === w.toUpperCase() && /[A-ZÀ-Ü]/.test(w));
   if (capsWords.length > 0) {
     issues.push({ level: "error", rule: "assunto", detail: `palavra em caixa alta: ${capsWords.join(", ")}` });
   }

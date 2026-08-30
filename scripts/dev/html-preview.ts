@@ -14,7 +14,11 @@ async function main() {
 <div style="background:#f5f5f5;padding:10px 16px;font-size:12px;color:#555">${step.id.toUpperCase()} · dia ${step.offsetDays === 0 ? "0" : "+" + step.offsetDays} — <b>De:</b> Luigi Choffe &lt;contact@bedreamy.com.br&gt; — <b>Assunto:</b> ${b.subject}</div>
 <div style="background:#fff;padding:20px 24px;font-size:14px;line-height:1.6;color:#111">${b.html}</div></div>`;
   });
-  writeFileSync(out, `<!doctype html><meta charset="utf-8"><title>Prévia — ${slug}</title><body style="background:#e9ecea;margin:0;padding:12px">${blocks.join("\n")}</body>`, "utf8");
+  writeFileSync(
+    out,
+    `<!doctype html><meta charset="utf-8"><title>Prévia — ${slug}</title><body style="background:#e9ecea;margin:0;padding:12px">${blocks.join("\n")}</body>`,
+    "utf8",
+  );
   console.log("gerado:", out, "| contato:", contact.nome, "·", contact.empresa);
 }
 main();

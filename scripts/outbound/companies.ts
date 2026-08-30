@@ -151,7 +151,10 @@ async function cmdImport(values: {
       continue;
     }
 
-    industrias.set(record.industria ?? "(sem indústria)", (industrias.get(record.industria ?? "(sem indústria)") ?? 0) + 1);
+    industrias.set(
+      record.industria ?? "(sem indústria)",
+      (industrias.get(record.industria ?? "(sem indústria)") ?? 0) + 1,
+    );
     if (record.custom.clientes_ativos) comClientes += 1;
     if (record.custom.ticket_medio) comTicket += 1;
 

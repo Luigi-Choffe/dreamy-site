@@ -1,11 +1,4 @@
-import {
-  isBusinessDay,
-  isoAtLocalMinute,
-  localParts,
-  rampCap,
-  sendDateKey,
-  type OutboundEnv,
-} from "./config";
+import { isBusinessDay, isoAtLocalMinute, localParts, rampCap, sendDateKey, type OutboundEnv } from "./config";
 import { evaluateGuardRails } from "./guardrails";
 import { buildEmail, campaignContentHash, lintEmail, lintErrors } from "./render";
 import { normalizeEmail } from "./store";
@@ -222,10 +215,7 @@ export function computePlan(input: PlanInput): PlanResult {
       });
       const errors = lintErrors(lintEmail(built.subject, built.text, { subjectTemplate: step.subject }));
       if (errors.length > 0) {
-        skip(
-          enrollment.id,
-          `lint da copy: ${errors.map((e) => `${e.rule} (${e.detail})`).join("; ")}`,
-        );
+        skip(enrollment.id, `lint da copy: ${errors.map((e) => `${e.rule} (${e.detail})`).join("; ")}`);
         continue;
       }
     } catch (err) {
@@ -240,9 +230,7 @@ export function computePlan(input: PlanInput): PlanResult {
 
   // Prioridade: follow-ups antes de e1 (sequência aberta não envelhece); round-robin entre campanhas.
   for (const list of byCampaign.values()) {
-    list.sort(
-      (a, b) => b.stepIndex - a.stepIndex || a.enrollment.createdAt.localeCompare(b.enrollment.createdAt),
-    );
+    list.sort((a, b) => b.stepIndex - a.stepIndex || a.enrollment.createdAt.localeCompare(b.enrollment.createdAt));
   }
   const queues = [...byCampaign.keys()].sort().map((slug) => byCampaign.get(slug) as Candidate[]);
   const windowSpan = env.window.endMin - windowStart;

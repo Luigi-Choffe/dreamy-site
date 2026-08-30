@@ -7,5 +7,7 @@ console.log(`Abas (${sheets.length}):`);
 sheets.forEach((name, i) => {
   const { headers, rows } = parseXlsx(buf, { sheet: i });
   const nonEmpty = headers.filter((h) => h.trim() !== "");
-  console.log(`  [${i}] "${name}" — ${rows.length} linhas · ${nonEmpty.length} colunas: ${nonEmpty.slice(0, 12).join(" | ")}${nonEmpty.length > 12 ? " …" : ""}`);
+  console.log(
+    `  [${i}] "${name}" — ${rows.length} linhas · ${nonEmpty.length} colunas: ${nonEmpty.slice(0, 12).join(" | ")}${nonEmpty.length > 12 ? " …" : ""}`,
+  );
 });

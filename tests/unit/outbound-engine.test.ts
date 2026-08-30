@@ -197,15 +197,14 @@ describe("computePlan — elegibilidade", () => {
     expect(plan({ campaignDefs: [campaign({ status: "draft" })] }).skipped[0]?.reason).toMatch(/draft/);
     expect(plan({ runtimes: [] }).skipped[0]?.reason).toMatch(/sem aprovação/);
     expect(
-      plan({ runtimes: [runtime({ pausedAt: "2026-09-01T00:00:00Z", pausedReason: "bounce-rate" })] })
-        .skipped[0]?.reason,
+      plan({ runtimes: [runtime({ pausedAt: "2026-09-01T00:00:00Z", pausedReason: "bounce-rate" })] }).skipped[0]
+        ?.reason,
     ).toMatch(/pausada/);
   });
 
   it("contato suprimido, não verificado ou inativo não recebe", () => {
     expect(
-      plan({ suppressions: [{ email: "maria@acme.com.br", reason: "unsubscribe", createdAt: "" }] })
-        .skipped[0]?.reason,
+      plan({ suppressions: [{ email: "maria@acme.com.br", reason: "unsubscribe", createdAt: "" }] }).skipped[0]?.reason,
     ).toMatch(/supressão/);
     expect(plan({ contacts: [contact({ verification: "risky" })] }).skipped[0]?.reason).toMatch(/verificação/);
     expect(
@@ -363,7 +362,12 @@ describe("computePlan — cap e agendamento", () => {
       campaignDefs: [campaign(), defB],
       runtimes: [approvedRuntime(campaign()), approvedRuntime(defB)],
     });
-    expect(r.items.map((i) => i.campaignSlug).slice(0, 2).sort()).toEqual(["dist-teste", "outra-campanha"]);
+    expect(
+      r.items
+        .map((i) => i.campaignSlug)
+        .slice(0, 2)
+        .sort(),
+    ).toEqual(["dist-teste", "outra-campanha"]);
   });
 
   it("campaignFilter restringe o plano", () => {

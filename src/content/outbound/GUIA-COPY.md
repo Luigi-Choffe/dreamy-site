@@ -17,30 +17,30 @@ nunca como slogan colado no e-mail.
 
 ## Regras de forma
 
-| Regra | Valor |
-| --- | --- |
-| Tamanho do corpo | 50–120 palavras (lint: erro acima de 140, aviso fora de 30–120) |
-| Ideias por e-mail | 1 — uma cena de dor específica da indústria, nada de lista de serviços |
-| Perguntas | exatamente 1, curta, respondível numa linha ("faz sentido aí?") |
-| Adjetivos de venda | zero ("inovador", "líder", "exclusivo" — o lint bloqueia, PRD §6) |
-| Assunto | minúsculo, curto (≤ 60 caracteres), específico — ex.: `pedidos em planilha na {{empresa}}?` |
-| Links | primeiro e segundo toques SEM link; link só no E3, com UTM (ver abaixo) |
-| Formato | texto puro; sem HTML, sem imagem, sem negrito, sem emoji |
-| Exclamações | no máximo 1 na peça inteira (ideal: 0) |
-| Assinatura | NÃO escreva no corpo — o motor anexa a assinatura oficial (Luigi Choffe, Sócio fundador, logo, WhatsApp, CNPJ) de `src/lib/outbound/signature.ts` em todo envio |
-| Opt-out humano | no E4 (ou antes, se couber): "se não fizer sentido, me diz que eu paro por aqui" |
+| Regra              | Valor                                                                                                                                                           |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tamanho do corpo   | 50–120 palavras (lint: erro acima de 140, aviso fora de 30–120)                                                                                                 |
+| Ideias por e-mail  | 1 — uma cena de dor específica da indústria, nada de lista de serviços                                                                                          |
+| Perguntas          | exatamente 1, curta, respondível numa linha ("faz sentido aí?")                                                                                                 |
+| Adjetivos de venda | zero ("inovador", "líder", "exclusivo" — o lint bloqueia, PRD §6)                                                                                               |
+| Assunto            | minúsculo, curto (≤ 60 caracteres), específico — ex.: `pedidos em planilha na {{empresa}}?`                                                                     |
+| Links              | primeiro e segundo toques SEM link; link só no E3, com UTM (ver abaixo)                                                                                         |
+| Formato            | texto puro; sem HTML, sem imagem, sem negrito, sem emoji                                                                                                        |
+| Exclamações        | no máximo 1 na peça inteira (ideal: 0)                                                                                                                          |
+| Assinatura         | NÃO escreva no corpo — o motor anexa a assinatura oficial (Luigi Choffe, Sócio fundador, logo, WhatsApp, CNPJ) de `src/lib/outbound/signature.ts` em todo envio |
+| Opt-out humano     | no E4 (ou antes, se couber): "se não fizer sentido, me diz que eu paro por aqui"                                                                                |
 
 A identificação legal (razão social/CNPJ, PRD §18) é acrescentada pelo motor de envio na hora do
 disparo — não faz parte da copy versionada (e hoje ainda está pendente, decisão §24).
 
 ## A sequência (PRD §7)
 
-| Passo | offsetDays | Ângulo | Link? |
-| --- | --- | --- | --- |
-| e1 | 0 | Cena de dor da indústria + pergunta curta (gancho da oferta âncora) | não |
-| e2 | 3 | "Você não precisa saber o que construir" — diagnóstico, remoção de objeção | não |
-| e3 | 7 | Prova: dado de mercado com fonte OU simulação rotulada (`withLink: true`) | sim |
-| e4 | 7 | Encerramento curto e educado + opt-out humano | não |
+| Passo | offsetDays | Ângulo                                                                     | Link? |
+| ----- | ---------- | -------------------------------------------------------------------------- | ----- |
+| e1    | 0          | Cena de dor da indústria + pergunta curta (gancho da oferta âncora)        | não   |
+| e2    | 3          | "Você não precisa saber o que construir" — diagnóstico, remoção de objeção | não   |
+| e3    | 7          | Prova: dado de mercado com fonte OU simulação rotulada (`withLink: true`)  | sim   |
+| e4    | 7          | Encerramento curto e educado + opt-out humano                              | não   |
 
 Cada follow-up agrega ângulo novo. Nunca "só passando para lembrar". Sem breakup passivo-agressivo.
 

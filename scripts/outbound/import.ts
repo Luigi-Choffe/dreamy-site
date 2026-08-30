@@ -76,7 +76,8 @@ async function main(): Promise<void> {
   if (ext === ".csv") table = parseCsv(buffer);
   else if (ext === ".xlsx") {
     // --sheet: nome ou índice 0-based da aba (o Clay exporta empresas e pessoas em abas distintas)
-    const sheet = values.sheet === undefined ? undefined : /^\d+$/.test(values.sheet) ? Number(values.sheet) : values.sheet;
+    const sheet =
+      values.sheet === undefined ? undefined : /^\d+$/.test(values.sheet) ? Number(values.sheet) : values.sheet;
     table = parseXlsx(buffer, { sheet });
   } else throw new Error(`Extensão "${ext}" não suportada — use .xlsx ou .csv.`);
 

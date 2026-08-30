@@ -53,9 +53,7 @@ export function assertSendReady(env: OutboundEnv): asserts env is OutboundEnv & 
   if (!env.from) missing.push("OUTBOUND_FROM");
   if (!env.replyTo) missing.push("OUTBOUND_REPLY_TO");
   if (missing.length > 0) {
-    throw new Error(
-      `Envio real exige env: ${missing.join(", ")} (defina em .env.local — nomes em .env.example).`,
-    );
+    throw new Error(`Envio real exige env: ${missing.join(", ")} (defina em .env.local — nomes em .env.example).`);
   }
 }
 

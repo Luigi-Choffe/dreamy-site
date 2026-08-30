@@ -114,9 +114,7 @@ async function main() {
   // que o enrollment considera enviado; ooo COM --suppress é opt-out e cancela sim.
   const sends = await store.sends();
   const deveCancelar = classification !== "ooo" || values.suppress;
-  const pendentes = deveCancelar
-    ? sends.filter((s) => s.contactId === contact.id && s.status === "scheduled")
-    : [];
+  const pendentes = deveCancelar ? sends.filter((s) => s.contactId === contact.id && s.status === "scheduled") : [];
   let cancelados = 0;
   let cancelFalhas = 0;
   if (pendentes.length > 0) {
@@ -156,7 +154,9 @@ async function main() {
     console.log(`  supressão:     adicionada (unsubscribe) — ${paradosPorOptOut} enrollment(s) extra parado(s)`);
   }
   if (cancelados > 0 || cancelFalhas > 0) {
-    console.log(`  agendados:     ${cancelados} cancelado(s) no Resend${cancelFalhas > 0 ? ` · ${cancelFalhas} FALHA(S) — cancele no painel` : ""}`);
+    console.log(
+      `  agendados:     ${cancelados} cancelado(s) no Resend${cancelFalhas > 0 ? ` · ${cancelFalhas} FALHA(S) — cancele no painel` : ""}`,
+    );
   }
 
   logger.info("outbound.reply", {

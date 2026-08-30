@@ -110,12 +110,7 @@ export interface DailySendPoint {
 }
 
 /** Série diária dos últimos `days` dias (inclui dias sem envio, para o sparkline). */
-export function dailySendSeries(
-  sends: SendRecord[],
-  days: number,
-  now: Date,
-  utcOffset: string,
-): DailySendPoint[] {
+export function dailySendSeries(sends: SendRecord[], days: number, now: Date, utcOffset: string): DailySendPoint[] {
   const byDay = new Map<string, DailySendPoint>();
   for (let i = days - 1; i >= 0; i -= 1) {
     const d = new Date(now.getTime() - i * 86_400_000);
@@ -139,19 +134,13 @@ export function dailySendSeries(
  * ou sequência parada) — acontecem quando um cancelamento falhou ou a chave do
  * Resend não estava configurada no momento da ação. Exigem cancelamento manual.
  */
-export function orphanScheduled(
-  sends: SendRecord[],
-  contacts: Contact[],
-  enrollments: Enrollment[],
-): SendRecord[] {
+export function orphanScheduled(sends: SendRecord[], contacts: Contact[], enrollments: Enrollment[]): SendRecord[] {
   const suppressedContacts = new Set(contacts.filter((c) => c.status === "suppressed").map((c) => c.id));
   const deadEnrollments = new Set(
     enrollments.filter((e) => e.status === "stopped" || e.status === "replied").map((e) => e.id),
   );
   return sends.filter(
-    (s) =>
-      s.status === "scheduled" &&
-      (suppressedContacts.has(s.contactId) || deadEnrollments.has(s.enrollmentId)),
+    (s) => s.status === "scheduled" && (suppressedContacts.has(s.contactId) || deadEnrollments.has(s.enrollmentId)),
   );
 }
 

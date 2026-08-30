@@ -55,7 +55,12 @@ describe("rewindEnrollmentForCancel", () => {
 
   it("e2 cancelado: volta ao passo 1 com lastSendAt do e1 entregue", () => {
     const e1 = send({ id: "s1", stepId: "e1", status: "delivered", scheduledAt: "2026-08-28T10:00:00-03:00" });
-    const s2 = send({ id: "s2", stepId: "e2", idempotencyKey: "dist-teste/c1/e2", scheduledAt: "2026-09-01T10:00:00-03:00" });
+    const s2 = send({
+      id: "s2",
+      stepId: "e2",
+      idempotencyKey: "dist-teste/c1/e2",
+      scheduledAt: "2026-09-01T10:00:00-03:00",
+    });
     const e = enrollment({ nextStep: 2, lastSendAt: s2.scheduledAt });
     expect(rewindEnrollmentForCancel(e, s2, DEF, [e1, s2])).toBe(true);
     expect(e.nextStep).toBe(1);
