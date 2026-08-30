@@ -463,3 +463,21 @@ Date:
 
 Status:
 Accepted. Emenda parcialmente ADR-010 (escopo do guard) e substitui a proposta de auth do PRD-EMAIL-OUTBOUND §16 / §19 item 4.
+---
+
+# ADR-025
+
+Decision:
+CRM piloto por cima do outbound (PRD-EMAIL-OUTBOUND §29): sete coleções ADITIVAS no store duplo (`deals`, `notes`, `tasks`, `demands`, `agentActivities`, `briefings`, `settings` — arquivo e Postgres via `outbound_documents`, zero DDL). Pipeline com 8 estágios: "novo/contatado/respondeu" derivados do outbound por `reconcileDeals` (puro, idempotente, forward-only, jamais escreve nas coleções do motor); de "reuniao_marcada" em diante o movimento é humano (`applyStageMove`, piso no `autoStage`, motivo obrigatório em perdido, data obrigatória em reunião). Reunião NÃO é entidade: é estágio com `stageHistory` append-only, que alimenta a métrica norte (geradas/realizadas). Tarefas e notas append-only, com a regra do interessado (`ensureFollowUpTask` na mesma transação do reply). Fila de demandas console → CLI (`outbound:demandas`; transições validadas em `demands-core.ts`, resolução obrigatória em concluída/recusada, cancelamento só de pendente). IA por fetch direto (`claude-sonnet-5`, `OUTBOUND_ANTHROPIC_API_KEY`; 503 sem chave; demo com conteúdo simulado rotulado) com gate humano absoluto — nunca envia, nunca grava classificação, nunca move estágio — e prompts sem PII (`redactEmails`; só agregados, primeiro nome, cargo, indústria). `WorkspaceSettings` singleton de APRESENTAÇÃO (nunca alimenta copy, assinatura ou motor). Time de subagentes em `.claude/agents/` (verbo=copy, garimpo=leads/ICP, trato=respostas/CRM, forja=plataforma; teto de 5 — 5ª vaga MIRA reservada; demissão só com autorização do Luigi).
+
+Reason:
+Ordem do Luigi (2026-08-30): a plataforma é o piloto do CRM que a Dreamy vende; o MORK é o produto e a validação é ser vendido a outro cliente. O desenho protege o que já opera (1º disparo real 2026-08-31: motor de envio intocado, tudo aditivo), preserva os gates do ADR-020 (armar/disparar/aprovar só na CLI, com humano) e torna cada automação derivável e reversível (reconcile idempotente, históricos append-only, IA só sugere).
+
+Alternatives:
+CRM externo (Pipedrive/HubSpot — PII fora de casa e integração maior que o piloto); coleção Meeting separada (duplicaria o stageHistory); SDK da Anthropic (dependência desnecessária para um fetch); IA com autonomia de escrita (violaria o gate humano e o controle de PII); tabelas Postgres dedicadas por coleção (DDL e migrações sem ganho no volume atual).
+
+Date:
+2026-08-30
+
+Status:
+Accepted. Complementa ADR-019/023 (mesmas garantias de store para as coleções novas) e preserva integralmente ADR-020.

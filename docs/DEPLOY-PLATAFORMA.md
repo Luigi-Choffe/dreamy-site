@@ -4,7 +4,7 @@ Roteiro para o Luigi colocar a plataforma de vendas no ar: console `/interno/out
 
 ## Estado (2026-08-30)
 
-- Projeto Vercel: **criado em 2026-08-30** (`dreamy-site`, time `luigichoffedremay`, `https://dreamy-site-murex.vercel.app`; passo 1 ✓) e **Neon conectado** (passo 2 ✓ — as envs automáticas usam o prefixo escolhido na integração, `STORAGE_*` ou `DATABASE_*`; a pooled é a `*_URL` cujo host contém `-pooler`). A integração desta máquina não tem permissão no time (`403`): tudo na Vercel é pelo painel. **Próximo: passo 3.**
+- Projeto Vercel: **criado em 2026-08-30** (`dreamy-site`, time `luigichoffedremay`, `https://dreamy-site-murex.vercel.app`; passo 1 ✓) e **Neon conectado** (passo 2 ✓ — as envs automáticas usam o prefixo escolhido na integração, `STORAGE_*` ou `DATABASE_*`; a pooled é a `*_URL` cujo host contém `-pooler`). A integração desta máquina não tem permissão no time (`403`): tudo na Vercel é pelo painel. **Passos 3 e 4 feitos em 2026-08-30** (as 8 envs + Redeploy; banco migrado: 79 contatos, 99 empresas, 16 enrollments, armada SIM). Próximo: primeiro login (passo 6) e domínio (passo 5).
 - Código: adapter Postgres + `pnpm outbound:db` (ADR-023) e login por link mágico com proxy (ADR-024) já no repo e publicados no `main` em 2026-08-30. Sem `OUTBOUND_DATABASE_URL`, tudo continua no store local `.outbound/` (dev/demo).
 - Operação: campanha `construcao-nova-receita` aprovada e ARMADA; tarefa `DreamyOutboundAuto` (dias úteis 09:05) segue no PC do Luigi e passa a gravar no banco depois do passo 4.
 

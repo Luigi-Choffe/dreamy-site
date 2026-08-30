@@ -9,6 +9,9 @@
 pnpm outbound:arm status      # armada? breaker? cap do dia? env presente?
 pnpm outbound:report          # funil por campanha, guard-rails, supressões
 pnpm outbound:campaign list   # campanhas, aprovação, pausa, bounce por campanha
+pnpm outbound:demandas list          # fila do time (claim ao começar, done ao entregar)
+pnpm outbound:crm task list --today  # tarefas de hoje e vencidas (follow-up de interessado!)
+pnpm outbound:crm reconcile          # pipeline acompanha o outbound (idempotente)
 ```
 
 Console visual: hospedado em https://mork.bedreamy.com.br/interno/outbound (login
@@ -79,6 +82,8 @@ Tarefa Windows **DreamyOutboundAuto** roda `pnpm outbound:auto` (dias úteis
 | Complaint                                 | breaker global para TUDO; só o Luigi decide religar (`arm reset-breaker --confirm`)                                                                                                                                            |
 | Pausar uma campanha                       | `pnpm outbound:campaign pause --slug <x> --reason "..."` (cancela agendados)                                                                                                                                                   |
 | Pânico geral                              | `pnpm outbound:arm disarm`                                                                                                                                                                                                     |
+| Demanda nova na fila (aba Demandas)       | `pnpm outbound:demandas claim --id <id>` ao começar · `done --id <id> --resolution "..."` ao entregar · recusar exige `--motivo`; toda transição vira prestação de contas na aba MORK                                          |
+| Interessado classificado                  | a tarefa de follow-up nasce sozinha; conferir em `pnpm outbound:crm task list --today` e mover o negócio no pipeline quando marcar reunião                                                                                     |
 
 ## 4. Relatório semanal ao Luigi (sexta ou quando pedir)
 
@@ -101,6 +106,8 @@ como tendência; número ruim se reporta igual número bom.
 | Dados vivos (PII)                     | banco Postgres Neon (`OUTBOUND_DATABASE_URL`, compartilhado console ↔ CLIs) · sem a env: `.outbound/` (dev/demo) · planilhas em `docs/CONTATOS/` · backups `pnpm outbound:db pull` (gitignored) |
 | Env (chave Resend, from/reply, banco) | `.env.local` no PC · Vercel → Settings → Environment Variables (nomes em `.env.example`)                                                                                                        |
 | Deploy da plataforma                  | `docs/DEPLOY-PLATAFORMA.md`                                                                                                                                                                     |
+| CRM piloto (núcleo, IA, demandas)     | `src/lib/outbound/crm-core.ts`, `demands-core.ts`, `ai.ts`, `agent-log.ts` · CLIs `outbound:crm`, `outbound:demandas` · páginas pipeline, hoje, contatos/[id], demandas, mork, configuracao     |
+| Time de agentes (subagentes do MORK)  | `.claude/agents/`: verbo (copy), garimpo (leads/ICP), trato (respostas/CRM), forja (plataforma); 5ª vaga MIRA reservada; demitir só com permissão do Luigi                                      |
 | Spec e decisões                       | `docs/PRD-EMAIL-OUTBOUND.md` (§28 operação, §29 plataforma) · ADR-019…024 em `docs/DECISIONS.md`                                                                                                |
 
 ## 6. Estado em 2026-08-30 (atualizar quando mudar de fase)
@@ -122,15 +129,21 @@ Postgres Neon **compartilhado** com os CLIs (`OUTBOUND_DATABASE_URL` no
 Luigi já criou o projeto Vercel `dreamy-site` no time dele (`luigichoffedremay`,
 URL `https://dreamy-site-murex.vercel.app`, build do commit e7abee2 OK — login
 respondendo) e conectou o Neon ao projeto (Production+Preview; envs criadas com
-prefixo `STORAGE_*` ou `DATABASE_*`). **Falta**: item 3 do
-`docs/DEPLOY-PLATAFORMA.md` (envs: `OUTBOUND_DATABASE_URL` = string `-pooler`,
-`OUTBOUND_PLATFORM_ONLY=true`, Resend, FROM/REPLY_TO, `OUTBOUND_TEAM_EMAILS`,
-`OUTBOUND_SESSION_SECRET`, `OUTBOUND_APP_URL` = URL da Vercel até o domínio) →
-Redeploy → login de teste; item 4 (Luigi passa a connection string, MORK roda
-`outbound:db migrate` + `push` FORA da janela 09:00–17:30 e confere status =
-42 contatos / 16 enrollments / armada); item 5 (CNAME `mork` na Hostinger e
-trocar `OUTBOUND_APP_URL`). O MCP Vercel desta máquina é de outra conta (403):
+prefixo `STORAGE_*` ou `DATABASE_*`). **Feito na tarde de 2026-08-30**: itens 3 e 4 (as 8 envs na Vercel + Redeploy; banco migrado com `outbound:db migrate`/`push`: 79 contatos, 99 empresas, 16 enrollments, armada SIM — CLIs e console no MESMO banco; allowlist contact@bedreamy.com.br + luigi.lgv@hotmail.com). **Falta**: login de teste do Luigi e item 5 (CNAME `mork` na Hostinger e trocar `OUTBOUND_APP_URL`). O MCP Vercel desta máquina é de outra conta (403):
 tudo na Vercel é clique do Luigi. Até o `push`, o estado vivo está em
 `.outbound/`; depois, no banco — mesmos comandos, mesma leitura. Pendências: corrigir domínio do Grupo Impper no
 Clay (veio rdstation.com); Vercel Cron, webhooks, one-click e respostas
 automáticas = fases P2–P4 do PRD §29.3.
+
+**CRM piloto (2026-08-30, ADR-025)**: a plataforma virou o piloto do CRM da
+Dreamy (o MORK é o produto; a validação é ser vendido a outro cliente).
+Implementado por cima do console, motor de envio intocado: pipeline kanban
+(8 estágios; novo/contatado/respondeu automáticos via `outbound:crm reconcile`),
+conta do contato com timeline/notas/tarefas, aba Hoje (interested classificado
+gera tarefa de follow-up sozinho), fila de Demandas (console ↔
+`outbound:demandas`), painel MORK (prestação de contas), IA env-gated
+(`OUTBOUND_ANTHROPIC_API_KEY`: briefing do dia + sugestão de triagem; gate
+humano SEMPRE, prompt sem PII), funil de valor na visão geral e Configuração de
+marca (apresentação apenas). Time de subagentes em `.claude/agents/`: VERBO
+(copy), GARIMPO (leads/ICP), TRATO (respostas/CRM), FORJA (plataforma); 5ª vaga
+(MIRA, análise) reservada — demitir exige permissão do Luigi. Ritual novo no §0.

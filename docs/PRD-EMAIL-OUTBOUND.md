@@ -3,7 +3,7 @@
 Empresa: Dreamy
 Produto: sistema interno de campanhas de e-mail B2B segmentadas por indústria, enviadas via Resend e operadas pelo agente (Claude), com dashboard interno de métricas.
 Versão: 1.0
-Status: EM OPERAÇÃO desde 2026-08-29 — campanha `construcao-nova-receita` aprovada (Luigi Choffe) e automação ARMADA; tarefa agendada "DreamyOutboundAuto" (dias úteis 09:05); 1º disparo real: segunda 2026-08-31 (16 incorporadoras, rampa 15/dia) · **PIVÔ 2026-08-29 (§29)**: este repositório passa a ser a plataforma de vendas hospedada da Dreamy (console na Vercel + Postgres Neon + login do time por link mágico); o site institucional fica com o sócio, em outro deploy
+Status: EM OPERAÇÃO desde 2026-08-29 — campanha `construcao-nova-receita` aprovada (Luigi Choffe) e automação ARMADA; tarefa agendada "DreamyOutboundAuto" (dias úteis 09:05); 1º disparo real: segunda 2026-08-31 (16 incorporadoras, rampa 15/dia) · **PIVÔ 2026-08-29 (§29)**: este repositório passa a ser a plataforma de vendas hospedada da Dreamy (console na Vercel + Postgres Neon + login do time por link mágico); o site institucional fica com o sócio, em outro deploy · **CRM PILOTO desde 2026-08-30 (ADR-025)**: pipeline de negócios, conta do contato com timeline, tarefas/hoje, fila de demandas do MORK, IA env-gated (briefing + triagem, gate humano) e funil de valor implementados por cima do console; motor de envio intocado
 Idioma: pt-BR
 Origem da lista: export do Clay (Excel), entregue pelo usuário (pendente)
 Documentos relacionados: `docs/PRD.md` (site — fonte de verdade de posicionamento e copy), `docs/apresentacao/` (pitch), `docs/CONTENT-SOURCES.md` (claims permitidos), `.agents/rules/dreamy-site.md`
