@@ -5,7 +5,7 @@ Roteiro para o Luigi colocar a plataforma de vendas no ar: console `/interno/out
 ## Estado (2026-08-30)
 
 - Projeto Vercel: **ainda não existe** — a integração desta máquina não tem permissão de criar projeto (`403`); é import pelo painel (passo 1).
-- Código: adapter Postgres + `pnpm outbound:db` já no repo (ADR-023); login por link mágico em implementação (ADR-024). Sem `OUTBOUND_DATABASE_URL`, tudo continua no store local `.outbound/` (dev/demo).
+- Código: adapter Postgres + `pnpm outbound:db` (ADR-023) e login por link mágico com proxy (ADR-024) já no repo e publicados no `main` em 2026-08-30. Sem `OUTBOUND_DATABASE_URL`, tudo continua no store local `.outbound/` (dev/demo).
 - Operação: campanha `construcao-nova-receita` aprovada e ARMADA; tarefa `DreamyOutboundAuto` (dias úteis 09:05) segue no PC do Luigi e passa a gravar no banco depois do passo 4.
 
 ## Como as peças se ligam
