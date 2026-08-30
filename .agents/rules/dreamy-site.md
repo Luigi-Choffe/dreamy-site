@@ -1,11 +1,11 @@
 ---
 trigger: always_on
-description: Regras permanentes do projeto do site institucional B2B da Dreamy.
+description: Regras permanentes do workspace Dreamy — plataforma de vendas (outbound/MORK) e o site institucional B2B de origem.
 ---
 
 # Regra do workspace — Dreamy Site
 
-Este projeto implementa o site institucional B2B da Dreamy.
+Este projeto nasceu como o site institucional B2B da Dreamy e, desde 2026-08-29, é a **plataforma de vendas** da Dreamy (console de outbound hospedado + agente MORK — ver `.agents/mork/MORK.md` e `docs/PRD-EMAIL-OUTBOUND.md`). As regras de posicionamento e copy abaixo continuam valendo para tudo que a plataforma envia em nome da Dreamy.
 
 O arquivo `docs/PRD.md` é a fonte de verdade. Em caso de conflito, seguir a ordem de prioridade do PRD:
 posicionamento e estratégia comercial → regras de negócio → arquitetura de informação → UX → copy → design system → implementação técnica.

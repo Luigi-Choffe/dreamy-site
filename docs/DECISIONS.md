@@ -367,7 +367,7 @@ Date:
 2026-08-27
 
 Status:
-Accepted. Reavaliar na fase de produção (dashboard com auth + webhooks exigem banco compartilhado).
+Accepted. Superseded parcialmente por ADR-023 (2026-08-29): Postgres passa a ser a fonte de verdade quando `OUTBOUND_DATABASE_URL` existe; o store em arquivos permanece para dev/demo. Polling de eventos continua até a fase de webhooks (PRD-EMAIL-OUTBOUND §29.3).
 
 ---
 
@@ -425,3 +425,41 @@ Date:
 
 Status:
 Accepted.
+
+---
+
+# ADR-023
+
+Decision:
+Persistência do outbound em Postgres gerenciado (Neon, criado pela aba Storage do projeto Vercel — integração Marketplace, free tier), acessado com `@neondatabase/serverless` pela env `OUTBOUND_DATABASE_URL` (connection string POOLED). `openStore()` escolhe o adapter pela presença da env: com ela, `store-pg.ts` (tabelas `outbound_documents`, `outbound_events`, `outbound_state`, `outbound_locks` — coleções como documentos JSON, eventos append-only, estado armed/breaker e lock de operação no próprio banco); sem ela, o store em arquivos (`.outbound/`) continua valendo — dev, demo e fallback. Comandos: `pnpm outbound:db migrate` (cria/confirma tabelas, idempotente), `push [--confirm]` (copia o store local para o banco, uma vez; recusa sobrescrever banco com dados sem `--confirm`), `pull [--dir]` (backup banco → JSON), `status` (contagens). Testes do adapter rodam com Postgres embutido (`@electric-sql/pglite`, devDependency). CLIs locais (incluindo a tarefa agendada) e o console na Vercel apontam para o MESMO banco.
+
+Reason:
+O pivô de 2026-08-29 (PRD-EMAIL-OUTBOUND §29) transforma o console num serviço hospedado com acesso do time — arquivos locais não são compartilháveis nem persistem em serverless. Neon pela Storage da Vercel dispensa conta/billing separados e injeta a conexão no projeto; o driver serverless fala HTTP/WebSocket (funciona em funções de curta duração, sem pool próprio) e a string pooled (PgBouncer) absorve conexões simultâneas de console + CLIs. Modelo documento-por-coleção preserva os tipos e chamadores do store em arquivos (ADR-019) — zero mudança de modelo de dados. Manter o store em arquivos preserva `pnpm dev`/demo sem banco e o caminho de saída (`pull`). pglite dá testes reais de SQL sem Docker nem serviço externo no CI. Duas dependências novas, ambas justificadas (ADR-011: dependência só com motivo forte).
+
+Alternatives:
+Continuar em arquivos + Vercel Blob (sem transações nem consultas; concorrência console × CLI); Upstash Redis (já rejeitado no ADR-019 — sem consultas analíticas); Supabase (segunda plataforma/conta; auth própria redundante); SQLite/Turso (fora da Storage da Vercel, driver extra); ORM (Drizzle/Prisma — camada a mais para meia dúzia de tabelas; SQL versionado é suficiente); testes contra Neon real (segredo no CI, lento, flaky).
+
+Date:
+2026-08-29
+
+Status:
+Accepted. Supersede parcialmente ADR-019: o banco é a fonte de verdade quando `OUTBOUND_DATABASE_URL` existe; o store em arquivos permanece para dev/demo.
+
+---
+
+# ADR-024
+
+Decision:
+Autenticação do console hospedado por **link mágico**: `/interno/login` recebe um e-mail; se estiver na allowlist `OUTBOUND_TEAM_EMAILS` (separada por vírgulas), o app envia pelo Resend (mesma conta do outbound) um link assinado e de validade curta para `/api/outbound/auth/callback`, que grava um cookie de sessão assinado com HMAC (`OUTBOUND_SESSION_SECRET`; HttpOnly, Secure, SameSite=Lax; 30 dias). Guard em `src/proxy.ts` sobre `/interno/*` e `/api/outbound/*` (exceto as rotas de auth); `/interno/logout` encerra a sessão. `OUTBOUND_APP_URL` define a base dos links; `OUTBOUND_AUTH_DISABLED=true` desliga o guard somente fora de produção (dev/testes). Sem provedor externo, sem senha, sem tabela de usuários: estar na allowlist é o cadastro. Revogação: remover da allowlist (+ trocar `OUTBOUND_SESSION_SECRET` para derrubar sessões vivas) e redeploy.
+
+Reason:
+O time precisa entrar por e-mail sem conta em serviço nenhum, e o projeto Vercel é Hobby (um membro; sem convite de membros): a **Vercel Authentication** (Deployment Protection) só aceita membros da Vercel, não serve ao time e já fora rejeitada como mecanismo primário no PRD-EMAIL-OUTBOUND §16 por bloquear rotas públicas futuras (webhook, descadastro). A **senha compartilhada** proposta no PRD §16/§19 (`OUTBOUND_DASHBOARD_PASSWORD`) não identifica quem fez cada ação (as Server Actions mutam PII), vaza por chat e exige rotação coletiva. Um provedor de identidade (Auth.js/Clerk/Auth0) adicionaria dependência, conta e configuração para um time de poucas pessoas. O link mágico reaproveita o Resend já presente (domínio `bedreamy.com.br` verificado) e a assinatura HMAC é nativa (sem dependência). Reverte de forma delimitada o ADR-010 ("sem proxy.ts"): o matcher cobre apenas `/interno/*` e `/api/outbound/*`; as páginas do site continuam estáticas e fora do guard.
+
+Alternatives:
+Vercel Authentication/Deployment Protection (exige membros Vercel/plano; bloquearia webhooks); senha única de time em env (PRD §16 — sem identidade individual, rotação coletiva); Auth.js/Clerk/Auth0 (dependência e conta externas para 2–3 usuários); Basic Auth (sem logout, credenciais em cada request, mesma fraqueza da senha única); Cloudflare Access (proxy de terceiro na frente da Vercel, outro painel).
+
+Date:
+2026-08-29
+
+Status:
+Accepted. Emenda parcialmente ADR-010 (escopo do guard) e substitui a proposta de auth do PRD-EMAIL-OUTBOUND §16 / §19 item 4.

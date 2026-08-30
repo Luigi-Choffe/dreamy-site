@@ -69,6 +69,10 @@ específico, primeira pessoa, pergunta genuína, zero verniz de marketing.
 
 ## Estado vivo
 
-O estado real está sempre no store (`.outbound/`) e se consulta com comandos —
-nunca de memória. Início de qualquer sessão do MORK: `pnpm outbound:arm status`
-e `pnpm outbound:report` (detalhe no PLAYBOOK).
+O estado real está sempre no store — o banco Postgres Neon compartilhado
+(`OUTBOUND_DATABASE_URL`) ou, sem a env, `.outbound/` — e se consulta com
+comandos, nunca de memória. Início de qualquer sessão do MORK:
+`pnpm outbound:arm status` e `pnpm outbound:report` (detalhe no PLAYBOOK).
+O console hospedado (`https://mork.bedreamy.com.br/interno/outbound`, login por
+e-mail do time — PRD §29) mostra o mesmo banco: é onde o Luigi e o time
+acompanham; o MORK opera pela CLI.

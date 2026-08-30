@@ -70,3 +70,5 @@ next-env.d.ts
 *.log
 Thumbs.db
 scripts/dev/__pycache__/
+# outbound: backups do banco (pnpm outbound:db pull — PII, nunca commitar)
+/.outbound-backup-*/

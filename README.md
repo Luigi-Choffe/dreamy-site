@@ -1,4 +1,8 @@
-# Dreamy — Site institucional B2B
+# Dreamy — Plataforma de vendas (outbound + MORK)
+
+> **Pivô 2026-08-29**: este repositório virou a **plataforma de vendas da Dreamy** — o console de campanhas de e-mail (`/interno/outbound`) hospedado na Vercel com login por e-mail para o time, operado pelo agente **MORK** (`.agents/mork/`). O site institucional, construído aqui a partir do PRD v2.0 (`docs/PRD.md`), foi duplicado e é hospedado à parte pelo sócio; suas páginas continuam no repo até a fase de remoção (PRD-EMAIL-OUTBOUND §29.3).
+>
+> Comece por `docs/HANDOFF.md`; especificação da plataforma em `docs/PRD-EMAIL-OUTBOUND.md`; deploy em `docs/DEPLOY-PLATAFORMA.md`. Comandos: `pnpm outbound:*` (import, verify, companies, campaign, arm, plan, send, sync, auto, reply, report, demo, db).
 
 Site institucional da Dreamy (software sob medida e agentes de IA para empresas), construído a partir do **PRD v2.0** (`docs/PRD.md` — fonte de verdade). Objetivo: gerar reuniões comerciais qualificadas.
 

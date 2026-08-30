@@ -3,7 +3,7 @@
 Empresa: Dreamy
 Produto: sistema interno de campanhas de e-mail B2B segmentadas por indústria, enviadas via Resend e operadas pelo agente (Claude), com dashboard interno de métricas.
 Versão: 1.0
-Status: EM OPERAÇÃO desde 2026-08-29 — campanha `construcao-nova-receita` aprovada (Luigi Choffe) e automação ARMADA; tarefa agendada "DreamyOutboundAuto" (dias úteis 09:05); 1º disparo real: segunda 2026-08-31 (16 incorporadoras, rampa 15/dia)
+Status: EM OPERAÇÃO desde 2026-08-29 — campanha `construcao-nova-receita` aprovada (Luigi Choffe) e automação ARMADA; tarefa agendada "DreamyOutboundAuto" (dias úteis 09:05); 1º disparo real: segunda 2026-08-31 (16 incorporadoras, rampa 15/dia) · **PIVÔ 2026-08-29 (§29)**: este repositório passa a ser a plataforma de vendas hospedada da Dreamy (console na Vercel + Postgres Neon + login do time por link mágico); o site institucional fica com o sócio, em outro deploy
 Idioma: pt-BR
 Origem da lista: export do Clay (Excel), entregue pelo usuário (pendente)
 Documentos relacionados: `docs/PRD.md` (site — fonte de verdade de posicionamento e copy), `docs/apresentacao/` (pitch), `docs/CONTENT-SOURCES.md` (claims permitidos), `.agents/rules/dreamy-site.md`
@@ -91,12 +91,12 @@ Non-goals V1:
 
 Framework de campanha por indústria (preencher quando a lista chegar — **exemplos ilustrativos**, validar contra a lista real):
 
-| Indústria (exemplo) | Oferta âncora | Dor traduzida (cena do slide 03 no vocabulário do setor) | Gancho de abertura |
-| --- | --- | --- | --- |
-| Distribuição / atacado | Sistemas Sob Medida | Pedidos em planilha, ERP que não conversa com o comercial, ruptura descoberta tarde | "O ERP diz uma coisa, o vendedor vê outra" |
-| Indústria / manufatura | Agentes de IA (Operação) | Relatórios de produção montados à mão, apontamentos em papel/planilha | "Quanto tempo entre o fim do turno e o número na sua mesa?" |
-| Serviços B2B recorrentes | Nova Receita Digital | Base grande de clientes monetizada só pelo serviço principal | "O que MAIS seus clientes comprariam de você?" |
-| Saúde / clínicas em rede | Agentes de IA (Atendimento) | Agenda e confirmação manuais, leads sem retorno em horas | "Leads que esperam horas esfriam em minutos" |
+| Indústria (exemplo)      | Oferta âncora               | Dor traduzida (cena do slide 03 no vocabulário do setor)                            | Gancho de abertura                                          |
+| ------------------------ | --------------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Distribuição / atacado   | Sistemas Sob Medida         | Pedidos em planilha, ERP que não conversa com o comercial, ruptura descoberta tarde | "O ERP diz uma coisa, o vendedor vê outra"                  |
+| Indústria / manufatura   | Agentes de IA (Operação)    | Relatórios de produção montados à mão, apontamentos em papel/planilha               | "Quanto tempo entre o fim do turno e o número na sua mesa?" |
+| Serviços B2B recorrentes | Nova Receita Digital        | Base grande de clientes monetizada só pelo serviço principal                        | "O que MAIS seus clientes comprariam de você?"              |
+| Saúde / clínicas em rede | Agentes de IA (Atendimento) | Agenda e confirmação manuais, leads sem retorno em horas                            | "Leads que esperam horas esfriam em minutos"                |
 
 Regra do framework: a dor é sempre uma **cena reconhecível** do setor (traduzida das dores genéricas do site/apresentação) — nunca uma estatística inventada do setor, nunca um case fictício.
 
@@ -122,12 +122,12 @@ Fonte: copy real do site (`src/content/`) e da apresentação (`docs/apresentaca
 
 Sequência padrão por campanha (4 toques, ~17 dias — dentro do consenso 3–5 toques/14–21 dias):
 
-| Passo | Dia | Ângulo | Link? |
-| --- | --- | --- | --- |
-| E1 | 0 | Cena de dor da indústria + pergunta curta (gancho da oferta âncora) | Não |
-| E2 | +3 | "Você não precisa saber o que construir" — diagnóstico, remoção de objeção | Não |
-| E3 | +7 | Prova: dado de mercado com fonte OU simulação rotulada (Nova Receita) | Sim — página da solução com `?solucao=` + UTM |
-| E4 | +7 | Encerramento curto e educado ("encerro por aqui; se fizer sentido um dia, a porta está aberta") | Não |
+| Passo | Dia | Ângulo                                                                                          | Link?                                         |
+| ----- | --- | ----------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| E1    | 0   | Cena de dor da indústria + pergunta curta (gancho da oferta âncora)                             | Não                                           |
+| E2    | +3  | "Você não precisa saber o que construir" — diagnóstico, remoção de objeção                      | Não                                           |
+| E3    | +7  | Prova: dado de mercado com fonte OU simulação rotulada (Nova Receita)                           | Sim — página da solução com `?solucao=` + UTM |
+| E4    | +7  | Encerramento curto e educado ("encerro por aqui; se fizer sentido um dia, a porta está aberta") | Não                                           |
 
 - Cada follow-up agrega ângulo novo — nunca "só passando para lembrar". Sem breakup passivo-agressivo.
 - Parada imediata e automática do restante da sequência em: resposta (qualquer), unsubscribe, bounce, complaint.
@@ -271,12 +271,12 @@ Verificação de entregabilidade (obrigatória antes do 1º envio de cada lote �
 - Google Postmaster Tools: cadastrar o domínio de envio no dia 0; spam rate é guard-rail (§21).
 - **Rampa de volume** (domínio novo; caps aplicados pelo motor §12):
 
-| Semana | Cap/dia (total do domínio) |
-| --- | --- |
-| 1 | 15 |
-| 2 | 30 |
-| 3 | 50 |
-| 4+ | 80 (teto da V1; escalar = mais domínios, não mais volume) |
+| Semana | Cap/dia (total do domínio)                                |
+| ------ | --------------------------------------------------------- |
+| 1      | 15                                                        |
+| 2      | 30                                                        |
+| 3      | 50                                                        |
+| 4+     | 80 (teto da V1; escalar = mais domínios, não mais volume) |
 
 - Regime: goteo dentro da janela comercial; nunca rajada. Plano Resend: Free (100/dia) cobre a rampa; Pro (US$ 20/mês) quando o volume mensal passar de 3 mil ou para folga operacional.
 - Realismo (registrado para decisão do §2): envio via API/ESP não replica o padrão "caixa humana" das ferramentas de cold (Google Workspace + warm-up automático). Com Resend, a mitigação é volume baixo + relevância alta + lista impecável. É limite estrutural da Opção A.
@@ -306,6 +306,7 @@ ADRs a registrar em `docs/DECISIONS.md` na implementação (próximo livre: ADR-
 4. **Auth do dashboard**: senha de time + cookie assinado + guard em `proxy.ts` (reverte parcialmente ADR-010 "sem middleware" — registrar a tensão e o escopo mínimo do guard). Páginas do site permanecem estáticas.
 5. **Envio via API própria vs Audiences/Broadcasts do Resend**: proposta — API própria (`/emails/batch`): segmentação e supressão são nossas, custo de Audiences por contato armazenado não se justifica, personalização por destinatário é total. Broadcasts reconsiderável para nurture opt-in (Opção B/C).
 6. **Conta Resend separada** para outbound (isolamento do risco de AUP — §2) + domínio de envio (§17).
+
 - Código: `src/lib/outbound/` (domínio: provider adapter, supressão, tokens), `src/app/api/outbound/`, `src/app/(site)/descadastro/`, `src/app/interno/outbound/`, `scripts/outbound/` (CLI). Testes: unit (vitest) para import/validação/supressão/webhook-dedupe; e2e (playwright) para descadastro e auth do dashboard; fixtures de payloads Svix.
 - `pnpm check` continua sendo o gate. Novos comandos: `outbound:import`, `outbound:verify`, `outbound:plan`, `outbound:send`, `outbound:reply`, `outbound:report`.
 
@@ -329,11 +330,11 @@ Hierarquia de métricas (honesta — decisão nunca por abertura):
 3. **Abertura**: registrada e exibida **sempre com a ressalva** — Apple MPP pré-carrega pixels (metade dos "opens" pode ser falsa), Gmail/Yahoo usam proxy de imagem. Serve para tendência grosseira entre variantes, nunca para meta.
 4. **Guard-rails (param a máquina)**:
 
-| Métrica | Verde | Âmbar (alerta) | Vermelho (circuit breaker) |
-| --- | --- | --- | --- |
-| Bounce (por campanha e por dia) | < 2% | 2–3% | > 3% → pausa automática da campanha + cancelar agendados |
-| Complaint | < 0,05% | 0,05–0,1% | > 0,1% → pausa de TODAS as campanhas |
-| Spam rate (Postmaster) | < 0,1% | 0,1–0,3% | ≥ 0,3% → pausa total + investigação |
+| Métrica                         | Verde   | Âmbar (alerta) | Vermelho (circuit breaker)                               |
+| ------------------------------- | ------- | -------------- | -------------------------------------------------------- |
+| Bounce (por campanha e por dia) | < 2%    | 2–3%           | > 3% → pausa automática da campanha + cancelar agendados |
+| Complaint                       | < 0,05% | 0,05–0,1%      | > 0,1% → pausa de TODAS as campanhas                     |
+| Spam rate (Postmaster)          | < 0,1%  | 0,1–0,3%       | ≥ 0,3% → pausa total + investigação                      |
 
 - Circuit breaker: verificado pelo motor antes de cada lote e ao processar webhooks; estado exibido no dashboard; religar exige ação humana.
 - Além dos limiares acima, lembrar os do próprio Resend (AUP): bounce ≥ 4% ou complaint ≥ 0,08% podem encerrar a conta — os guard-rails internos são deliberadamente mais rígidos.
@@ -341,28 +342,34 @@ Hierarquia de métricas (honesta — decisão nunca por abertura):
 ## 22. FASES DE DESENVOLVIMENTO
 
 FASE 0 — DECISÕES E INFRA EXTERNA
+
 - Usuário decide: §2 (A/B/C), domínio de envio, ferramenta de verificação, CNPJ/razão social para assinatura, confirmação do WhatsApp.
 - Comprar/configurar domínio de envio; criar conta Resend do outbound; DNS (DKIM/SPF/MX/DMARC/tracking CNAME); Postmaster Tools; importar projeto na Vercel (pendência já existente do site).
 - Gate: decisões registradas (ADRs) + domínio verificado no Resend + deploy com URL pública.
 
 FASE 1 — FUNDAÇÃO DE DADOS
+
 - Postgres provisionado + migrações; `outbound:import` + `outbound:verify` completos com relatório; supressão global.
 - Gate: lista real do Clay importada, validada, verificada; relatório aprovado pelo usuário; `pnpm check` verde.
 
 FASE 2 — SUPERFÍCIES PÚBLICAS
+
 - `/descadastro` (GET + POST one-click) + tokens; `POST /api/outbound/webhooks` com Svix + dedupe + efeitos de supressão; fixtures e testes.
 - Gate: webhook de teste do Resend processado no deploy; descadastro e2e verde; one-click validado com mail-tester/Gmail real.
 
 FASE 3 — MOTOR DE ENVIO + PILOTO
+
 - `outbound:plan`/`outbound:send` com rampa, janela, idempotência, circuit breaker; copy da primeira campanha aprovada (§20).
 - **Piloto**: 1 indústria, 20–30 contatos da faixa mais quente, semana 1 da rampa.
 - Gate: piloto entregue com bounce < 2%, zero complaint, eventos fluindo no banco; decisão consciente de escalar.
 
 FASE 4 — DASHBOARD INTERNO
+
 - Auth + `/interno/outbound` (visão geral, funil, guard-rails, respostas, supressão); gráficos SVG dentro da CSP.
 - Gate: dashboard reflete o piloto com números conferidos manualmente contra o Resend; e2e de auth verde.
 
 FASE 5 — ESCALA E REFINAMENTO
+
 - Demais campanhas por indústria (uma por vez, respeitando rampa); classificação de respostas rodando; relatório semanal padrão; avaliar V1.1 (inbound automático §14, correlação automática com leads do site, segunda variante por passo).
 - Gate: 2+ campanhas completas com métricas §21 dentro das faixas; retrospectiva escrita (o que cada indústria respondeu melhor).
 
@@ -381,49 +388,49 @@ FASE 5 — ESCALA E REFINAMENTO
 
 ## 24. DECISÕES PENDENTES (BLOQUEIAM FASES)
 
-| # | Decisão | Bloqueia | Recomendação |
-| --- | --- | --- | --- |
-| 1 | §2: Opção A (Resend p/ cold, risco aceito), B (híbrido, recomendada) ou C (só opt-in) | Fase 3 | B; se A, conta separada + mitigação completa |
-| 2 | Domínio de envio (irmão vs subdomínio) e sua compra | Fase 0 | Domínio irmão (ex.: `dreamy.net.br`) |
-| 3 | Ferramenta de verificação de e-mails | Fase 1 | MillionVerifier (custo) ou ZeroBounce |
-| 4 | Razão social + CNPJ + cidade para assinatura dos e-mails | Fase 3 | Fornecer (hoje `null` no projeto) |
-| 5 | Confirmação do WhatsApp +55 11 94879-3233 (ADR-013) | assinatura dos e-mails | Confirmar |
-| 6 | Caixa `reply_to` monitorada (endereço e quem monitora) | Fase 3 | Definir com o comercial |
-| 7 | Provedor Postgres (Neon vs alternativa) | Fase 1 | Neon via Vercel Marketplace |
-| 8 | Indústrias reais da lista + oferta âncora de cada campanha | copy (Fase 3) | Definir ao receber o Excel |
-| 9 | Plano Resend (Free → Pro) | Fase 3 (escala) | Free na rampa; Pro ao escalar |
+| #   | Decisão                                                                               | Bloqueia               | Recomendação                                 |
+| --- | ------------------------------------------------------------------------------------- | ---------------------- | -------------------------------------------- |
+| 1   | §2: Opção A (Resend p/ cold, risco aceito), B (híbrido, recomendada) ou C (só opt-in) | Fase 3                 | B; se A, conta separada + mitigação completa |
+| 2   | Domínio de envio (irmão vs subdomínio) e sua compra                                   | Fase 0                 | Domínio irmão (ex.: `dreamy.net.br`)         |
+| 3   | Ferramenta de verificação de e-mails                                                  | Fase 1                 | MillionVerifier (custo) ou ZeroBounce        |
+| 4   | Razão social + CNPJ + cidade para assinatura dos e-mails                              | Fase 3                 | Fornecer (hoje `null` no projeto)            |
+| 5   | Confirmação do WhatsApp +55 11 94879-3233 (ADR-013)                                   | assinatura dos e-mails | Confirmar                                    |
+| 6   | Caixa `reply_to` monitorada (endereço e quem monitora)                                | Fase 3                 | Definir com o comercial                      |
+| 7   | Provedor Postgres (Neon vs alternativa)                                               | Fase 1                 | Neon via Vercel Marketplace                  |
+| 8   | Indústrias reais da lista + oferta âncora de cada campanha                            | copy (Fase 3)          | Definir ao receber o Excel                   |
+| 9   | Plano Resend (Free → Pro)                                                             | Fase 3 (escala)        | Free na rampa; Pro ao escalar                |
 
 ## 25. CONFIGURÁVEIS (ENV)
 
-Somente nomes em `.env.example`; valores nunca commitados.
+Somente nomes em `.env.example`; valores nunca commitados. Lista vigente (ADR-023/024 substituíram as propostas originais de senha de dashboard, webhook Svix e tokens de descadastro — voltam nas fases do §29.3):
 
-| Variável | Uso |
-| --- | --- |
-| `OUTBOUND_DATABASE_URL` | Postgres (CLI + Vercel) |
-| `OUTBOUND_RESEND_API_KEY` | conta Resend do outbound (≠ `EMAIL_PROVIDER_API_KEY` do site) |
-| `OUTBOUND_RESEND_WEBHOOK_SECRET` | verificação Svix |
-| `OUTBOUND_FROM` | remetente (`"Nome <nome@dominio-de-envio>"`) |
-| `OUTBOUND_REPLY_TO` | caixa monitorada |
-| `OUTBOUND_DASHBOARD_PASSWORD` | auth do dashboard |
-| `OUTBOUND_SESSION_SECRET` | assinatura do cookie de sessão |
-| `OUTBOUND_DAILY_CAP` | teto diário (rampa §17; default 15) |
-| `OUTBOUND_SEND_WINDOW` | janela (`09:00-17:30`) e timezone |
-| `OUTBOUND_UNSUB_TOKEN_SECRET` | tokens de descadastro |
+| Variável                                                              | Uso                                                                            |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `OUTBOUND_RESEND_API_KEY`                                             | conta Resend dedicada ao outbound (≠ transacional do site)                     |
+| `OUTBOUND_FROM` / `OUTBOUND_REPLY_TO`                                 | remetente e caixa de respostas (identidade em `src/lib/outbound/signature.ts`) |
+| `OUTBOUND_SEND_WINDOW` / `OUTBOUND_UTC_OFFSET` / `OUTBOUND_DAILY_CAP` | janela, fuso e cap manual (rampa §17 vale o menor)                             |
+| `OUTBOUND_STORE_DIR`                                                  | diretório do store em arquivos (dev/demo)                                      |
+| `OUTBOUND_DATABASE_URL`                                               | Postgres Neon (pooled) — liga o store hospedado; CLIs e console no mesmo banco |
+| `OUTBOUND_TEAM_EMAILS`                                                | allowlist do login por link mágico                                             |
+| `OUTBOUND_SESSION_SECRET`                                             | HMAC do cookie de sessão (30 dias)                                             |
+| `OUTBOUND_APP_URL`                                                    | base pública dos links de login                                                |
+| `OUTBOUND_AUTH_DISABLED`                                              | desliga o login SÓ fora de produção                                            |
+| `OUTBOUND_PLATFORM_ONLY`                                              | `/` → console (deploy da plataforma)                                           |
 
 ## 26. RISCOS E MITIGAÇÃO
 
-| Risco | Mitigação |
-| --- | --- |
-| Conta Resend encerrada por AUP (cold) | §2: decisão consciente; conta+domínio separados; guard-rails mais rígidos que os do Resend; adapter permite trocar de provedor sem reescrita |
-| Domínio de envio queimado (bounce/spam) | Verificação obrigatória, descarte de catch-all, rampa, caps, circuit breaker, domínio irmão descartável |
-| Reclamação LGPD/ANPD | Legítimo interesse documentado (LIA), origem por lote, identificação completa, opt-out < 48 h, minimização, supressão permanente |
-| Abertura inflada leva a decisões erradas | Hierarquia de métricas §21; ressalva fixa no dashboard; decisão por resposta/reunião |
-| Copy fria viola regras do posicionamento | Copy versionada, aprovada pelo usuário, checagem contra §3/§6 antes de aprovar campanha |
-| Webhook perdido/duplicado | at-least-once + dedupe por `svix-id`; reconciliação diária opcional via API do Resend |
-| Envio duplicado em retry | Idempotency-Key no Resend + unicidade local |
-| Dashboard exposto | Auth + rate limit no login + noindex + sem links públicos; PII só autenticado |
-| Vercel ainda sem projeto | Pendência externa já mapeada (`docs/DEPLOY.md`); Fases 1 e parte da 3 (dry-run) não dependem de deploy |
-| Excel do Clay com colunas imprevisíveis | Mapa de colunas revisado por lote + relatório de import para aprovação |
+| Risco                                    | Mitigação                                                                                                                                    |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Conta Resend encerrada por AUP (cold)    | §2: decisão consciente; conta+domínio separados; guard-rails mais rígidos que os do Resend; adapter permite trocar de provedor sem reescrita |
+| Domínio de envio queimado (bounce/spam)  | Verificação obrigatória, descarte de catch-all, rampa, caps, circuit breaker, domínio irmão descartável                                      |
+| Reclamação LGPD/ANPD                     | Legítimo interesse documentado (LIA), origem por lote, identificação completa, opt-out < 48 h, minimização, supressão permanente             |
+| Abertura inflada leva a decisões erradas | Hierarquia de métricas §21; ressalva fixa no dashboard; decisão por resposta/reunião                                                         |
+| Copy fria viola regras do posicionamento | Copy versionada, aprovada pelo usuário, checagem contra §3/§6 antes de aprovar campanha                                                      |
+| Webhook perdido/duplicado                | at-least-once + dedupe por `svix-id`; reconciliação diária opcional via API do Resend                                                        |
+| Envio duplicado em retry                 | Idempotency-Key no Resend + unicidade local                                                                                                  |
+| Dashboard exposto                        | Auth + rate limit no login + noindex + sem links públicos; PII só autenticado                                                                |
+| Vercel ainda sem projeto                 | Pendência externa já mapeada (`docs/DEPLOY.md`); Fases 1 e parte da 3 (dry-run) não dependem de deploy                                       |
+| Excel do Clay com colunas imprevisíveis  | Mapa de colunas revisado por lote + relatório de import para aprovação                                                                       |
 
 ## 27. REFERÊNCIAS
 
@@ -473,7 +480,55 @@ Deploy Vercel + Postgres + webhooks Svix + one-click RFC 8058 + auth do dashboar
 
 1. ~~Lista de PESSOAS~~ ✅ 2026-08-27: o workbook `Luigi_CONSTRUCAO.xlsx` tem as abas "Empresas" (99 importadas e segmentadas) e "Pessoas" (100 linhas → 41 ativos no ICP, 38 gerentes/supervisores excluídos com motivo, 19 sem e-mail de trabalho, 2 duplicados). Importar com `--sheet Pessoas`.
 2. ~~`OUTBOUND_RESEND_API_KEY`~~ ✅ 2026-08-27: chave em `.env.local` (conta dedicada; ao armar, o usuário assume o risco da Opção A do §2).
-3. Domínio de envio: **bedreamy.com.br** já criado no Resend (região `sa-east-1`) com DKIM + SPF verificados; falta só o MX de recebimento na raiz (opcional — só para Resend Inbound) e o **DMARC** (`_dmarc` TXT `v=DMARC1; p=none; rua=mailto:...` — §17). Pendentes: `OUTBOUND_FROM` (proposta: `Rafael Lang <rafael@bedreamy.com.br>`) e `OUTBOUND_REPLY_TO` (caixa real que o Rafael lê — as respostas são o CTA).
-3b. **Verificação da lista** (§11): exportar com `outbound:verify --export` e validar em verificador externo (ZeroBounce/MillionVerifier — 41 e-mails cabem no free tier) antes do 1º envio; ou `--assume-ok --confirm` assumindo o risco.
+3. Domínio de envio: **bedreamy.com.br** já criado no Resend (região `sa-east-1`) com DKIM + SPF verificados; falta só o MX de recebimento na raiz (opcional — só para Resend Inbound) e o **DMARC** (`_dmarc` TXT `v=DMARC1; p=none; rua=mailto:...` — §17). Definidos em 2026-08-29: `OUTBOUND_FROM = Luigi Choffe <contact@bedreamy.com.br>` e `OUTBOUND_REPLY_TO = contact@bedreamy.com.br` (caixa real na Hostinger — as respostas são o CTA). O MX de recebimento do Resend não é usado (respostas chegam na Hostinger); DMARC já existia (`p=none`).
+   3b. **Verificação da lista** (§11): exportar com `outbound:verify --export` e validar em verificador externo (ZeroBounce/MillionVerifier — 41 e-mails cabem no free tier) antes do 1º envio; ou `--assume-ok --confirm` assumindo o risco.
 4. Razão social/CNPJ para identificação legal na assinatura (§18 — hoje `null`; adicionar à copy quando fornecido).
 5. Copy real por indústria aprovada + `outbound:arm arm --confirm`.
+
+## 29. PLATAFORMA HOSPEDADA (PIVÔ 2026-08-29)
+
+### 29.1 O que muda
+
+- **Este repositório deixa de ser o site institucional da Dreamy e vira a plataforma de vendas**: o console `/interno/outbound` hospedado na Vercel, com acesso por e-mail para o time, e o MORK (`.agents/mork/`) operando por trás. O site foi duplicado e passa a ser hospedado pelo sócio em outro lugar. `docs/PRD.md` continua sendo a fonte de posicionamento/copy (a oferta não mudou); as páginas de marketing deste repo entram em modo de remoção (29.3, P5).
+- O deploy deste repo sai **noindex** (ADR-017: `NEXT_PUBLIC_SITE_ENV=production` nunca é definido aqui), para o site duplicado não concorrer com o oficial; o console já é `noindex` por rota. Com `OUTBOUND_PLATFORM_ONLY=true` (env do projeto Vercel; regra em `next.config.ts`) a raiz `/` redireciona (307) para `/interno/outbound` — o deploy se comporta como plataforma mesmo com as páginas do site ainda no código.
+- Domínio da plataforma: `mork.bedreamy.com.br` (CNAME na Hostinger → Vercel). `bedreamy.com.br` segue como domínio de envio (§17, §28.4) — o CNAME no subdomínio não interfere no e-mail.
+- Propostas de banco/auth dos §§9, 16, 19 e 25 são substituídas pelas decisões abaixo (ADR-023/024): não existe `OUTBOUND_DASHBOARD_PASSWORD`; `OUTBOUND_DATABASE_URL` confirmada; `OUTBOUND_RESEND_WEBHOOK_SECRET` e `OUTBOUND_UNSUB_TOKEN_SECRET` ficam para as fases de 29.3.
+
+### 29.2 Arquitetura
+
+```
+   Time (allowlist OUTBOUND_TEAM_EMAILS)
+        │ link mágico via Resend → cookie HMAC (30 dias)
+        ▼
+   Vercel · Next.js · https://mork.bedreamy.com.br   (OUTBOUND_PLATFORM_ONLY=true: "/" → /interno/outbound)
+   /interno/login · /api/outbound/auth/callback · /interno/logout · guard em src/proxy.ts
+   /interno/outbound (+ subrotas) — Server Actions conservadoras (§16, §28.5)
+        │  @neondatabase/serverless
+        ▼
+   Postgres Neon (Storage do projeto Vercel; OUTBOUND_DATABASE_URL pooled) ◄──────────────┐
+        contatos · empresas · campanhas · enrollments · envios · eventos ·                │
+        supressão · respostas · imports · estado (armed/breaker) · lock                   │ mesma env no .env.local
+                                                                                          │
+   PC do Luigi: pnpm outbound:* + tarefa DreamyOutboundAuto (dias úteis 09:05) ───────────┘
+        │
+        ▼
+   Resend (envio batch + agendamento; eventos por polling — §28.1; e-mail do link de login)
+```
+
+- **Banco** (ADR-023): adapter Postgres do `OutboundStore` escolhido pela presença de `OUTBOUND_DATABASE_URL`; sem a env, store em arquivos (`.outbound/`) — dev/demo. `pnpm outbound:db migrate | push [--confirm] | pull [--dir] | status` (`push` recusa sobrescrever banco com dados sem `--confirm`). Testes do adapter com pglite.
+- **Auth** (ADR-024): link mágico + allowlist + cookie HMAC; guard em `src/proxy.ts` para `/interno/*` e `/api/outbound/*`; `OUTBOUND_AUTH_DISABLED=true` só fora de produção. Sem provedor externo.
+- **Operação**: inalterada (§28.2, ADR-020). Armar e disparar continuam na CLI; o console segue com ações conservadoras. A tarefa agendada continua no PC do Luigi apontando para o mesmo banco — nesta fase a Vercel só hospeda o console.
+- **Env** (nomes em `.env.example`): novas `OUTBOUND_PLATFORM_ONLY`, `OUTBOUND_DATABASE_URL`, `OUTBOUND_TEAM_EMAILS`, `OUTBOUND_SESSION_SECRET`, `OUTBOUND_APP_URL`, `OUTBOUND_AUTH_DISABLED` (dev) + as existentes (`OUTBOUND_RESEND_API_KEY`, `OUTBOUND_FROM`, `OUTBOUND_REPLY_TO`, janela/cap). A tabela do §25 fica superada por esta lista.
+- **Deploy**: passo a passo em `docs/DEPLOY-PLATAFORMA.md` (import pelo painel — a integração local não cria projeto; Storage → Neon; envs; `outbound:db migrate/push`; domínio; primeiro login; checklist; gestão do time).
+
+### 29.3 Fases seguintes (roadmap — nada disto está feito)
+
+| Fase                               | Entrega                                                                                                                                                                                         | Gate                                                                              |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| P1 — Console hospedado (esta)      | Vercel + Neon + auth; CLIs locais no mesmo banco; `OUTBOUND_PLATFORM_ONLY`                                                                                                                      | time logando em `mork.bedreamy.com.br`; `outbound:report` e console batendo       |
+| P2 — Ciclo diário na nuvem         | Vercel Cron chamando o ciclo `auto` (sync → plan → send → report) por rota protegida; tarefa Windows desligada                                                                                  | 1 semana de disparos sem o PC do Luigi ligado                                     |
+| P3 — Eventos e opt-out sem polling | webhooks Resend (Svix, §13) no lugar de `outbound:sync`; one-click unsubscribe HTTPS RFC 8058 (`/descadastro`, §15, ADR-021)                                                                    | webhook de teste processado; one-click validado em Gmail real                     |
+| P4 — Respostas automáticas         | Resend Inbound / leitura da caixa `reply_to` → registro automático da resposta (§14 V1.1); classificação segue humana/MORK                                                                      | respostas aparecendo no console no mesmo dia                                      |
+| P5 — Plataforma pura               | remover as páginas do site marketing deste repo; `/` vira a plataforma (login/console) sem redirect; README, `.agents/rules/` e referências a `docs/PRD.md` reposicionados; smoke da plataforma | `pnpm check` verde sem `src/app/(site)`; `pnpm smoke` reescrito para a plataforma |
+
+Notas: Vercel Hobby limita Cron a 1 execução/dia com precisão de hora (o `send` agenda no Resend, então o minuto exato não importa) e funções a ≤ 300 s — o ciclo cabe. Se a Vercel exigir plano comercial (Hobby é uso pessoal), migrar para Pro sem mudança de código.

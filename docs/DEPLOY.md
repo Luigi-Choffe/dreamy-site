@@ -2,6 +2,8 @@
 
 Complementa `docs/SEO-MIGRATION.md` (domínio) e `docs/LAUNCH-CHECKLIST.md` (go-live). Host recomendado: Vercel; qualquer host Node/Next funciona igual (build `pnpm build`, start `pnpm start`).
 
+> **Pivô 2026-08-29**: o projeto Vercel deste repositório é a **plataforma de vendas** (console `/interno/outbound`), não o site — siga `docs/DEPLOY-PLATAFORMA.md`. O site institucional foi duplicado e é hospedado pelo sócio em outro lugar; o roteiro abaixo (go-live em `www.dreamy.app.br`) fica como referência. Neste projeto, **não** definir `NEXT_PUBLIC_SITE_ENV=production`.
+
 ## Estado
 
 - Repositório: `https://github.com/Luigi-Choffe/dreamy-site` (privado, branch `main`). CI em `.github/workflows/ci.yml` roda em cada push/PR (check + e2e).
