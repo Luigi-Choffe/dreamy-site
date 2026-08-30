@@ -17,6 +17,7 @@ import { Code, fmtDateTime, fmtInt, fmtPct } from "./ui";
 export type ConsoleTab =
   | "visao-geral"
   | "hoje"
+  | "agenda"
   | "pipeline"
   | "campanha"
   | "contatos"
@@ -30,6 +31,7 @@ export type ConsoleTab =
 const TABS: Array<{ id: ConsoleTab; label: string; href: string }> = [
   { id: "visao-geral", label: "Visão geral", href: "/interno/outbound" },
   { id: "hoje", label: "Hoje", href: "/interno/outbound/hoje" },
+  { id: "agenda", label: "Agenda", href: "/interno/outbound/agenda" },
   { id: "pipeline", label: "Pipeline", href: "/interno/outbound/pipeline" },
   { id: "contatos", label: "Contatos", href: "/interno/outbound/contatos" },
   { id: "respostas", label: "Respostas", href: "/interno/outbound/respostas" },

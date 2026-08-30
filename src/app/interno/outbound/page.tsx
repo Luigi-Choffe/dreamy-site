@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { forecastCadence } from "@/lib/outbound/agenda-core";
 import { requireSession } from "@/lib/outbound/auth";
-import { getOutboundEnv, rampCap } from "@/lib/outbound/config";
+import { getOutboundEnv, rampCap, sendDateKey } from "@/lib/outbound/config";
 import { dailyCap, usedTodayCount } from "@/lib/outbound/engine";
 import { evaluateGuardRails } from "@/lib/outbound/guardrails";
 import {
@@ -195,6 +196,23 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
     m: campaignMetrics(def.slug, data),
   }));
 
+  // Agenda: quantos e-mails a cadência prevê para o PRÓXIMO dia útil (aba Agenda).
+  const todayKey = sendDateKey(now, env.utcOffset);
+  const proximoDia = forecastCadence(
+    {
+      contacts: data.contacts,
+      enrollments: data.enrollments,
+      sends: data.sends,
+      suppressions: data.suppressions,
+      campaignDefs: data.defs,
+      runtimes: data.runtimes,
+      state: data.state,
+      env,
+      now,
+    },
+    5,
+  ).days.find((d) => d.dateKey > todayKey);
+
   // CRM piloto: funil de valor, reuniões e briefing (PRD §29).
   const funil = valueFunnel(data);
   const reunioes = meetingStats(data.deals, data.replies);
@@ -228,6 +246,18 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
                 value={fmtInt(reunioes.geradas)}
                 tone={reunioes.geradas > 0 ? "success" : "default"}
                 hint="negócios que chegaram a reunião marcada"
+              />
+              <Stat
+                label="Amanhã na cadência"
+                value={fmtInt(proximoDia?.items.length ?? 0)}
+                hint={
+                  <Link
+                    href={consoleHref("/interno/outbound/agenda", isDemo)}
+                    className="font-semibold text-brand-strong underline underline-offset-2"
+                  >
+                    e-mails previstos · ver Agenda
+                  </Link>
+                }
               />
               <Stat
                 label="Taxa de resposta"
