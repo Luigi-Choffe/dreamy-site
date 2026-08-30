@@ -16,14 +16,39 @@ import type { ReplyClass } from "./types";
 export const AI_MODEL = "claude-sonnet-5";
 const API_URL = "https://api.anthropic.com/v1/messages";
 const API_VERSION = "2023-06-01";
+const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
+/** Modelo OpenAI padrão (barato e atual na conta do Luigi); override por OUTBOUND_OPENAI_MODEL. */
+const OPENAI_DEFAULT_MODEL = "gpt-5.4-mini";
 const TIMEOUT_MS = 30_000;
 
 export function anthropicKey(): string | null {
   return process.env.OUTBOUND_ANTHROPIC_API_KEY?.trim() || null;
 }
 
+export function openaiKey(): string | null {
+  return process.env.OUTBOUND_OPENAI_API_KEY?.trim() || null;
+}
+
+export function openaiModel(): string {
+  return process.env.OUTBOUND_OPENAI_MODEL?.trim() || OPENAI_DEFAULT_MODEL;
+}
+
+export type AiProvider = "anthropic" | "openai";
+
+/** Dois motores possíveis; a Anthropic tem preferência quando as duas chaves existem. */
+export function aiProvider(): AiProvider | null {
+  if (anthropicKey()) return "anthropic";
+  if (openaiKey()) return "openai";
+  return null;
+}
+
+/** Nome do modelo ativo (gravado no briefing e mostrado na UI). */
+export function aiModelLabel(): string {
+  return aiProvider() === "openai" ? openaiModel() : AI_MODEL;
+}
+
 export function aiAvailable(): boolean {
-  return anthropicKey() !== null;
+  return aiProvider() !== null;
 }
 
 /** Qualquer coisa com @ vira marcador: e-mail de contato jamais entra em prompt. */
@@ -137,10 +162,65 @@ async function callAnthropic(prompt: string, maxTokens: number): Promise<string>
   return text;
 }
 
+async function callOpenAI(prompt: string, maxTokens: number): Promise<string> {
+  const key = openaiKey();
+  if (!key) throw new Error("OUTBOUND_OPENAI_API_KEY ausente.");
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  let res: Response;
+  try {
+    res = await fetch(OPENAI_URL, {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
+      body: JSON.stringify({
+        model: openaiModel(),
+        // Modelos gpt-5+ gastam parte do orçamento em raciocínio interno: folga proposital.
+        max_completion_tokens: Math.max(maxTokens * 2, 600),
+        messages: [{ role: "user", content: prompt }],
+      }),
+      signal: controller.signal,
+    });
+  } catch (err) {
+    throw new Error(
+      err instanceof Error && err.name === "AbortError"
+        ? "A API da OpenAI demorou demais (30 s). Tente de novo."
+        : "Não deu para falar com a API da OpenAI. Confira a rede e tente de novo.",
+    );
+  } finally {
+    clearTimeout(timer);
+  }
+  if (res.status === 401 || res.status === 403) {
+    throw new Error("Chave da OpenAI inválida ou sem permissão (OUTBOUND_OPENAI_API_KEY).");
+  }
+  if (res.status === 404) {
+    throw new Error(`A OpenAI não conhece o modelo "${openaiModel()}" nesta conta (ajuste OUTBOUND_OPENAI_MODEL).`);
+  }
+  if (res.status === 429) {
+    throw new Error("Limite ou crédito da API da OpenAI esgotado. Confira o billing em platform.openai.com.");
+  }
+  if (res.status >= 500) throw new Error("API da OpenAI instável agora. Tente de novo em instantes.");
+  if (!res.ok) throw new Error(`API da OpenAI recusou a chamada (HTTP ${res.status}).`);
+  const data = (await res.json()) as { choices?: Array<{ message?: { content?: string | null } }> };
+  const text = (data.choices ?? [])
+    .map((choice) => choice.message?.content ?? "")
+    .join("\n")
+    .trim();
+  if (!text) throw new Error("A API da OpenAI respondeu vazio. Tente de novo.");
+  return text;
+}
+
+/** Despacha para o motor ativo. Sem chave nenhuma: falha fechado com instrução. */
+async function callAi(prompt: string, maxTokens: number): Promise<string> {
+  const provider = aiProvider();
+  if (provider === "anthropic") return callAnthropic(prompt, maxTokens);
+  if (provider === "openai") return callOpenAI(prompt, maxTokens);
+  throw new Error("Recursos de IA desligados: defina OUTBOUND_ANTHROPIC_API_KEY ou OUTBOUND_OPENAI_API_KEY.");
+}
+
 /* ─── Recursos ────────────────────────────────────────────────────────────── */
 
 export async function generateBriefing(aggregates: BriefingAggregates): Promise<string> {
-  return sanitizeAiText(await callAnthropic(buildBriefingPrompt(aggregates), 800));
+  return sanitizeAiText(await callAi(buildBriefingPrompt(aggregates), 800));
 }
 
 const REPLY_CLASSES: ReplyClass[] = ["interested", "not_now", "referral", "negative", "ooo", "other"];
@@ -171,5 +251,5 @@ export function parseTriageResponse(raw: string): TriageSuggestion {
 }
 
 export async function suggestReplyTriage(input: TriageInput): Promise<TriageSuggestion> {
-  return parseTriageResponse(await callAnthropic(buildTriagePrompt(input), 700));
+  return parseTriageResponse(await callAi(buildTriagePrompt(input), 700));
 }

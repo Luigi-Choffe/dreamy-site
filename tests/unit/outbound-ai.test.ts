@@ -36,8 +36,12 @@ const AGG: BriefingAggregates = {
 describe("disponibilidade e higiene", () => {
   it("aiAvailable acompanha a env", () => {
     vi.stubEnv("OUTBOUND_ANTHROPIC_API_KEY", "");
+    vi.stubEnv("OUTBOUND_OPENAI_API_KEY", "");
     expect(aiAvailable()).toBe(false);
     vi.stubEnv("OUTBOUND_ANTHROPIC_API_KEY", "sk-teste");
+    expect(aiAvailable()).toBe(true);
+    vi.stubEnv("OUTBOUND_ANTHROPIC_API_KEY", "");
+    vi.stubEnv("OUTBOUND_OPENAI_API_KEY", "sk-openai");
     expect(aiAvailable()).toBe(true);
   });
 
@@ -125,6 +129,40 @@ describe("generateBriefing (fetch mockado)", () => {
 
   it("sem chave, falha fechado com instrução", async () => {
     vi.stubEnv("OUTBOUND_ANTHROPIC_API_KEY", "");
-    await expect(generateBriefing(AGG)).rejects.toThrow(/OUTBOUND_ANTHROPIC_API_KEY/);
+    vi.stubEnv("OUTBOUND_OPENAI_API_KEY", "");
+    await expect(generateBriefing(AGG)).rejects.toThrow(/OUTBOUND_ANTHROPIC_API_KEY ou OUTBOUND_OPENAI_API_KEY/);
+  });
+});
+
+describe("motor OpenAI (fetch mockado)", () => {
+  it("com só a chave da OpenAI, o briefing sai pelo chat/completions sem PII", async () => {
+    vi.stubEnv("OUTBOUND_ANTHROPIC_API_KEY", "");
+    vi.stubEnv("OUTBOUND_OPENAI_API_KEY", "sk-openai");
+    vi.stubEnv("OUTBOUND_OPENAI_MODEL", "gpt-teste");
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ choices: [{ message: { content: "Dia forte — 2 interessados." } }] }), {
+          status: 200,
+        }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const out = await generateBriefing(AGG);
+    expect(out).toContain("2 interessados");
+    expect(out).not.toMatch(/[—–]/);
+    const call = fetchMock.mock.calls[0] as unknown as [string, { body: string }];
+    expect(String(call[0])).toContain("api.openai.com");
+    const body = JSON.parse(call[1].body) as { model: string };
+    expect(body.model).toBe("gpt-teste");
+    expect(JSON.stringify(body)).not.toContain("@");
+  });
+
+  it("429 da OpenAI vira aviso de crédito/limite", async () => {
+    vi.stubEnv("OUTBOUND_ANTHROPIC_API_KEY", "");
+    vi.stubEnv("OUTBOUND_OPENAI_API_KEY", "sk-openai");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response("{}", { status: 429 })),
+    );
+    await expect(generateBriefing(AGG)).rejects.toThrow(/crédito|limite/i);
   });
 });

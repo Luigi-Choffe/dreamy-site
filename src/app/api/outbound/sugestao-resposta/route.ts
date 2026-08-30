@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     return json(503, {
       ok: false,
       code: "sem_chave",
-      error: "Defina OUTBOUND_ANTHROPIC_API_KEY para ligar a sugestão de triagem.",
+      error: "Defina OUTBOUND_ANTHROPIC_API_KEY ou OUTBOUND_OPENAI_API_KEY para ligar a sugestão de triagem.",
     });
   }
 

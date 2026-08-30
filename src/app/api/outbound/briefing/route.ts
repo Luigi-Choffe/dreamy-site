@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { demoDir } from "@/app/interno/outbound/data";
 import { campaigns } from "@/content/outbound";
 import { logger } from "@/lib/observability/logger";
-import { AI_MODEL, aiAvailable, generateBriefing, type BriefingAggregates } from "@/lib/outbound/ai";
+import { aiAvailable, aiModelLabel, generateBriefing, type BriefingAggregates } from "@/lib/outbound/ai";
 import { logAgentActivity } from "@/lib/outbound/agent-log";
 import { getSession } from "@/lib/outbound/auth";
 import { getOutboundEnv, sendDateKey } from "@/lib/outbound/config";
@@ -77,7 +77,8 @@ export async function POST(request: NextRequest) {
     return json(503, {
       ok: false,
       code: "sem_chave",
-      error: "Defina OUTBOUND_ANTHROPIC_API_KEY (na Vercel e no .env.local do PC) para ligar o briefing por IA.",
+      error:
+        "Defina OUTBOUND_ANTHROPIC_API_KEY ou OUTBOUND_OPENAI_API_KEY (na Vercel e no .env.local do PC) para ligar o briefing por IA.",
     });
   }
 
@@ -135,7 +136,7 @@ export async function POST(request: NextRequest) {
     dateKey,
     generatedAt: new Date().toISOString(),
     generatedBy: session.email,
-    model: AI_MODEL,
+    model: aiModelLabel(),
     content,
   };
   await runExclusive("briefing-save", async () => {
