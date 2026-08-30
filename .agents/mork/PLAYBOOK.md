@@ -118,9 +118,19 @@ a plataforma de vendas da Dreamy; o site institucional ficou com o sócio. Conso
 na Vercel em `mork.bedreamy.com.br` (login por link mágico para e-mails da
 allowlist; `OUTBOUND_PLATFORM_ONLY=true` manda `/` para o console) com banco
 Postgres Neon **compartilhado** com os CLIs (`OUTBOUND_DATABASE_URL` no
-`.env.local`; sem a env, `.outbound/`). Deploy ainda NÃO feito: depende de o
-Luigi importar o repo na Vercel (`docs/DEPLOY-PLATAFORMA.md`). Até o
-`pnpm outbound:db push`, o estado vivo está em `.outbound/`; depois, no banco —
-mesmos comandos, mesma leitura. Pendências: corrigir domínio do Grupo Impper no
+`.env.local`; sem a env, `.outbound/`). **Deploy em andamento (2026-08-30)**: o
+Luigi já criou o projeto Vercel `dreamy-site` no time dele (`luigichoffedremay`,
+URL `https://dreamy-site-murex.vercel.app`, build do commit e7abee2 OK — login
+respondendo) e conectou o Neon ao projeto (Production+Preview; envs criadas com
+prefixo `STORAGE_*` ou `DATABASE_*`). **Falta**: item 3 do
+`docs/DEPLOY-PLATAFORMA.md` (envs: `OUTBOUND_DATABASE_URL` = string `-pooler`,
+`OUTBOUND_PLATFORM_ONLY=true`, Resend, FROM/REPLY_TO, `OUTBOUND_TEAM_EMAILS`,
+`OUTBOUND_SESSION_SECRET`, `OUTBOUND_APP_URL` = URL da Vercel até o domínio) →
+Redeploy → login de teste; item 4 (Luigi passa a connection string, MORK roda
+`outbound:db migrate` + `push` FORA da janela 09:00–17:30 e confere status =
+42 contatos / 16 enrollments / armada); item 5 (CNAME `mork` na Hostinger e
+trocar `OUTBOUND_APP_URL`). O MCP Vercel desta máquina é de outra conta (403):
+tudo na Vercel é clique do Luigi. Até o `push`, o estado vivo está em
+`.outbound/`; depois, no banco — mesmos comandos, mesma leitura. Pendências: corrigir domínio do Grupo Impper no
 Clay (veio rdstation.com); Vercel Cron, webhooks, one-click e respostas
 automáticas = fases P2–P4 do PRD §29.3.
