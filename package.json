@@ -36,9 +36,11 @@
     "outbound:arm": "tsx scripts/outbound/arm.ts",
     "outbound:demo": "tsx scripts/outbound/demo.ts",
     "outbound:companies": "tsx scripts/outbound/companies.ts",
+    "outbound:db": "tsx scripts/outbound/db.ts",
     "check": "pnpm typecheck && pnpm lint && pnpm content:check && pnpm test && pnpm build"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
     "clsx": "^2.1.1",
     "gray-matter": "^4.0.3",
     "lucide-react": "^1.31.0",
@@ -52,6 +54,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
+    "@electric-sql/pglite": "^0.5.8",
     "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4.3.3",
     "@testing-library/jest-dom": "^7.0.1",

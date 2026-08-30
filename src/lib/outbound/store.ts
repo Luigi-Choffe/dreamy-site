@@ -1,7 +1,11 @@
 import fs from "node:fs/promises";
 import { unlinkSync } from "node:fs";
+import { hostname } from "node:os";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import { createNeonSqlClient, type SqlClient } from "./sql";
+import { DEFAULT_STATE, LOCK_STALE_MS, LOCK_WAIT_MS, normalizeEmail } from "./store-common";
+import { acquireDbLock, createPgStore, releaseDbLock } from "./store-pg";
 import type {
   CampaignRuntime,
   Company,
@@ -15,11 +19,17 @@ import type {
   Suppression,
 } from "./types";
 
+export { DEFAULT_STATE, normalizeEmail };
+
 /**
- * Store do outbound em arquivos JSON (`.outbound/`, gitignored) — ADR-019.
- * V1 local: volumes pequenos (rampa de 15–80 envios/dia), um único operador (CLI +
- * dashboard local). Escrita atômica via arquivo temporário + rename. A migração para
- * Postgres (fase de produção do PRD §22) troca esta implementação sem mudar chamadores.
+ * Store do outbound. Duas implementações com a MESMA semântica (coleções lidas e
+ * gravadas inteiras):
+ * - arquivos JSON em `.outbound/` (ADR-019) — dev, demo e operação sem banco;
+ * - Postgres (ADR-023) quando `OUTBOUND_DATABASE_URL` existe — plataforma
+ *   hospedada: o console na Vercel e os CLIs na máquina do operador compartilham
+ *   o mesmo banco.
+ * `openStore()` sem argumento escolhe pela env; `openStore(dir)` força arquivos
+ * (demo, backups, testes).
  */
 
 const COLLECTIONS = {
@@ -38,89 +48,16 @@ type CollectionName = keyof typeof COLLECTIONS;
 const EVENTS_FILE = "events.jsonl";
 const STATE_FILE = "config.json";
 
-export const DEFAULT_STATE: OutboundState = { armed: false };
-
 export function outboundDir(): string {
   return process.env.OUTBOUND_STORE_DIR ?? path.join(process.cwd(), ".outbound");
 }
 
-/** Lock considerado obsoleto (processo morto) depois deste prazo. */
-const LOCK_STALE_MS = 10 * 60_000;
-/** Tempo máximo esperando outro comando terminar. */
-const LOCK_WAIT_MS = 60_000;
-
-/**
- * Lock de processo para os CLIs mutantes: o store faz read-modify-write de arquivos
- * inteiros, então dois comandos simultâneos (ex.: tarefa agendada + comando manual)
- * perderiam atualizações um do outro. Um lockfile em `.outbound/.lock` serializa.
- * Lock com mais de 10 min é considerado órfão (processo morto) e roubado.
- */
-export async function runExclusive<T>(
-  label: string,
-  fn: () => Promise<T>,
-  dirOverride?: string,
-): Promise<T> {
-  try {
-    process.loadEnvFile(".env.local"); // OUTBOUND_STORE_DIR pode vir do .env.local
-  } catch {
-    // sem .env.local — vale a env do shell
-  }
-  const dir = dirOverride ?? outboundDir();
-  const lockPath = path.join(dir, ".lock");
-  await fs.mkdir(dir, { recursive: true });
-  const started = Date.now();
-  for (;;) {
-    try {
-      const handle = await fs.open(lockPath, "wx");
-      await handle.writeFile(
-        JSON.stringify({ pid: process.pid, label, at: new Date().toISOString() }) + "\n",
-        "utf8",
-      );
-      await handle.close();
-      break;
-    } catch (err) {
-      if ((err as NodeJS.ErrnoException).code !== "EEXIST") throw err;
-      try {
-        const stat = await fs.stat(lockPath);
-        if (Date.now() - stat.mtimeMs > LOCK_STALE_MS) {
-          await fs.unlink(lockPath).catch(() => {});
-          continue;
-        }
-      } catch {
-        continue; // lock sumiu entre o open e o stat — tente de novo
-      }
-      if (Date.now() - started > LOCK_WAIT_MS) {
-        throw new Error(
-          `outro comando outbound está rodando (lock em ${lockPath}) — aguarde terminar; se tiver certeza de que não há outro processo, apague o arquivo de lock`,
-        );
-      }
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    }
-  }
-  // CLIs usam process.exit() em caminhos de erro — isso pula o finally, então a
-  // limpeza do lock também fica registrada no evento "exit" (síncrono).
-  const releaseOnExit = () => {
-    try {
-      unlinkSync(lockPath);
-    } catch {
-      // já liberado
-    }
-  };
-  process.once("exit", releaseOnExit);
-  try {
-    return await fn();
-  } finally {
-    process.removeListener("exit", releaseOnExit);
-    await fs.unlink(lockPath).catch(() => {});
-  }
+export function databaseUrl(): string | null {
+  return process.env.OUTBOUND_DATABASE_URL?.trim() || null;
 }
 
 export function newId(): string {
   return randomUUID();
-}
-
-export function normalizeEmail(email: string): string {
-  return email.trim().toLowerCase();
 }
 
 async function readJson<T>(file: string, fallback: T): Promise<T> {
@@ -141,6 +78,7 @@ async function writeJsonAtomic(file: string, value: unknown): Promise<void> {
 }
 
 export interface OutboundStore {
+  /** Diretório LOCAL (snapshots de plano, relatórios). No Postgres continua sendo local. */
   readonly dir: string;
 
   contacts(): Promise<Contact[]>;
@@ -178,11 +116,11 @@ export interface OutboundStore {
   saveState(state: OutboundState): Promise<void>;
 }
 
-export function openStore(dir = outboundDir()): OutboundStore {
+/** Store em arquivos JSON (sempre local). */
+export function openFileStore(dir = outboundDir()): OutboundStore {
   const file = (name: string) => path.join(dir, name);
   const collection = <T>(name: CollectionName) => readJson<T[]>(file(COLLECTIONS[name]), []);
-  const saveCollection = (name: CollectionName, rows: unknown[]) =>
-    writeJsonAtomic(file(COLLECTIONS[name]), rows);
+  const saveCollection = (name: CollectionName, rows: unknown[]) => writeJsonAtomic(file(COLLECTIONS[name]), rows);
 
   let eventKeys: Set<string> | null = null;
 
@@ -259,4 +197,110 @@ export function openStore(dir = outboundDir()): OutboundStore {
     state: () => readJson<OutboundState>(file(STATE_FILE), DEFAULT_STATE),
     saveState: (state) => writeJsonAtomic(file(STATE_FILE), state),
   };
+}
+
+let sharedSqlClient: SqlClient | null = null;
+let sharedSqlUrl: string | null = null;
+
+/** Cliente SQL compartilhado do processo (Neon via HTTP — sem pool para gerenciar). */
+export function getSqlClient(): SqlClient {
+  const url = databaseUrl();
+  if (!url) throw new Error("OUTBOUND_DATABASE_URL não definida.");
+  if (!sharedSqlClient || sharedSqlUrl !== url) {
+    sharedSqlClient = createNeonSqlClient(url);
+    sharedSqlUrl = url;
+  }
+  return sharedSqlClient;
+}
+
+/**
+ * Store padrão: `dir` explícito força arquivos (demo, backup); sem `dir`, usa o
+ * Postgres se `OUTBOUND_DATABASE_URL` existir, senão arquivos em `.outbound/`.
+ */
+export function openStore(dir?: string): OutboundStore {
+  if (dir) return openFileStore(dir);
+  if (databaseUrl()) return createPgStore(getSqlClient(), outboundDir());
+  return openFileStore(outboundDir());
+}
+
+/**
+ * Lock de processo para os CLIs e actions mutantes: o store faz read-modify-write
+ * de coleções inteiras, então dois comandos simultâneos perderiam atualizações.
+ * Arquivos: lockfile em `.outbound/.lock`. Postgres: linha em `outbound_locks`
+ * com TTL — mesma semântica (lock órfão > 10 min é roubado).
+ */
+export async function runExclusive<T>(label: string, fn: () => Promise<T>, dirOverride?: string): Promise<T> {
+  try {
+    process.loadEnvFile(".env.local"); // OUTBOUND_STORE_DIR/OUTBOUND_DATABASE_URL podem vir do .env.local
+  } catch {
+    // sem .env.local — vale a env do shell
+  }
+  if (!dirOverride && databaseUrl()) return runExclusiveDb(label, fn);
+  return runExclusiveFile(label, fn, dirOverride ?? outboundDir());
+}
+
+async function runExclusiveDb<T>(label: string, fn: () => Promise<T>): Promise<T> {
+  const client = getSqlClient();
+  const holder = `${hostname()}:${process.pid}:${randomUUID().slice(0, 8)}`;
+  const started = Date.now();
+  while (!(await acquireDbLock(client, "outbound", holder, LOCK_STALE_MS))) {
+    if (Date.now() - started > LOCK_WAIT_MS) {
+      throw new Error(
+        `outro comando outbound está rodando (${label}: lock "outbound" ocupado no banco) — aguarde terminar`,
+      );
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  try {
+    return await fn();
+  } finally {
+    await releaseDbLock(client, "outbound", holder).catch(() => {});
+  }
+}
+
+async function runExclusiveFile<T>(label: string, fn: () => Promise<T>, dir: string): Promise<T> {
+  const lockPath = path.join(dir, ".lock");
+  await fs.mkdir(dir, { recursive: true });
+  const started = Date.now();
+  for (;;) {
+    try {
+      const handle = await fs.open(lockPath, "wx");
+      await handle.writeFile(JSON.stringify({ pid: process.pid, label, at: new Date().toISOString() }) + "\n", "utf8");
+      await handle.close();
+      break;
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code !== "EEXIST") throw err;
+      try {
+        const stat = await fs.stat(lockPath);
+        if (Date.now() - stat.mtimeMs > LOCK_STALE_MS) {
+          await fs.unlink(lockPath).catch(() => {});
+          continue;
+        }
+      } catch {
+        continue; // lock sumiu entre o open e o stat — tente de novo
+      }
+      if (Date.now() - started > LOCK_WAIT_MS) {
+        throw new Error(
+          `outro comando outbound está rodando (lock em ${lockPath}) — aguarde terminar; se tiver certeza de que não há outro processo, apague o arquivo de lock`,
+        );
+      }
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+  }
+  // CLIs usam process.exit() em caminhos de erro — isso pula o finally, então a
+  // limpeza do lock também fica registrada no evento "exit" (síncrono).
+  const releaseOnExit = () => {
+    try {
+      unlinkSync(lockPath);
+    } catch {
+      // já liberado
+    }
+  };
+  process.once("exit", releaseOnExit);
+  try {
+    return await fn();
+  } finally {
+    process.removeListener("exit", releaseOnExit);
+    await fs.unlink(lockPath).catch(() => {});
+  }
 }

@@ -83,3 +83,21 @@ describe("runExclusive", () => {
     expect(existsSync(lockPath)).toBe(false);
   });
 });
+
+describe("openStore — seleção por env", () => {
+  it("dir explícito força o store em arquivos mesmo com OUTBOUND_DATABASE_URL definida", async () => {
+    const prev = process.env.OUTBOUND_DATABASE_URL;
+    process.env.OUTBOUND_DATABASE_URL = "postgres://user:pass@example.invalid/db";
+    try {
+      const { openStore: open } = await import("../../src/lib/outbound/store");
+      const dir = tempDir();
+      const store = open(dir);
+      expect(store.dir).toBe(dir);
+      await store.saveState({ armed: true });
+      expect((await store.state()).armed).toBe(true); // roundtrip em arquivo, sem tocar rede
+    } finally {
+      if (prev === undefined) delete process.env.OUTBOUND_DATABASE_URL;
+      else process.env.OUTBOUND_DATABASE_URL = prev;
+    }
+  });
+});
