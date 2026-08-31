@@ -20,7 +20,7 @@ const SUGESTOES = ["Como está o funil hoje?", "O que o time fez esta semana?", 
 /** Últimas trocas enviadas como contexto (a rota também limita). */
 const HISTORICO_MAX = 6;
 
-export function AquarioChat({ isDemo }: { isDemo: boolean }) {
+export function AquarioChat({ isDemo, alto = false }: { isDemo: boolean; alto?: boolean }) {
   const [msgs, setMsgs] = useState<ChatMsg[]>([]);
   const [texto, setTexto] = useState("");
   const [loading, setLoading] = useState(false);
@@ -66,7 +66,10 @@ export function AquarioChat({ isDemo }: { isDemo: boolean }) {
   }
 
   return (
-    <section aria-label="Pergunte ao MORK" className="rounded-2xl border border-border bg-surface p-3 shadow-sm">
+    <section
+      aria-label="Pergunte ao MORK"
+      className={alto ? "p-3" : "rounded-2xl border border-border bg-surface p-3 shadow-sm"}
+    >
       <header className="flex items-baseline justify-between gap-2 px-1">
         <h2 className="font-display text-[0.68rem] font-bold tracking-[0.24em] text-foreground-muted uppercase">
           Pergunte ao MORK
@@ -74,7 +77,12 @@ export function AquarioChat({ isDemo }: { isDemo: boolean }) {
         {model ? <p className="text-[0.6rem] text-foreground-subtle">{model}</p> : null}
       </header>
 
-      <div aria-live="polite" className="no-scrollbar mt-2 flex max-h-64 min-h-0 flex-col gap-2 overflow-y-auto pr-0.5">
+      <div
+        aria-live="polite"
+        className={`no-scrollbar mt-2 flex min-h-0 flex-col gap-2 overflow-y-auto pr-0.5 ${
+          alto ? "max-h-[55dvh] min-h-[16rem]" : "max-h-64"
+        }`}
+      >
         {msgs.length === 0 && !loading ? (
           <div className="flex flex-col gap-1.5 py-1">
             <p className="text-[0.7rem] leading-snug text-foreground-muted">

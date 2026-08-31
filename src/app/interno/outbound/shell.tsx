@@ -4,10 +4,9 @@ import { getOutboundEnv } from "@/lib/outbound/config";
 import { dailyCap, usedTodayCount } from "@/lib/outbound/engine";
 import { evaluateGuardRails } from "@/lib/outbound/guardrails";
 import { orphanScheduled } from "@/lib/outbound/metrics";
-import { Aquario } from "./aquario";
-import { AquarioChat } from "./aquario-chat";
 import { AtalhosDoConsole } from "./atalhos";
 import { MaterialRoot } from "./material-root";
+import { MorkFlutuante } from "./mork-flutuante";
 import { consoleHref, type DashboardData } from "./data";
 import { Code, fmtDateTime, fmtInt, fmtPct } from "./ui";
 
@@ -293,18 +292,9 @@ export function ConsoleShell({
         <div>{children}</div>
       </div>
 
-      {/* Aquário + chat do MORK (telas largas; a aba MORK cobre as demais).
-          A coluna é sticky e rola por dentro quando o conjunto passa da tela. */}
-      <aside className="hidden w-[19.5rem] shrink-0 pt-14 2xl:block">
-        {/* scroll-slim: rolagem visível e honesta (P0 #2 de docs/MELHORIAS-CONSOLE.md). */}
-        <div className="scroll-slim sticky top-6 max-h-[calc(100dvh-3rem)] overflow-y-auto pr-1">
-          <Aquario data={data} />
-          {/* A linha divide o tanque da conversa: em cima o time, embaixo as perguntas. */}
-          <div className="mt-5 border-t border-border pt-5">
-            <AquarioChat isDemo={data.isDemo} />
-          </div>
-        </div>
-      </aside>
+      {/* Mundos separados (pedido do Luigi): o CRM fica com a largura toda; o
+          Aquário mora na aba MORK; o chat é o painel flutuante, em toda aba. */}
+      <MorkFlutuante isDemo={data.isDemo} />
     </div>
   );
 }
