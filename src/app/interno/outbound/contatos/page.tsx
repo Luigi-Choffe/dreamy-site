@@ -20,6 +20,7 @@ import {
   Metric,
   VERIFICATION_LABELS,
 } from "../ui";
+import { FiltroSelect } from "./filtros";
 
 /** Sempre dinâmico: lê o store local (`.outbound/` ou demo) a cada request. */
 export const dynamic = "force-dynamic";
@@ -29,8 +30,17 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const TABLE_LIMIT = 100;
+/** Página cresce de 100 em 100 pelo "Mostrar mais" (?limite=), com teto de sanidade. */
+const LIMITE_PASSO = 100;
+const LIMITE_TETO = 2000;
 const SEM_INDUSTRIA = "(sem indústria)";
+
+/** Ordenações clicáveis da tabela (?ordem=, sufixo -desc inverte). */
+const ORDENS = ["empresa", "verificacao", "ultimo_envio"] as const;
+type Ordem = (typeof ORDENS)[number];
+
+/** Asc = saudável primeiro; desc responde "quem está sujo?" num clique. */
+const VERIF_RANK: Record<VerificationStatus, number> = { ok: 0, risky: 1, invalid: 2, unverified: 3 };
 
 const CONTACT_STATUSES: ContactStatus[] = ["active", "excluded", "suppressed"];
 const VERIFICATION_STATUSES: VerificationStatus[] = ["ok", "risky", "invalid", "unverified"];
@@ -91,6 +101,15 @@ function sendRefTime(send: SendRecord): number {
   return iso ? Date.parse(iso) : 0;
 }
 
+/** Duas iniciais da empresa (ou do nome): âncora visual da linha, sem PII nova. */
+function monogram(contact: { empresa?: string; nome: string }): string {
+  const base = contact.empresa?.trim() || contact.nome.trim() || "?";
+  const parts = base.split(/\s+/).filter((w) => w.length > 1);
+  const a = parts[0]?.[0] ?? base[0] ?? "?";
+  const b = parts[1]?.[0] ?? parts[0]?.[1] ?? "";
+  return (a + b).toUpperCase();
+}
+
 /** Base de contatos: filtro, auditoria e supressão contato a contato. */
 export default async function OutboundContactsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const session = await requireSession();
@@ -108,6 +127,34 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
     : "";
   const industriaFilter = param(sp, "industria");
   const hasFilter = Boolean(q || statusFilter || verificationFilter || industriaFilter);
+
+  const ordemRaw = param(sp, "ordem");
+  const ordemStrip = ordemRaw.endsWith("-desc") ? ordemRaw.slice(0, -5) : ordemRaw;
+  const ordemCampo: Ordem = (ORDENS as readonly string[]).includes(ordemStrip) ? (ordemStrip as Ordem) : "empresa";
+  const ordemDesc = ordemRaw === `${ordemCampo}-desc`;
+  const limiteRaw = Number.parseInt(param(sp, "limite"), 10);
+  const limite = Number.isFinite(limiteRaw) ? Math.min(Math.max(limiteRaw, LIMITE_PASSO), LIMITE_TETO) : LIMITE_PASSO;
+
+  /** Monta href preservando filtros/ordem/demo; override com undefined remove a chave. */
+  const buildHref = (overrides: Record<string, string | undefined>): string => {
+    const params = new URLSearchParams();
+    if (isDemo) params.set("demo", "1");
+    for (const [k, v] of Object.entries({
+      q,
+      status: statusFilter,
+      verificacao: verificationFilter,
+      industria: industriaFilter,
+    })) {
+      if (v) params.set(k, v);
+    }
+    if (ordemCampo !== "empresa" || ordemDesc) params.set("ordem", ordemDesc ? `${ordemCampo}-desc` : ordemCampo);
+    for (const [k, v] of Object.entries(overrides)) {
+      if (v === undefined) params.delete(k);
+      else params.set(k, v);
+    }
+    const qs = params.toString();
+    return `/interno/outbound/contatos${qs ? `?${qs}` : ""}`;
+  };
 
   const collator = new Intl.Collator("pt-BR", { sensitivity: "base" });
   const industrias = [...new Set(data.contacts.map((c) => c.industria?.trim() || SEM_INDUSTRIA))].sort(
@@ -130,15 +177,6 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
   const totalStats = contactStats(data.contacts);
   const filteredStats = contactStats(filtered);
 
-  const rows = [...filtered]
-    .sort(
-      (a, b) =>
-        collator.compare(a.empresa ?? "", b.empresa ?? "") ||
-        collator.compare(a.nome, b.nome) ||
-        collator.compare(a.sobrenome ?? "", b.sobrenome ?? ""),
-    )
-    .slice(0, TABLE_LIMIT);
-
   const activeCampaignsByContact = new Map<string, string[]>();
   for (const enrollment of data.enrollments) {
     if (enrollment.status !== "active") continue;
@@ -154,6 +192,25 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
     const prev = lastSendByContact.get(send.contactId);
     if (!prev || t > sendRefTime(prev)) lastSendByContact.set(send.contactId, send);
   }
+
+  type Row = (typeof filtered)[number];
+  const porEmpresa = (a: Row, b: Row) =>
+    collator.compare(a.empresa ?? "", b.empresa ?? "") ||
+    collator.compare(a.nome, b.nome) ||
+    collator.compare(a.sobrenome ?? "", b.sobrenome ?? "");
+  const ultimoEnvio = (c: Row) => {
+    const send = lastSendByContact.get(c.id);
+    return send ? sendRefTime(send) : 0;
+  };
+  const cmp =
+    ordemCampo === "verificacao"
+      ? (a: Row, b: Row) => VERIF_RANK[a.verification] - VERIF_RANK[b.verification] || porEmpresa(a, b)
+      : ordemCampo === "ultimo_envio"
+        ? (a: Row, b: Row) => ultimoEnvio(a) - ultimoEnvio(b) || porEmpresa(a, b)
+        : porEmpresa;
+  const sorted = [...filtered].sort(cmp);
+  if (ordemDesc) sorted.reverse();
+  const rows = sorted.slice(0, limite);
 
   const clearHref = consoleHref("/interno/outbound/contatos", isDemo);
 
@@ -176,6 +233,10 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
             className="rounded-xl border border-border bg-surface p-4 shadow-sm"
           >
             {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
+            {/* Trocar filtro preserva a ordenação e reseta o limite. */}
+            {ordemCampo !== "empresa" || ordemDesc ? (
+              <input type="hidden" name="ordem" value={ordemDesc ? `${ordemCampo}-desc` : ordemCampo} />
+            ) : null}
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(14rem,2fr)_1fr_1fr_1fr_auto]">
               <div className="flex flex-col gap-1">
                 <label
@@ -200,14 +261,14 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
                 >
                   Status
                 </label>
-                <select id="filtro-status" name="status" defaultValue={statusFilter} className={CONTROL_CLASS}>
+                <FiltroSelect id="filtro-status" name="status" defaultValue={statusFilter} className={CONTROL_CLASS}>
                   <option value="">todos</option>
                   {CONTACT_STATUSES.map((status) => (
                     <option key={status} value={status}>
                       {CONTACT_STATUS_LABELS[status]}
                     </option>
                   ))}
-                </select>
+                </FiltroSelect>
               </div>
               <div className="flex flex-col gap-1">
                 <label
@@ -216,7 +277,7 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
                 >
                   Verificação
                 </label>
-                <select
+                <FiltroSelect
                   id="filtro-verificacao"
                   name="verificacao"
                   defaultValue={verificationFilter}
@@ -228,7 +289,7 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
                       {VERIFICATION_LABELS[status]}
                     </option>
                   ))}
-                </select>
+                </FiltroSelect>
               </div>
               <div className="flex flex-col gap-1">
                 <label
@@ -237,14 +298,19 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
                 >
                   Indústria
                 </label>
-                <select id="filtro-industria" name="industria" defaultValue={industriaFilter} className={CONTROL_CLASS}>
+                <FiltroSelect
+                  id="filtro-industria"
+                  name="industria"
+                  defaultValue={industriaFilter}
+                  className={CONTROL_CLASS}
+                >
                   <option value="">todas</option>
                   {industrias.map((industria) => (
                     <option key={industria} value={industria}>
                       {industria}
                     </option>
                   ))}
-                </select>
+                </FiltroSelect>
               </div>
               <div className="flex items-end gap-3">
                 <button
@@ -343,48 +409,49 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
                 <table className="w-full min-w-[56rem] border-collapse text-small">
                   <thead>
                     <tr className="border-b border-border bg-background-secondary/60 text-left">
-                      <th
-                        scope="col"
-                        className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase"
-                      >
-                        Contato
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase"
-                      >
-                        Cargo
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase"
-                      >
-                        Indústria
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase"
-                      >
-                        Verificação
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase"
-                      >
-                        Status
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase"
-                      >
-                        Campanha ativa
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase"
-                      >
-                        Último envio
-                      </th>
+                      {(
+                        [
+                          { label: "Contato", campo: "empresa" as Ordem },
+                          { label: "Cargo" },
+                          { label: "Indústria" },
+                          { label: "Verificação", campo: "verificacao" as Ordem },
+                          { label: "Status" },
+                          { label: "Campanha ativa" },
+                          { label: "Último envio", campo: "ultimo_envio" as Ordem },
+                        ] as Array<{ label: string; campo?: Ordem }>
+                      ).map(({ label, campo }) => {
+                        const ativa = campo !== undefined && campo === ordemCampo;
+                        return (
+                          <th
+                            key={label}
+                            scope="col"
+                            aria-sort={ativa ? (ordemDesc ? "descending" : "ascending") : undefined}
+                            className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase"
+                          >
+                            {campo ? (
+                              <Link
+                                href={buildHref({
+                                  ordem: ativa && !ordemDesc ? `${campo}-desc` : campo,
+                                  limite: undefined,
+                                })}
+                                title="Ordenar por esta coluna (clique de novo para inverter)"
+                                className={`inline-flex items-center gap-1 underline-offset-2 hover:text-foreground hover:underline ${
+                                  ativa ? "text-foreground" : ""
+                                }`}
+                              >
+                                {label}
+                                {ativa ? (
+                                  <span aria-hidden className="text-[0.6rem]">
+                                    {ordemDesc ? "↓" : "↑"}
+                                  </span>
+                                ) : null}
+                              </Link>
+                            ) : (
+                              label
+                            )}
+                          </th>
+                        );
+                      })}
                       <th scope="col" className="px-3 py-2">
                         <span className="sr-only">Ações</span>
                       </th>
@@ -405,14 +472,31 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
                           <td className="px-3 py-2">
                             <Link
                               href={consoleHref(`/interno/outbound/contatos/${contact.id}`, isDemo)}
-                              className="underline-offset-2 hover:text-brand-strong hover:underline"
+                              className="flex items-center gap-2.5 hover:text-brand-strong"
                               title="Abrir a conta do contato"
                             >
+                              <span
+                                aria-hidden
+                                className="inline-flex size-7 shrink-0 items-center justify-center rounded-full border border-border bg-background-secondary font-display text-[0.6rem] font-bold text-foreground-muted"
+                              >
+                                {monogram(contact)}
+                              </span>
                               <ContactCell contact={contact} />
                             </Link>
                           </td>
-                          <td className="px-3 py-2 text-foreground-muted">{contact.cargo?.trim() || "—"}</td>
-                          <td className="px-3 py-2 text-foreground-muted">{contact.industria?.trim() || "—"}</td>
+                          <td className="px-3 py-2 text-foreground-muted">
+                            <span className="block max-w-[13rem] truncate" title={contact.cargo?.trim() || undefined}>
+                              {contact.cargo?.trim() || "—"}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2 text-foreground-muted">
+                            <span
+                              className="block max-w-[13rem] truncate"
+                              title={contact.industria?.trim() || undefined}
+                            >
+                              {contact.industria?.trim() || "—"}
+                            </span>
+                          </td>
                           <td className="px-3 py-2">
                             <Chip tone={verificationChip.tone}>{verificationChip.label}</Chip>
                           </td>
@@ -466,12 +550,21 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
                     })}
                   </tbody>
                 </table>
+                {/* Fim dos contatos inalcançáveis: a página cresce aqui mesmo, preservando filtros e ordem. */}
+                {filtered.length > rows.length ? (
+                  <div className="border-t border-border bg-background-secondary/30 px-3 py-2.5 text-center text-small">
+                    <Link
+                      href={buildHref({ limite: String(Math.min(limite + LIMITE_PASSO, LIMITE_TETO)) })}
+                      className="font-semibold text-brand-strong underline-offset-2 hover:underline"
+                    >
+                      Mostrar mais {fmtInt(Math.min(LIMITE_PASSO, filtered.length - rows.length))}
+                    </Link>{" "}
+                    <span className="text-foreground-subtle tabular-nums">
+                      · exibindo {fmtInt(rows.length)} de {fmtInt(filtered.length)}
+                    </span>
+                  </div>
+                ) : null}
               </div>
-              {filtered.length > TABLE_LIMIT ? (
-                <p className="mt-2 text-xs text-warning">
-                  Mostrando {fmtInt(TABLE_LIMIT)} de {fmtInt(filtered.length)} — refine o filtro para ver o restante.
-                </p>
-              ) : null}
               <p className="mt-2 text-xs text-foreground-subtle">
                 E-mails não aparecem como texto no console (PII) — passe o mouse sobre o contato para ver no tooltip.
                 Suprimir é permanente e bloqueia qualquer envio futuro; agendados no Resend são cancelados quando a

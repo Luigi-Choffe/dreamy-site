@@ -81,7 +81,10 @@ describe("sessão assinada — signSession/verifySession", () => {
   it("rejeita assinatura adulterada, payload forjado e segredo diferente", () => {
     const token = signSession("a@b.c", SECRET);
     const [payload, signature] = token.split(".") as [string, string];
-    const flipped = signature.slice(0, -1) + (signature.endsWith("A") ? "B" : "A");
+    // Flip no PRIMEIRO caractere (6 bits altos): o último carrega só 4 bits úteis
+    // em base64url de 32 bytes, e flipá-lo pode decodificar para os MESMOS bytes
+    // (teste ficava flaky conforme o valor sorteado do HMAC).
+    const flipped = (signature.startsWith("A") ? "B" : "A") + signature.slice(1);
     expect(verifySession(`${payload}.${flipped}`, SECRET)).toBeNull();
 
     const forged = Buffer.from(JSON.stringify({ email: "x@y.z", exp: Date.now() + 60_000 })).toString("base64url");
