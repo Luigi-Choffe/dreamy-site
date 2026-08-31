@@ -83,9 +83,30 @@ export default async function OutboundRepliesPage({ searchParams }: { searchPara
   const byClass = countBy(replies, (r) => r.classification);
   const interessados = byClass.get("interested") ?? 0;
 
-  const ordered = [...replies].sort(
-    (a, b) => b.receivedAt.localeCompare(a.receivedAt) || b.recordedAt.localeCompare(a.recordedAt),
+  // Ordenação e crescimento da lista (P2 #13 do plano): ?ordem=recebida inverte; ?limite= cresce.
+  const spStr = (v: string | string[] | undefined): string =>
+    typeof v === "string" ? v : Array.isArray(v) ? (v[0] ?? "") : "";
+  const ordemAsc = spStr(sp.ordem) === "recebida";
+  const limiteRaw = Number.parseInt(spStr(sp.limite), 10);
+  const limite = Number.isFinite(limiteRaw) ? Math.min(Math.max(limiteRaw, 50), 1000) : 50;
+  const todas = [...replies].sort((a, b) =>
+    ordemAsc
+      ? a.receivedAt.localeCompare(b.receivedAt) || a.recordedAt.localeCompare(b.recordedAt)
+      : b.receivedAt.localeCompare(a.receivedAt) || b.recordedAt.localeCompare(a.recordedAt),
   );
+  const ordered = todas.slice(0, limite);
+
+  const respostasHref = (overrides: Record<string, string | undefined>): string => {
+    const params = new URLSearchParams();
+    if (isDemo) params.set("demo", "1");
+    if (ordemAsc) params.set("ordem", "recebida");
+    for (const [k, v] of Object.entries(overrides)) {
+      if (v === undefined) params.delete(k);
+      else params.set(k, v);
+    }
+    const qs = params.toString();
+    return `/interno/outbound/respostas${qs ? `?${qs}` : ""}`;
+  };
 
   // Contatos elegíveis para registrar resposta: inscritos em alguma campanha.
   const enrolledIds = new Set(enrollments.map((e) => e.contactId));
@@ -167,7 +188,7 @@ export default async function OutboundRepliesPage({ searchParams }: { searchPara
                 tabIndex={0}
                 role="region"
                 aria-label="Lista de respostas"
-                className="mt-4 overflow-x-auto rounded-lg border border-border bg-surface"
+                className="mt-4 overflow-x-auto rounded-xl border border-border bg-surface shadow-sm"
               >
                 <table className="w-full min-w-[44rem] text-small">
                   <thead>
@@ -181,8 +202,17 @@ export default async function OutboundRepliesPage({ searchParams }: { searchPara
                       <th scope="col" className={TH}>
                         Passo provável
                       </th>
-                      <th scope="col" className={TH}>
-                        Recebida em
+                      <th scope="col" aria-sort={ordemAsc ? "ascending" : "descending"} className={TH}>
+                        <Link
+                          href={respostasHref({ ordem: ordemAsc ? undefined : "recebida", limite: undefined })}
+                          title="Ordenar por data (clique para inverter)"
+                          className="inline-flex items-center gap-1 text-foreground underline-offset-2 hover:underline"
+                        >
+                          Recebida em
+                          <span aria-hidden className="text-[0.6rem]">
+                            {ordemAsc ? "↑" : "↓"}
+                          </span>
+                        </Link>
                       </th>
                       <th scope="col" className={TH}>
                         Classe
@@ -265,6 +295,19 @@ export default async function OutboundRepliesPage({ searchParams }: { searchPara
                     })}
                   </tbody>
                 </table>
+                {todas.length > ordered.length ? (
+                  <div className="border-t border-border bg-background-secondary/30 px-3 py-2.5 text-center text-small">
+                    <Link
+                      href={respostasHref({ limite: String(Math.min(limite + 50, 1000)) })}
+                      className="font-semibold text-brand-strong underline-offset-2 hover:underline"
+                    >
+                      Mostrar mais {fmtInt(Math.min(50, todas.length - ordered.length))}
+                    </Link>{" "}
+                    <span className="text-foreground-subtle tabular-nums">
+                      · exibindo {fmtInt(ordered.length)} de {fmtInt(todas.length)}
+                    </span>
+                  </div>
+                ) : null}
               </div>
             )}
           </section>

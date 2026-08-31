@@ -88,13 +88,34 @@ export default async function OutboundSuppressionPage({ searchParams }: { search
   const motivoRaw = param(sp, "motivo");
   const motivoFilter = REASONS.some((r) => r.reason === motivoRaw) ? (motivoRaw as SuppressionReason) : "";
   const hasFiltro = Boolean(q || motivoFilter);
-  const suppressions = [...data.suppressions]
+  // Ordenação e crescimento da lista (P2 #13 do plano): ?ordem=quando inverte; ?limite= cresce.
+  const ordemAsc = param(sp, "ordem") === "quando";
+  const limiteRaw = Number.parseInt(param(sp, "limite"), 10);
+  const limite = Number.isFinite(limiteRaw) ? Math.min(Math.max(limiteRaw, 100), 2000) : 100;
+  const filtradas = [...data.suppressions]
     .filter(
       (s) =>
         (!motivoFilter || s.reason === motivoFilter) &&
         (!qL || s.email.toLowerCase().includes(qL) || (s.origin ?? "").toLowerCase().includes(qL)),
     )
-    .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+    .sort((a, b) =>
+      ordemAsc ? Date.parse(a.createdAt) - Date.parse(b.createdAt) : Date.parse(b.createdAt) - Date.parse(a.createdAt),
+    );
+  const suppressions = filtradas.slice(0, limite);
+
+  const buildHref = (overrides: Record<string, string | undefined>): string => {
+    const params = new URLSearchParams();
+    if (isDemo) params.set("demo", "1");
+    if (q) params.set("q", q);
+    if (motivoFilter) params.set("motivo", motivoFilter);
+    if (ordemAsc) params.set("ordem", "quando");
+    for (const [k, v] of Object.entries(overrides)) {
+      if (v === undefined) params.delete(k);
+      else params.set(k, v);
+    }
+    const qs = params.toString();
+    return `/interno/outbound/supressao${qs ? `?${qs}` : ""}`;
+  };
 
   const collator = new Intl.Collator("pt-BR", { sensitivity: "base" });
   const activeContacts = data.contacts
@@ -136,9 +157,7 @@ export default async function OutboundSuppressionPage({ searchParams }: { search
         <section aria-labelledby="registros-title">
           <h2 id="registros-title" className="font-display text-h4 font-bold">
             Registros{" "}
-            <span className="font-sans text-xs font-normal text-foreground-subtle">
-              ({fmtInt(suppressions.length)})
-            </span>
+            <span className="font-sans text-xs font-normal text-foreground-subtle">({fmtInt(filtradas.length)})</span>
           </h2>
           <form method="get" action="/interno/outbound/supressao" className="mt-3 flex flex-wrap items-end gap-3">
             {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
@@ -183,7 +202,7 @@ export default async function OutboundSuppressionPage({ searchParams }: { search
               </Link>
             ) : null}
           </form>
-          {suppressions.length === 0 ? (
+          {filtradas.length === 0 ? (
             <div className="mt-4">
               <EmptyState>
                 {hasFiltro ? (
@@ -201,7 +220,7 @@ export default async function OutboundSuppressionPage({ searchParams }: { search
               tabIndex={0}
               role="region"
               aria-label="Lista de supressões"
-              className="mt-4 overflow-x-auto rounded-lg border border-border"
+              className="mt-4 overflow-x-auto rounded-xl border border-border bg-surface shadow-sm"
             >
               <table className="w-full min-w-[38rem] border-collapse text-small">
                 <thead>
@@ -226,9 +245,19 @@ export default async function OutboundSuppressionPage({ searchParams }: { search
                     </th>
                     <th
                       scope="col"
+                      aria-sort={ordemAsc ? "ascending" : "descending"}
                       className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase"
                     >
-                      Quando
+                      <Link
+                        href={buildHref({ ordem: ordemAsc ? undefined : "quando", limite: undefined })}
+                        title="Ordenar por data (clique para inverter)"
+                        className="inline-flex items-center gap-1 text-foreground underline-offset-2 hover:underline"
+                      >
+                        Quando
+                        <span aria-hidden className="text-[0.6rem]">
+                          {ordemAsc ? "↑" : "↓"}
+                        </span>
+                      </Link>
                     </th>
                   </tr>
                 </thead>
@@ -252,6 +281,19 @@ export default async function OutboundSuppressionPage({ searchParams }: { search
                   ))}
                 </tbody>
               </table>
+              {filtradas.length > suppressions.length ? (
+                <div className="border-t border-border bg-background-secondary/30 px-3 py-2.5 text-center text-small">
+                  <Link
+                    href={buildHref({ limite: String(Math.min(limite + 100, 2000)) })}
+                    className="font-semibold text-brand-strong underline-offset-2 hover:underline"
+                  >
+                    Mostrar mais {fmtInt(Math.min(100, filtradas.length - suppressions.length))}
+                  </Link>{" "}
+                  <span className="text-foreground-subtle tabular-nums">
+                    · exibindo {fmtInt(suppressions.length)} de {fmtInt(filtradas.length)}
+                  </span>
+                </div>
+              ) : null}
             </div>
           )}
         </section>

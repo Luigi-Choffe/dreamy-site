@@ -410,15 +410,26 @@ export function DailySendSparkline({ points }: { points: DailySendPoint[] }) {
           const x = i * (SPARK.barW + SPARK.gap);
           const hSent = p.sent > 0 ? Math.max((p.sent / max) * usable, 1.5) : 0;
           const hBounce = p.bounced > 0 ? Math.max((p.bounced / max) * usable, 1.5) : 0;
+          // A última barra é o dia corrente: marcador de "hoje" (P2 #11 do plano).
+          const hoje = i === points.length - 1;
           return (
             <g key={p.date}>
               <title>
-                {`${dayLabel(p.date)}: ${fmtInt(p.sent)} ${p.sent === 1 ? "envio" : "envios"}${
+                {`${dayLabel(p.date)}${hoje ? " (hoje)" : ""}: ${fmtInt(p.sent)} ${p.sent === 1 ? "envio" : "envios"}${
                   p.bounced > 0 ? ` · ${fmtInt(p.bounced)} bounce` : ""
                 }`}
               </title>
               {hSent > 0 ? (
-                <rect x={x} y={SPARK.h - 1 - hSent} width={SPARK.barW} height={hSent} fill="var(--foreground-subtle)" />
+                <rect
+                  x={x}
+                  y={SPARK.h - 1 - hSent}
+                  width={SPARK.barW}
+                  height={hSent}
+                  fill={hoje ? "var(--brand-strong)" : "var(--foreground-subtle)"}
+                />
+              ) : null}
+              {hoje && hSent === 0 ? (
+                <rect x={x} y={SPARK.h - 2.5} width={SPARK.barW} height={1.5} fill="var(--brand-strong)" />
               ) : null}
               {hBounce > 0 ? (
                 <rect x={x} y={SPARK.h - 1 - hBounce} width={SPARK.barW} height={hBounce} fill="var(--error)" />
@@ -429,7 +440,16 @@ export function DailySendSparkline({ points }: { points: DailySendPoint[] }) {
         <rect x="0" y={SPARK.h - 1} width={width} height="1" fill="var(--border-strong)" />
       </svg>
       <figcaption className="mt-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-xs text-foreground-subtle">
-        <span className="tabular-nums">{first && last ? `${dayLabel(first.date)} – ${dayLabel(last.date)}` : "—"}</span>
+        <span className="tabular-nums">
+          {first && last ? (
+            <>
+              {dayLabel(first.date)} – {dayLabel(last.date)} ·{" "}
+              <span className="font-semibold text-brand-strong">hoje {fmtInt(last.sent)}</span>
+            </>
+          ) : (
+            "—"
+          )}
+        </span>
         <span className="tabular-nums">
           {fmtInt(totalSent)} {totalSent === 1 ? "envio" : "envios"} no período
           {totalBounced > 0 ? (

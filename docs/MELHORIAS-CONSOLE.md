@@ -39,13 +39,13 @@ com a coluna) e 1720px.
 
 ## P2 — polimento (depois dos P1)
 
-| #   | Item                                                                                                          | Status     |
-| --- | ------------------------------------------------------------------------------------------------------------- | ---------- |
-| 10  | Toast/Dialog herdarem o material de vidro dentro do console (hoje ficam com o material do site)               | aberto     |
-| 11  | Sparkline de envios com marcador de "hoje" e valor no hover                                                   | aberto     |
-| 12  | Revisão completa do console em 390px (mobile) e 768px                                                         | aberto     |
-| 13  | Ordenação e "Mostrar mais" também nas tabelas de Respostas e Supressão                                        | aberto     |
-| 14  | Ideia a discutir: seleção múltipla em Contatos para suprimir em lote (perigosa; exige desenho de confirmação) | a discutir |
+| #   | Item                                                                                                          | Status             |
+| --- | ------------------------------------------------------------------------------------------------------------- | ------------------ |
+| 10  | Toast/Dialog herdarem o material de vidro dentro do console (hoje ficam com o material do site)               | feito · 2026-08-31 |
+| 11  | Sparkline de envios com marcador de "hoje" e valor no hover                                                   | feito · 2026-08-31 |
+| 12  | Revisão completa do console em 390px (mobile) e 768px                                                         | feito · 2026-08-31 |
+| 13  | Ordenação e "Mostrar mais" também nas tabelas de Respostas e Supressão                                        | feito · 2026-08-31 |
+| 14  | Ideia a discutir: seleção múltipla em Contatos para suprimir em lote (perigosa; exige desenho de confirmação) | a discutir         |
 
 ## Regras que continuam valendo
 

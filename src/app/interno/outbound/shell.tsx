@@ -7,6 +7,7 @@ import { orphanScheduled } from "@/lib/outbound/metrics";
 import { Aquario } from "./aquario";
 import { AquarioChat } from "./aquario-chat";
 import { AtalhosDoConsole } from "./atalhos";
+import { MaterialRoot } from "./material-root";
 import { consoleHref, type DashboardData } from "./data";
 import { Code, fmtDateTime, fmtInt, fmtPct } from "./ui";
 
@@ -130,9 +131,11 @@ export function ConsoleShell({
     rails.sent === 0 ? "neutral" : rails.bounceRate < 0.02 ? "ok" : rails.bounceRate < 0.03 ? "warn" : "crit";
 
   return (
-    <div data-app="console" className="mx-auto flex max-w-[105rem] justify-center gap-10 px-6 py-8">
+    <div data-app="console" className="mx-auto flex max-w-[105rem] justify-center gap-10 px-4 py-6 sm:px-6 sm:py-8">
       {/* Atalhos: "/" foca a busca; Alt+1..9 troca de aba (P1 #9 do plano). */}
       <AtalhosDoConsole hrefs={TABS.slice(0, 9).map((tab) => consoleHref(tab.href, data.isDemo))} />
+      {/* Toasts (portal fora deste wrapper) herdam o vidro do console (P2 #10). */}
+      <MaterialRoot />
       {/* Luz ambiente do app (decorativa): dá matéria para o vidro fosco desfocar. */}
       <div
         aria-hidden
