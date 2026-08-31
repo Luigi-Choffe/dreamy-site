@@ -388,7 +388,9 @@ export function AquarioRede({
               <span key={b.key} className="absolute" style={{ left: `${b.x}%`, top: `${b.y}%` }}>
                 {/* Nós do topo (MORK) falam para baixo-direita, no espaço vazio do
                     palco, sem cobrir o VERBO; os demais falam acima de si. */}
-                <span className={`absolute left-0 ${b.abaixo ? "top-9 -translate-x-[10%]" : "bottom-8 -translate-x-1/2"}`}>
+                <span
+                  className={`absolute left-0 ${b.abaixo ? "top-9 -translate-x-[10%]" : "bottom-8 -translate-x-1/2"}`}
+                >
                   <m.span
                     initial={{ opacity: 0, scale: 0.82, y: b.abaixo ? -6 : 6 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
