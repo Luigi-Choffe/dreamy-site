@@ -17,8 +17,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const BTN =
-  "rounded-md border border-border bg-background-secondary px-2.5 py-1 text-xs font-semibold text-foreground hover:border-border-strong";
+/** Ação principal da linha em toque pequeno de verde; secundárias em ghost. */
+const BTN_BASE =
+  "rounded-full px-2.5 py-1 text-xs font-semibold transition-colors duration-(--duration-fast) ease-(--ease-out) " +
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-[0.98]";
+const BTN_PRIMARY = `${BTN_BASE} bg-brand-soft text-brand-strong hover:bg-brand-soft-strong`;
+const BTN_GHOST = `${BTN_BASE} text-foreground-muted hover:bg-background-secondary hover:text-foreground`;
 const SECTION_TITLE = "font-display text-h4 font-bold";
 
 function dueLabel(dateKey: string): string {
@@ -39,7 +43,7 @@ function TaskRow({
   reagendas: Array<{ label: string; date: string }>;
 }) {
   return (
-    <li className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-border px-4 py-2.5 first:border-t-0">
+    <li className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-border px-4 py-2.5 transition-colors duration-(--duration-fast) first:border-t-0 hover:bg-surface-hover">
       <span className="text-xs whitespace-nowrap text-foreground-subtle tabular-nums">{dueLabel(task.dueDate)}</span>
       {task.dueDate < todayKey ? <Chip tone="error">vencida</Chip> : null}
       {task.origin === "regra" ? <Chip tone="brand">regra</Chip> : null}
@@ -56,7 +60,7 @@ function TaskRow({
         <form action={completeTaskAction} className="inline">
           <input type="hidden" name="taskId" value={task.id} />
           {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
-          <button type="submit" className={BTN}>
+          <button type="submit" className={BTN_PRIMARY}>
             Concluir
           </button>
         </form>
@@ -65,7 +69,7 @@ function TaskRow({
             <input type="hidden" name="taskId" value={task.id} />
             <input type="hidden" name="dueDate" value={r.date} />
             {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
-            <button type="submit" className={BTN} title={`Reagendar para ${r.date}`}>
+            <button type="submit" className={BTN_GHOST} title={`Reagendar para ${r.date}`}>
               {r.label}
             </button>
           </form>
@@ -123,7 +127,7 @@ export default async function OutboundTodayPage({ searchParams }: { searchParams
               <EmptyState>Nada para hoje. Tarefas novas nascem aqui, na conta do contato ou pelo MORK.</EmptyState>
             </div>
           ) : (
-            <ol className="mt-3 rounded-lg border border-border bg-surface">
+            <ol className="mt-3 overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
               {dueNow.map((task) => (
                 <TaskRow
                   key={task.id}
@@ -150,11 +154,11 @@ export default async function OutboundTodayPage({ searchParams }: { searchParams
               <EmptyState>Todo interessado tem follow-up. É assim que se joga.</EmptyState>
             </div>
           ) : (
-            <ol className="mt-3 rounded-lg border border-border bg-surface">
+            <ol className="mt-3 overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
               {followUps.map(({ reply, contact }) => (
                 <li
                   key={reply.id}
-                  className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-border px-4 py-2.5 first:border-t-0"
+                  className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-border px-4 py-2.5 transition-colors duration-(--duration-fast) first:border-t-0 hover:bg-surface-hover"
                 >
                   <Chip tone="success">interessado</Chip>
                   <Link
@@ -173,7 +177,7 @@ export default async function OutboundTodayPage({ searchParams }: { searchParams
                     <input type="hidden" name="titulo" value="Responder e propor reunião" />
                     <input type="hidden" name="dueDate" value={d1} />
                     {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
-                    <button type="submit" className={BTN}>
+                    <button type="submit" className={BTN_PRIMARY}>
                       Criar tarefa de reunião
                     </button>
                   </form>
@@ -192,7 +196,7 @@ export default async function OutboundTodayPage({ searchParams }: { searchParams
               <EmptyState>Semana livre por enquanto.</EmptyState>
             </div>
           ) : (
-            <ol className="mt-3 rounded-lg border border-border bg-surface">
+            <ol className="mt-3 rounded-xl border border-dashed border-border bg-background-secondary/30">
               {upcoming.map((task) => (
                 <TaskRow
                   key={task.id}

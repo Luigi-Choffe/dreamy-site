@@ -195,7 +195,7 @@ export default async function OutboundActivityPage({ searchParams }: { searchPar
                           colSpan={5}
                           className="px-3 py-1.5 text-left text-xs font-semibold text-foreground-muted tabular-nums"
                         >
-                          {group.date}
+                          {group.date} · {fmtInt(group.rows.length)} evento(s)
                         </th>
                       </tr>
                       {group.rows.map((event) => {
@@ -203,14 +203,17 @@ export default async function OutboundActivityPage({ searchParams }: { searchPar
                         const contact = send ? contactsById.get(send.contactId) : undefined;
                         const def = defsBySlug.get(event.campaignSlug);
                         return (
-                          <tr key={event.id} className="border-t border-border align-top">
+                          <tr
+                            key={event.id}
+                            className="border-t border-border align-top transition-colors duration-(--duration-fast) hover:bg-surface-hover"
+                          >
                             <td className="px-3 py-2">
                               <Chip tone={EVENT_TYPE_TONES[event.type]}>{EVENT_TYPE_LABELS[event.type]}</Chip>
                             </td>
                             <td className="px-3 py-2">
                               <Link
                                 href={consoleHref(`/interno/outbound/${event.campaignSlug}`, isDemo)}
-                                className="text-brand-strong hover:underline"
+                                className="text-foreground underline decoration-border underline-offset-2 hover:decoration-foreground"
                                 title={event.campaignSlug}
                               >
                                 {def?.industria ?? event.campaignSlug}

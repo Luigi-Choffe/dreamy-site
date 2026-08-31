@@ -61,8 +61,9 @@ type PillTone = "ok" | "neutral" | "warn" | "crit";
 const PILL_TONES: Record<PillTone, string> = {
   ok: "bg-brand-soft text-success",
   neutral: "bg-background-secondary text-foreground-muted",
-  warn: "border border-warning/50 text-warning",
-  crit: "bg-error-soft text-error",
+  warn: "bg-warning-soft text-warning",
+  // pulse-crit: pulso sutil (globals.css, escopo do console) — alerta vivo, como no Aquário.
+  crit: "bg-error-soft text-error pulse-crit",
 };
 
 /** Pílula do fio de saúde: ponto de estado + rótulo curto; detalhe fica no title. */
@@ -102,7 +103,16 @@ export function ConsoleShell({
     rails.sent === 0 ? "neutral" : rails.bounceRate < 0.02 ? "ok" : rails.bounceRate < 0.03 ? "warn" : "crit";
 
   return (
-    <div className="mx-auto flex max-w-[105rem] justify-center gap-10 px-6 py-8">
+    <div data-app="console" className="mx-auto flex max-w-[105rem] justify-center gap-10 px-6 py-8">
+      {/* Luz ambiente do app (decorativa): dá matéria para o vidro fosco desfocar. */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-10"
+        style={{
+          background:
+            "radial-gradient(50rem 30rem at 12% -6%, rgb(70 235 126 / 0.08), transparent 60%), radial-gradient(44rem 26rem at 88% 10%, rgb(70 235 126 / 0.05), transparent 65%), radial-gradient(46rem 32rem at 50% 112%, rgb(11 11 12 / 0.05), transparent 70%)",
+        }}
+      />
       <div className="w-full max-w-6xl min-w-0">
         {sessionEmail ? (
           <div className="mb-4 flex flex-wrap items-center justify-end gap-2 text-xs">
@@ -220,7 +230,11 @@ export function ConsoleShell({
           ) : null}
         </div>
 
-        <nav aria-label="Seções do console" className="mb-8 flex flex-wrap gap-1 border-b border-border text-small">
+        {/* Navegação em barra segmentada de vidro (o item ativo é a "pílula" sólida). */}
+        <nav
+          aria-label="Seções do console"
+          className="mb-8 flex flex-wrap gap-1 rounded-2xl border border-border bg-surface p-1.5 text-small shadow-sm"
+        >
           {TABS.map((tab) => (
             <Link
               key={tab.id}
@@ -228,8 +242,8 @@ export function ConsoleShell({
               aria-current={tab.id === active ? "page" : undefined}
               className={
                 tab.id === active
-                  ? "-mb-px border-b-2 border-brand-strong px-3 py-2 font-semibold text-brand-strong"
-                  : "-mb-px border-b-2 border-transparent px-3 py-2 text-foreground-muted hover:text-foreground"
+                  ? "rounded-full bg-white px-3.5 py-1.5 font-semibold text-brand-strong shadow-sm"
+                  : "rounded-full px-3.5 py-1.5 text-foreground-muted transition-colors duration-(--duration-fast) hover:bg-white/55 hover:text-foreground"
               }
             >
               {tab.label}

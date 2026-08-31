@@ -4,6 +4,7 @@ import { ConsentBanner } from "@/components/analytics/ConsentBanner";
 import { CtaClickDelegate } from "@/components/analytics/CtaClickDelegate";
 import { GoogleTagManager, GoogleTagManagerNoScript } from "@/components/analytics/GoogleTagManager";
 import { RouteChangeTracker } from "@/components/analytics/RouteChangeTracker";
+import { ChromeGate } from "@/components/layout/ChromeGate";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { SkipLink } from "@/components/layout/SkipLink";
@@ -57,12 +58,16 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <GoogleTagManagerNoScript />
         <SkipLink />
         <ToastProvider>
-          <Header />
+          <ChromeGate>
+            <Header />
+          </ChromeGate>
           <main id="conteudo" tabIndex={-1} className="flex-1 outline-none">
             {children}
           </main>
-          <Footer />
-          <ConsentBanner />
+          <ChromeGate>
+            <Footer />
+            <ConsentBanner />
+          </ChromeGate>
           <RouteChangeTracker />
           <CtaClickDelegate />
         </ToastProvider>

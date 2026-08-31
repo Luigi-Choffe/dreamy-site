@@ -31,7 +31,13 @@ function DealCard({ deal, contact, isDemo, now }: { deal: Deal; contact?: Contac
   const empresa = deal.empresa ?? contact?.empresa ?? nome;
   const dias = daysInStage(deal, now);
   return (
-    <article className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-3">
+    <article
+      className={`relative flex flex-col gap-2 overflow-hidden rounded-xl border bg-surface p-3 shadow-sm transition-[box-shadow,transform] duration-(--duration-fast) ease-(--ease-out) hover:shadow-md motion-safe:hover:-translate-y-px ${
+        deal.stage === "ganho" ? "border-brand-soft-strong" : "border-border"
+      }`}
+    >
+      {/* Vitória merece o verde: fio no topo do card ganho. */}
+      {deal.stage === "ganho" ? <span aria-hidden className="absolute inset-x-0 top-0 h-0.5 bg-brand" /> : null}
       {/* PII: e-mail só em tooltip, nunca como texto visível. */}
       <div className="min-w-0" title={contact?.email}>
         <p className="truncate text-small font-semibold text-foreground">{empresa}</p>
@@ -53,7 +59,9 @@ function DealCard({ deal, contact, isDemo, now }: { deal: Deal; contact?: Contac
         <p className="text-xs text-foreground-subtle">motivo: {deal.lostReason}</p>
       ) : null}
       <details className="text-xs">
-        <summary className="cursor-pointer font-semibold text-brand-strong">Mover</summary>
+        <summary className="cursor-pointer font-semibold text-foreground-muted transition-colors duration-(--duration-fast) hover:text-foreground">
+          Mover
+        </summary>
         <form action={moveDealStageAction} className="mt-2 flex flex-col gap-1.5">
           <input type="hidden" name="dealId" value={deal.id} />
           {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
@@ -87,7 +95,7 @@ function DealCard({ deal, contact, isDemo, now }: { deal: Deal; contact?: Contac
           </label>
           <button
             type="submit"
-            className="mt-0.5 rounded-md border border-border bg-background-secondary px-2.5 py-1 text-xs font-semibold text-foreground hover:border-border-strong"
+            className="mt-0.5 rounded-full bg-brand-soft px-2.5 py-1 text-xs font-semibold text-brand-strong transition-colors duration-(--duration-fast) hover:bg-brand-soft-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           >
             Mover
           </button>
@@ -142,14 +150,23 @@ export default async function OutboundPipelinePage({ searchParams }: { searchPar
             negócios a partir das sequências do outbound.
           </EmptyState>
         ) : (
-          <div tabIndex={0} role="region" aria-label="Pipeline de negócios" className="overflow-x-auto pb-2">
-            <div className="grid min-w-[96rem] grid-cols-8 gap-3">
+          <div
+            tabIndex={0}
+            role="region"
+            aria-label="Pipeline de negócios"
+            className="snap-x snap-proximity overflow-x-auto pb-2"
+          >
+            <div className="grid min-w-[80rem] grid-cols-8 gap-3">
               {DEAL_STAGES.map((stage) => {
                 const list = byStage.get(stage) ?? [];
                 const total = list.reduce((sum, d) => sum + (d.valorEstimado ?? 0), 0);
                 return (
-                  <section key={stage} aria-label={DEAL_STAGE_LABELS[stage]} className="flex min-w-0 flex-col gap-2">
-                    <header className="flex items-center justify-between gap-2 border-b border-border pb-2">
+                  <section
+                    key={stage}
+                    aria-label={DEAL_STAGE_LABELS[stage]}
+                    className="flex min-w-0 snap-start flex-col gap-2 rounded-xl bg-background-secondary/50 p-2"
+                  >
+                    <header className="flex items-center justify-between gap-2 border-b border-border px-1 pb-2">
                       <Chip tone={DEAL_STAGE_TONES[stage]}>{DEAL_STAGE_LABELS[stage]}</Chip>
                       <span className="text-xs text-foreground-subtle tabular-nums">
                         {fmtInt(list.length)}

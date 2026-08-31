@@ -81,7 +81,9 @@ export default async function OutboundAgendaPage({ searchParams }: { searchParam
           </div>
         ) : (
           <p className="text-xs text-foreground-subtle">
-            E-mails com o selo <Chip tone="brand">no Resend</Chip> já têm hora marcada de verdade. O restante é a{" "}
+            E-mails com o ponto verde{" "}
+            <span aria-hidden className="inline-block size-1.5 rounded-full bg-brand align-middle" /> já estão na fila
+            do Resend com hora marcada de verdade. O restante (círculo vazado) é a{" "}
             <span className="font-semibold text-foreground">previsão da cadência</span> (mesma matemática do motor,
             recalculada agora): o disparo real decide às 09:05 de cada dia útil, e respostas, pausas ou supressões mudam
             o plano.{" "}
@@ -113,11 +115,30 @@ export default async function OutboundAgendaPage({ searchParams }: { searchParam
                 day.agendados.length === 0 &&
                 day.tarefas.length === 0 &&
                 day.reunioes.length === 0;
+              const isHoje = day.dateKey === todayKey;
               return (
                 <li key={day.dateKey}>
-                  <Card as="section" padding="sm" aria-label={tituloDoDia(day.dateKey, todayKey, amanhaKey)}>
+                  {/* Hoje é o centro de gravidade; dia vazio recua para linha fantasma. */}
+                  <Card
+                    as="section"
+                    padding="sm"
+                    aria-label={tituloDoDia(day.dateKey, todayKey, amanhaKey)}
+                    className={
+                      isHoje
+                        ? "shadow-md ring-1 ring-brand-strong/15"
+                        : vazio
+                          ? "border-dashed bg-background-secondary/30 shadow-none"
+                          : undefined
+                    }
+                  >
                     <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                       <h2 className="font-display text-h4 font-bold">
+                        {isHoje ? (
+                          <span
+                            aria-hidden
+                            className="pulse-live mr-2 inline-block size-1.5 -translate-y-[0.15em] rounded-full bg-brand"
+                          />
+                        ) : null}
                         {tituloDoDia(day.dateKey, todayKey, amanhaKey)}
                       </h2>
                       <p className="text-xs text-foreground-subtle tabular-nums">
@@ -190,6 +211,11 @@ export default async function OutboundAgendaPage({ searchParams }: { searchParam
                                 const contact = contactById.get(send.contactId);
                                 return (
                                   <li key={send.id} className="flex flex-wrap items-center gap-2 text-small">
+                                    <span
+                                      aria-hidden
+                                      title="na fila do Resend"
+                                      className="size-1.5 shrink-0 rounded-full bg-brand"
+                                    />
                                     <span className="w-12 shrink-0 font-semibold text-foreground tabular-nums">
                                       {send.scheduledAt ? horaFmt.format(new Date(send.scheduledAt)) : ""}
                                     </span>
@@ -199,7 +225,7 @@ export default async function OutboundAgendaPage({ searchParams }: { searchParam
                                     ) : (
                                       <span className="text-foreground-subtle">(contato)</span>
                                     )}
-                                    <Chip tone="brand">no Resend</Chip>
+                                    <span className="sr-only">na fila do Resend</span>
                                   </li>
                                 );
                               })}
@@ -211,8 +237,13 @@ export default async function OutboundAgendaPage({ searchParams }: { searchParam
                                     key={`${item.campaignSlug}-${item.contactId}-${item.stepId}`}
                                     className="flex flex-wrap items-center gap-2 text-small"
                                   >
+                                    <span
+                                      aria-hidden
+                                      title="previsão da cadência"
+                                      className="size-1.5 shrink-0 rounded-full border border-border-strong"
+                                    />
                                     <span className="w-12 shrink-0 text-foreground-muted tabular-nums">
-                                      ~{horaFmt.format(new Date(item.scheduledAt))}
+                                      {horaFmt.format(new Date(item.scheduledAt))}
                                     </span>
                                     <span className="w-7 text-xs text-foreground-muted uppercase">{item.stepId}</span>
                                     {contact ? (

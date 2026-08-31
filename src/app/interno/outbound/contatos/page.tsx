@@ -36,13 +36,14 @@ const VERIFICATION_STATUSES: VerificationStatus[] = ["ok", "risky", "invalid", "
 
 /** Chips por linha (singular — os rótulos de `ui.tsx` são agregados/plurais). */
 const STATUS_ROW: Record<ContactStatus, { label: string; tone: ChipTone }> = {
-  active: { label: "ativo", tone: "success" },
+  // O caso comum é mudo: verde nas linhas ficaria repetido 100 vezes (verde = exceção boa).
+  active: { label: "ativo", tone: "neutral" },
   excluded: { label: "excluído", tone: "neutral" },
   suppressed: { label: "suprimido", tone: "error" },
 };
 
 const VERIFICATION_ROW: Record<VerificationStatus, { label: string; tone: ChipTone }> = {
-  ok: { label: "ok", tone: "success" },
+  ok: { label: "ok", tone: "neutral" },
   risky: { label: "arriscado", tone: "warning" },
   invalid: { label: "inválido", tone: "error" },
   unverified: { label: "não verificado", tone: "outline" },
@@ -171,7 +172,7 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
           <form
             method="get"
             action="/interno/outbound/contatos"
-            className="rounded-lg border border-border bg-surface p-4"
+            className="rounded-xl border border-border bg-surface p-4 shadow-sm"
           >
             {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(14rem,2fr)_1fr_1fr_1fr_auto]">
@@ -247,7 +248,7 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
               <div className="flex items-end gap-3">
                 <button
                   type="submit"
-                  className="h-9 rounded-md border border-border bg-background-secondary px-4 text-small font-semibold text-foreground hover:border-border-strong"
+                  className="h-9 rounded-full border border-border-strong bg-transparent px-4 text-small font-semibold text-foreground transition-colors duration-(--duration-fast) hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                 >
                   Filtrar
                 </button>
@@ -336,7 +337,7 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
                 tabIndex={0}
                 role="region"
                 aria-label="Tabela de contatos"
-                className="overflow-x-auto rounded-lg border border-border"
+                className="overflow-x-auto rounded-xl border border-border bg-surface shadow-sm"
               >
                 <table className="w-full min-w-[56rem] border-collapse text-small">
                   <thead>
@@ -396,7 +397,10 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
                       const statusChip = STATUS_ROW[contact.status];
                       const verificationChip = VERIFICATION_ROW[contact.verification];
                       return (
-                        <tr key={contact.id} className="border-b border-border last:border-b-0">
+                        <tr
+                          key={contact.id}
+                          className="border-b border-border transition-colors duration-(--duration-fast) last:border-b-0 hover:bg-surface-hover"
+                        >
                           <td className="px-3 py-2">
                             <Link
                               href={consoleHref(`/interno/outbound/contatos/${contact.id}`, isDemo)}
@@ -449,7 +453,7 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
                                 <button
                                   type="submit"
                                   title="Suprimir: sai de todas as campanhas e nunca mais recebe e-mail (permanente)"
-                                  className="rounded-md border border-error/40 px-2.5 py-1 text-xs font-semibold text-error hover:bg-error-soft"
+                                  className="rounded-full border border-error/40 px-2.5 py-1 text-xs font-semibold text-error transition-colors duration-(--duration-fast) hover:bg-error-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                                 >
                                   Suprimir
                                 </button>

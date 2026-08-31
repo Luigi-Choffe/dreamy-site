@@ -12,8 +12,10 @@ const CLASSE_LABELS: Record<string, string> = {
 };
 
 const BTN =
-  "rounded-md border border-border bg-background-secondary px-2.5 py-1 text-xs font-semibold text-foreground " +
-  "hover:border-border-strong disabled:cursor-not-allowed disabled:opacity-60";
+  "rounded-full bg-brand-soft px-2.5 py-1 text-xs font-semibold text-brand-strong " +
+  "transition-colors duration-(--duration-fast) ease-(--ease-out) hover:bg-brand-soft-strong " +
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-[0.98] " +
+  "disabled:cursor-not-allowed disabled:opacity-60";
 const CONTROL =
   "w-full rounded-md border border-border bg-surface px-2.5 py-1.5 text-xs text-foreground " +
   "hover:border-border-strong focus:border-brand-strong focus:ring-3 focus:ring-brand-strong/20 focus:outline-none";
@@ -74,7 +76,9 @@ export function TriagemIA({
 
   return (
     <details className="text-xs">
-      <summary className="cursor-pointer font-semibold text-brand-strong">Sugestão de IA</summary>
+      <summary className="cursor-pointer font-semibold text-foreground-muted transition-colors duration-(--duration-fast) hover:text-foreground">
+        Sugestão de IA
+      </summary>
       <div className="mt-2 flex max-w-xl flex-col gap-2">
         <label className="flex flex-col gap-1">
           <span className="text-foreground-subtle">

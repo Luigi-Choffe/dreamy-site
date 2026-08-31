@@ -103,7 +103,8 @@ export default async function OutboundRepliesPage({ searchParams }: { searchPara
     >
       <div className="flex flex-col gap-8">
         <section aria-label="Resumo de respostas" className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Card padding="sm">
+          {/* O herói da página: único vidro elevado com anel da marca. */}
+          <Card padding="sm" className="shadow-md ring-1 ring-brand-strong/15">
             <h2 className="text-xs font-semibold tracking-wide text-foreground-subtle uppercase">Interessados</h2>
             <p className="mt-1 font-display text-h3 font-extrabold text-brand-strong tabular-nums">
               {fmtInt(interessados)}
@@ -203,7 +204,7 @@ export default async function OutboundRepliesPage({ searchParams }: { searchPara
                             <td className="px-3 py-2">
                               <Link
                                 href={consoleHref(`/interno/outbound/${reply.campaignSlug}`, isDemo)}
-                                className="text-brand-strong hover:underline"
+                                className="text-foreground underline decoration-border underline-offset-2 hover:decoration-foreground"
                                 title={reply.campaignSlug}
                               >
                                 {def?.industria ?? reply.campaignSlug}
@@ -265,7 +266,7 @@ export default async function OutboundRepliesPage({ searchParams }: { searchPara
             )}
           </section>
 
-          <Card as="section" padding="sm" aria-labelledby="registrar-resposta-title">
+          <Card as="section" padding="sm" aria-labelledby="registrar-resposta-title" className="lg:sticky lg:top-6">
             <h2 id="registrar-resposta-title" className="font-display text-h4 font-bold">
               Registrar resposta
             </h2>
@@ -337,7 +338,9 @@ export default async function OutboundRepliesPage({ searchParams }: { searchPara
                   />
                 </div>
                 <details className="text-xs">
-                  <summary className="cursor-pointer font-semibold text-brand-strong">Registro retroativo</summary>
+                  <summary className="cursor-pointer font-semibold text-foreground-muted transition-colors duration-(--duration-fast) hover:text-foreground">
+                    Registro retroativo
+                  </summary>
                   <div className="mt-2 flex flex-col gap-3">
                     <div className="flex flex-col gap-1">
                       <label htmlFor="registrar-recebida" className={LABEL}>

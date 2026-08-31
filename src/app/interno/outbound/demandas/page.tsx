@@ -32,12 +32,16 @@ const CONTROL =
   "w-full rounded-md border border-border bg-surface px-2.5 py-1.5 text-small text-foreground " +
   "hover:border-border-strong focus:border-brand-strong focus:ring-3 focus:ring-brand-strong/20 focus:outline-none";
 const LABEL = "text-xs font-semibold text-foreground";
-const BTN =
-  "rounded-md border border-border bg-background-secondary px-2.5 py-1 text-xs font-semibold text-foreground hover:border-border-strong";
+/** Ação que avança a demanda em toque de verde; desfazer/cancelar em ghost. */
+const BTN_BASE =
+  "rounded-full px-2.5 py-1 text-xs font-semibold transition-colors duration-(--duration-fast) ease-(--ease-out) " +
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-[0.98]";
+const BTN = `${BTN_BASE} bg-brand-soft text-brand-strong hover:bg-brand-soft-strong`;
+const BTN_GHOST = `${BTN_BASE} text-foreground-muted hover:bg-background-secondary hover:text-foreground`;
 
 function DemandRow({ demand, isDemo }: { demand: Demand; isDemo: boolean }) {
   return (
-    <li className="flex flex-col gap-2 border-t border-border px-4 py-3 first:border-t-0">
+    <li className="flex flex-col gap-2 border-t border-border px-4 py-3 transition-colors duration-(--duration-fast) first:border-t-0 hover:bg-surface-hover">
       <div className="flex flex-wrap items-center gap-2">
         <Chip tone={DEMAND_STATUS_TONES[demand.status]}>{DEMAND_STATUS_LABELS[demand.status]}</Chip>
         <Chip tone="outline">{DEMAND_KIND_LABELS[demand.kind]}</Chip>
@@ -68,7 +72,7 @@ function DemandRow({ demand, isDemo }: { demand: Demand; isDemo: boolean }) {
           <form action={cancelDemandAction} className="inline">
             <input type="hidden" name="demandId" value={demand.id} />
             {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
-            <button type="submit" className={BTN} title="Cancelar (só antes de alguém assumir)">
+            <button type="submit" className={BTN_GHOST} title="Cancelar (só antes de alguém assumir)">
               Cancelar
             </button>
           </form>
@@ -76,7 +80,9 @@ function DemandRow({ demand, isDemo }: { demand: Demand; isDemo: boolean }) {
       ) : null}
       {demand.status === "em_andamento" ? (
         <details className="text-xs">
-          <summary className="cursor-pointer font-semibold text-brand-strong">Encerrar</summary>
+          <summary className="cursor-pointer font-semibold text-foreground-muted transition-colors duration-(--duration-fast) hover:text-foreground">
+            Encerrar
+          </summary>
           <form action={updateDemandStatusAction} className="mt-2 flex flex-col gap-2">
             <input type="hidden" name="demandId" value={demand.id} />
             {isDemo ? <input type="hidden" name="demo" value="1" /> : null}

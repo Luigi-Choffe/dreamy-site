@@ -35,6 +35,7 @@
   --error: #c4271f;
   --error-soft: #fdecec;
   --warning: #9a6700;
+  --warning-soft: #fdf8ec; /* tint ambar para pilulas/avisos (WCAG 1.4.11) */
   --focus-ring: #0f7c47;
   --overlay: rgb(11 11 12 / 0.6);
   --shadow-color: 11 11 12;
@@ -115,6 +116,7 @@
   --error: #ff6b6b;
   --error-soft: rgb(255 107 107 / 0.12);
   --warning: #f5c451;
+  --warning-soft: rgb(245 196 81 / 0.14);
   --focus-ring: #46eb7e;
   --overlay: rgb(0 0 0 / 0.7);
   --shadow-color: 0 0 0;

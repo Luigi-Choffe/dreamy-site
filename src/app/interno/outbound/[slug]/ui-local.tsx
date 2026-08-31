@@ -25,7 +25,7 @@ function LintBadge({ tone, title, children }: { tone: "error" | "warn"; title?: 
       title={title}
       className={cn(
         "inline-flex max-w-full items-baseline gap-1 rounded-md px-2 py-1 text-xs font-medium",
-        tone === "error" ? "bg-error-soft text-error" : "border border-warning/50 text-warning",
+        tone === "error" ? "bg-error-soft text-error" : "bg-warning-soft text-warning",
       )}
     >
       {children}
@@ -60,7 +60,7 @@ export function StepCopyPreview({ step, isFirst, industria, sampleCustom }: Step
   const clean = missing.length === 0 && issues.length === 0;
 
   return (
-    <article className="flex flex-col rounded-lg border border-border bg-surface">
+    <article className="flex flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
       <header className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2.5">
         <h3 className="font-display text-small font-bold uppercase">{step.id}</h3>
         <Chip tone="outline" title={isFirst ? "primeiro envio da cadência" : "dias após o passo anterior"}>
@@ -93,7 +93,8 @@ export function StepCopyPreview({ step, isFirst, industria, sampleCustom }: Step
         ))}
       </div>
 
-      <div className="px-4 py-3">
+      {/* O e-mail em si como "papel" branco sobre o vidro: documento sobre a mesa. */}
+      <div className="m-3 rounded-lg border border-border/70 bg-white px-4 py-3">
         <p className="text-small">
           <span className="text-foreground-subtle">Assunto:</span>{" "}
           <span className="font-semibold text-foreground">{subject.value}</span>

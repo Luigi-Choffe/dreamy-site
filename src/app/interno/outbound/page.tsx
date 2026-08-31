@@ -71,8 +71,8 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
 
   const hasData = data.contacts.length > 0 || data.sends.length > 0 || data.enrollments.length > 0;
   const subtitle = isDemo
-    ? "Resultado e operação — simulação de demonstração (.outbound-demo/)."
-    : "Resultado e operação das campanhas de e-mail — store local .outbound/.";
+    ? "Simulação de demonstração. Nada aqui foi enviado de verdade."
+    : "Resultado e operação das campanhas de e-mail.";
 
   // ── Estado vazio global: convite à ação com os comandos exatos ─────────────
   if (!hasData) {
@@ -233,7 +233,7 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
           <h2 id="resultado-title" className="sr-only">
             Resultado
           </h2>
-          <Card padding="sm" className="flex flex-wrap items-end justify-between gap-x-10 gap-y-5">
+          <Card padding="sm" className="flex flex-wrap items-end justify-between gap-x-10 gap-y-5 shadow-md">
             <dl className="flex flex-wrap gap-x-10 gap-y-5">
               <Stat
                 label="Interessados"
@@ -261,7 +261,7 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
               />
               <Stat
                 label="Taxa de resposta"
-                value={replyRate === null ? "—" : fmtPct(replyRate)}
+                value={replyRate === null ? "n/d" : fmtPct(replyRate)}
                 hint={
                   replyRate === null
                     ? "sem envios ainda"
@@ -269,7 +269,7 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
                 }
               />
             </dl>
-            <dl className="grid grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-4">
+            <dl className="grid grid-cols-2 gap-x-8 gap-y-3 border-border sm:grid-cols-4 lg:border-l lg:pl-10">
               <Metric label="Enviados" value={fmtInt(rails.sent)} />
               <Metric label="Entregues" value={fmtInt(delivered)} />
               <Metric label="Na fila" value={fmtInt(scheduled)} />
@@ -343,10 +343,11 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
                 <Card key={def.slug} as="article" padding="sm" interactive className="flex flex-col gap-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <h3 className="font-display text-h4 leading-snug font-bold">
+                      <h3 className="font-display text-body leading-snug font-bold">
+                        {/* O link se estica sobre o card inteiro: a superfície que levanta é clicável. */}
                         <Link
                           href={consoleHref(`/interno/outbound/${def.slug}`, isDemo)}
-                          className="hover:text-brand-strong"
+                          className="after:absolute after:inset-0 hover:text-brand-strong"
                         >
                           {def.industria}
                         </Link>
@@ -391,7 +392,7 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
                   ) : null}
                   {m.pending > 0 ? (
                     <p className="text-xs font-semibold text-error">
-                      {fmtInt(m.pending)} pending — resolver antes de enviar.
+                      {fmtInt(m.pending)} envio(s) pendente(s). Resolva antes do próximo disparo.
                     </p>
                   ) : null}
                 </Card>
@@ -505,8 +506,8 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
               </p>
               {pendings > 0 ? (
                 <p className="text-xs font-semibold text-error">
-                  {fmtInt(pendings)} pending — resolva com <Code>pnpm outbound:send --resolve-pending</Code> antes de
-                  qualquer envio.
+                  {fmtInt(pendings)} envio(s) pendente(s). Resolva com <Code>pnpm outbound:send --resolve-pending</Code>{" "}
+                  antes de qualquer envio.
                 </p>
               ) : null}
             </Card>

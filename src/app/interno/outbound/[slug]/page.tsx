@@ -181,29 +181,35 @@ export default async function OutboundCampaignPage({
             {runtime?.pausedAt ? (
               <Chip tone="warning">
                 pausada em {fmtDateTime(runtime.pausedAt)}
-                {runtime.pausedReason ? ` — ${runtime.pausedReason}` : ""}
+                {runtime.pausedReason ? ` · ${runtime.pausedReason}` : ""}
               </Chip>
             ) : null}
           </div>
           {campaign.notes ? <p className="measure text-xs text-foreground-subtle">{campaign.notes}</p> : null}
 
           {approvalStale ? (
-            <div className="rounded-lg border border-warning/50 bg-warning/10 px-4 py-3 text-small text-foreground">
-              <span className="font-semibold text-warning">Copy mudou desde a aprovação</span> — o motor não envia até
-              novo approve. Revise a prévia abaixo e rode{" "}
-              <Code>pnpm outbound:campaign approve --slug {campaign.slug} --by &quot;seu nome&quot; --confirm</Code>.
+            // Bloqueio SEGURO (o motor recusa enviar): âmbar, com título e ação.
+            <div className="rounded-lg border-l-4 border-warning/70 bg-warning-soft px-4 py-3 text-small text-foreground shadow-sm">
+              <p className="font-semibold text-warning">Copy mudou desde a aprovação</p>
+              <p className="mt-1">
+                O motor não envia até novo approve. Revise a prévia abaixo e rode{" "}
+                <Code>pnpm outbound:campaign approve --slug {campaign.slug} --by &quot;seu nome&quot; --confirm</Code>.
+              </p>
             </div>
           ) : null}
 
           {scheduledOrphans ? (
-            <div className="rounded-lg border border-warning/50 bg-warning/10 px-4 py-3 text-small text-foreground">
-              <span className="font-semibold text-warning">
+            // Risco ATIVO (os e-mails ainda vão sair): vermelho, não âmbar.
+            <div className="rounded-lg border-l-4 border-error/70 bg-error-soft px-4 py-3 text-small text-foreground shadow-sm">
+              <p className="font-semibold text-error">
                 {fmtInt(scheduledLeft)} e-mail{scheduledLeft === 1 ? "" : "s"} ainda agendado
                 {scheduledLeft === 1 ? "" : "s"} no Resend
-              </span>{" "}
-              — a campanha está pausada, mas o cancelamento não foi concluído (falha na API ou{" "}
-              <Code>OUTBOUND_RESEND_API_KEY</Code> ausente). Defina a chave e pause de novo, ou cancele no painel do
-              Resend antes que os envios saiam.
+              </p>
+              <p className="mt-1">
+                A campanha está pausada, mas o cancelamento não foi concluído (falha na API ou{" "}
+                <Code>OUTBOUND_RESEND_API_KEY</Code> ausente). Defina a chave e pause de novo, ou cancele no painel do
+                Resend antes que os envios saiam.
+              </p>
             </div>
           ) : null}
         </section>

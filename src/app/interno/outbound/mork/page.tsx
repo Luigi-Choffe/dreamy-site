@@ -6,17 +6,7 @@ import type { AgentActivity } from "@/lib/outbound/types";
 import { Aquario } from "../aquario";
 import { consoleHref, demoRequested, loadDashboardData, type SearchParams } from "../data";
 import { ConsoleShell } from "../shell";
-import {
-  AGENT_ACTIVITY_LABELS,
-  Chip,
-  type ChipTone,
-  Code,
-  EmptyState,
-  fmtDate,
-  fmtDateTime,
-  fmtInt,
-  Stat,
-} from "../ui";
+import { AGENT_ACTIVITY_LABELS, Code, EmptyState, fmtDate, fmtDateTime, fmtInt, Stat } from "../ui";
 
 /** Sempre dinâmico: lê o store (arquivos ou Postgres) a cada request. */
 export const dynamic = "force-dynamic";
@@ -24,12 +14,6 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "MORK · outbound · interno",
   robots: { index: false, follow: false },
-};
-
-const ACTOR_TONES: Record<AgentActivity["actor"], ChipTone> = {
-  mork: "brand",
-  console: "neutral",
-  sistema: "outline",
 };
 
 const TIMELINE_LIMIT = 150;
@@ -123,13 +107,22 @@ export default async function MorkPage({ searchParams }: { searchParams: Promise
                     {group.rows.map((activity) => (
                       <li
                         key={activity.id}
-                        className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-t border-border px-4 py-2.5"
+                        className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-t border-border px-4 py-2.5 transition-colors duration-(--duration-fast) hover:bg-surface-hover"
                       >
                         <span className="w-14 shrink-0 text-xs whitespace-nowrap text-foreground-subtle tabular-nums">
                           {fmtDateTime(activity.at).slice(-5)}
                         </span>
-                        <Chip tone={ACTOR_TONES[activity.actor]}>{activity.actor}</Chip>
-                        <Chip tone="outline">{AGENT_ACTIVITY_LABELS[activity.kind]}</Chip>
+                        {/* Ator vira ponto + texto (verde só para o MORK); tipo vira rótulo mudo. */}
+                        <span className="flex shrink-0 items-center gap-1.5 text-xs font-semibold text-foreground-muted">
+                          <span
+                            aria-hidden
+                            className={`size-1.5 rounded-full ${activity.actor === "mork" ? "bg-brand" : "bg-border-strong"}`}
+                          />
+                          {activity.actor}
+                        </span>
+                        <span className="shrink-0 text-xs text-foreground-subtle">
+                          {AGENT_ACTIVITY_LABELS[activity.kind]}
+                        </span>
                         <span className="min-w-0 flex-1 text-small text-foreground">{activity.summary}</span>
                         {refLinks(activity, isDemo).map((link) => (
                           <Link

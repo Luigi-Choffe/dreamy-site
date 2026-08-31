@@ -12,15 +12,7 @@ import { registerReplyAction, suppressContactAction } from "../../actions";
 import { addNoteAction, createTaskAction } from "../../crm-actions";
 import { consoleHref, demoRequested, loadDashboardData, type SearchParams } from "../../data";
 import { ConsoleShell } from "../../shell";
-import {
-  Chip,
-  type ChipTone,
-  DEAL_STAGE_LABELS,
-  DEAL_STAGE_TONES,
-  EmptyState,
-  fmtDateTime,
-  REPLY_CLASS_LABELS,
-} from "../../ui";
+import { Chip, DEAL_STAGE_LABELS, DEAL_STAGE_TONES, EmptyState, fmtDateTime, REPLY_CLASS_LABELS } from "../../ui";
 
 /** Sempre dinâmico: lê o store (arquivos ou Postgres) a cada request. */
 export const dynamic = "force-dynamic";
@@ -32,13 +24,17 @@ export const metadata: Metadata = {
 
 const REPLY_CLASSES: ReplyClass[] = ["interested", "not_now", "referral", "negative", "ooo", "other"];
 
-const TIMELINE_TONES: Record<TimelineItem["kind"], ChipTone> = {
-  envio: "outline",
-  evento: "neutral",
-  resposta: "brand",
-  nota: "neutral",
-  tarefa: "warning",
-  estagio: "success",
+/**
+ * Marcador por tipo na timeline: ponto colorido + rótulo pt-BR correto
+ * (nada de enum cru na interface). Verde só no que vale ouro: a resposta.
+ */
+const TIMELINE_STYLE: Record<TimelineItem["kind"], { label: string; dot: string }> = {
+  envio: { label: "envio", dot: "bg-border-strong" },
+  evento: { label: "evento", dot: "bg-foreground-subtle" },
+  resposta: { label: "resposta", dot: "bg-brand" },
+  nota: { label: "nota", dot: "bg-foreground-subtle" },
+  tarefa: { label: "tarefa", dot: "bg-warning" },
+  estagio: { label: "estágio", dot: "bg-foreground" },
 };
 
 const CONTROL =
@@ -100,7 +96,7 @@ export default async function ContactAccountPage({
               <button
                 type="submit"
                 title="Suprimir: sai de todas as campanhas e nunca mais recebe e-mail (permanente)"
-                className="rounded-md border border-error/40 px-2.5 py-1 text-xs font-semibold text-error hover:bg-error-soft"
+                className="rounded-full border border-error/40 px-2.5 py-1 text-xs font-semibold text-error transition-colors duration-(--duration-fast) hover:bg-error-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
               >
                 Suprimir
               </button>
@@ -138,12 +134,15 @@ export default async function ContactAccountPage({
               {timeline.map((item, i) => (
                 <li
                   key={`${item.at}-${item.kind}-${i}`}
-                  className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-t border-border px-4 py-2.5 first:border-t-0"
+                  className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-t border-border px-4 py-2.5 transition-colors duration-(--duration-fast) first:border-t-0 hover:bg-surface-hover"
                 >
                   <span className="w-32 shrink-0 text-xs whitespace-nowrap text-foreground-subtle tabular-nums">
                     {fmtDateTime(item.at)}
                   </span>
-                  <Chip tone={TIMELINE_TONES[item.kind]}>{item.kind}</Chip>
+                  <span className="flex w-20 shrink-0 items-center gap-1.5 text-xs font-semibold text-foreground-muted">
+                    <span aria-hidden className={`size-1.5 rounded-full ${TIMELINE_STYLE[item.kind].dot}`} />
+                    {TIMELINE_STYLE[item.kind].label}
+                  </span>
                   <span className="min-w-0 text-small text-foreground">{item.label}</span>
                   {item.detail ? <span className="min-w-0 text-xs text-foreground-subtle">{item.detail}</span> : null}
                 </li>

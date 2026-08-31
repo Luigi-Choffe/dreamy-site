@@ -153,7 +153,7 @@ const chipTones: Record<ChipTone, string> = {
   neutral: "bg-background-secondary text-foreground-muted",
   brand: "bg-brand-soft text-brand-strong",
   success: "bg-brand-soft text-success",
-  warning: "border border-warning/50 text-warning",
+  warning: "bg-warning-soft text-warning",
   error: "bg-error-soft text-error",
   outline: "border border-border text-foreground-muted",
 };
@@ -457,11 +457,16 @@ export interface FunnelStepData {
   respostas: number;
 }
 
+/**
+ * Rampa NEUTRA no corpo do funil (contraste real sobre o trilho, WCAG 1.4.11);
+ * âmbar marca a métrica com ressalva (abertos*) e o verde da marca fica
+ * reservado ao que decide: cliques e respostas.
+ */
 const FUNNEL_METRICS = [
   { key: "planejados", label: "Planejados", color: "var(--border-strong)" },
   { key: "enviados", label: "Enviados", color: "var(--foreground-subtle)" },
-  { key: "entregues", label: "Entregues", color: "var(--brand-primary)" },
-  { key: "abertos", label: "Abertos*", color: "var(--brand-soft-strong)" },
+  { key: "entregues", label: "Entregues", color: "var(--foreground-muted)" },
+  { key: "abertos", label: "Abertos*", color: "var(--warning)" },
   { key: "cliques", label: "Cliques", color: "var(--brand-strong)" },
   { key: "respostas", label: "Respostas", color: "var(--foreground)" },
 ] as const;
@@ -503,7 +508,8 @@ export function ValueFunnel({ stages }: { stages: Array<{ key: string; label: st
                 y="0"
                 width={Math.max((stage.value / max) * 100, 1)}
                 height="8"
-                fill={i >= stages.length - 2 ? "var(--brand-strong)" : "var(--brand-primary)"}
+                // Corpo do funil neutro; o verde é dos dois degraus finais (o que vira venda).
+                fill={i >= stages.length - 2 ? "var(--brand-strong)" : "var(--foreground-subtle)"}
               />
             ) : null}
           </svg>
