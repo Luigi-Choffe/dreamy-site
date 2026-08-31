@@ -5,6 +5,7 @@ import { requireSession } from "@/lib/outbound/auth";
 import type { AgentActivity } from "@/lib/outbound/types";
 import { Aquario } from "../aquario";
 import { consoleHref, demoRequested, loadDashboardData, type SearchParams } from "../data";
+import { FluxoDoAgente } from "./fluxo";
 import { ConsoleShell } from "../shell";
 import { AGENT_ACTIVITY_LABELS, Code, EmptyState, fmtDate, fmtDateTime, fmtInt, Stat } from "../ui";
 
@@ -39,6 +40,10 @@ export default async function MorkPage({ searchParams }: { searchParams: Promise
   const isDemo = demoRequested(sp);
   const data = await loadDashboardData(isDemo);
   const now = new Date().getTime();
+
+  const enviados = data.sends.filter((s) => s.status === "sent" || s.status === "delivered").length;
+  const reunioes = data.deals.filter((d) => d.stage === "reuniao_marcada").length;
+  const tarefasConcluidas = data.tasks.filter((t) => t.status === "concluida").length;
 
   const pendentes = data.demands.filter((d) => d.status === "pendente").length;
   const emAndamento = data.demands.filter((d) => d.status === "em_andamento").length;
@@ -80,10 +85,24 @@ export default async function MorkPage({ searchParams }: { searchParams: Promise
           </Card>
         </section>
 
-        {/* A sala do time: o Aquário mora AQUI, separado do fluxo de trabalho do CRM
-            (o chat é o painel flutuante do MORK, presente em toda aba). */}
-        <section aria-label="Aquário do time" className="flex justify-center">
-          <Aquario data={data} />
+        {/* O palco (docs/AQUARIO-VIVO.md): Entrada de dados → Raciocínio → Ações,
+            com a lente completa do Aquário no centro e números reais nas pontas. */}
+        <section aria-labelledby="mork-fluxo-title">
+          <h2 id="mork-fluxo-title" className="font-display text-h4 font-bold">
+            Como o time trabalha
+          </h2>
+          <p className="mt-1 max-w-2xl text-small text-foreground-muted">
+            Dados entram, a rede decide, ações saem. Passe o mouse num agente para a ficha; os balões de conversa citam
+            o que ficou registrado no diário.
+          </p>
+          <div className="mt-5">
+            <FluxoDoAgente
+              entrada={{ contatos: data.contacts.length, respostas: data.replies.length }}
+              acoes={{ enviados, reunioes, tarefas: tarefasConcluidas }}
+            >
+              <Aquario data={data} />
+            </FluxoDoAgente>
+          </div>
         </section>
 
         <section aria-labelledby="mork-timeline-title">

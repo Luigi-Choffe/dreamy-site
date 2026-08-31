@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { seatStatus, TEAM, teamGraph } from "../../src/lib/outbound/team";
+import { seatFalas, seatStatus, TEAM, teamGraph } from "../../src/lib/outbound/team";
 import type { AgentActivity, Demand } from "../../src/lib/outbound/types";
 
 const NOW = new Date("2026-08-31T12:00:00Z");
@@ -64,7 +64,7 @@ describe("seatStatus", () => {
       activities: [],
       now: NOW,
     });
-    expect(s.label).toBe("na demanda: Campanha obras");
+    expect(s.label).toBe("Estou na demanda: Campanha obras");
     expect(s.live).toBe(true);
   });
 
@@ -76,7 +76,7 @@ describe("seatStatus", () => {
       activities: [],
       now: NOW,
     });
-    expect(delivered.label).toBe("entregou: Triagem da semana");
+    expect(delivered.label).toBe("Acabei de entregar: Triagem da semana");
     expect(delivered.live).toBe(false);
 
     const idle = seatStatus(seat("garimpo"), { demands: [], activities: [], now: NOW });
@@ -98,6 +98,33 @@ describe("seatStatus", () => {
     expect(s.live).toBe(false);
   });
 });
+describe("seatFalas (balões do Aquário)", () => {
+  it("fala o status real da cadeira + a vigília; ociosa só vigia; MIRA (vaga) fica muda", () => {
+    const falas = seatFalas({
+      demands: [
+        demand({ status: "em_andamento", kind: "leads", title: "Lista construção", claimedAt: "2026-08-31T09:00:00Z" }),
+      ],
+      activities: [],
+      now: NOW,
+    });
+    expect(falas.garimpo[0]).toBe("Estou na demanda: Lista construção");
+    expect(falas.garimpo[1]).toBe("De olho na qualidade da lista e no ICP.");
+    expect(falas.verbo).toEqual(["De olho na copy das campanhas no ar."]);
+    expect(falas.mira).toEqual([]);
+  });
+
+  it("trunca status longos sem estourar o balão", () => {
+    const titulo = "Uma demanda com um título absurdamente comprido que jamais caberia num balão".repeat(2);
+    const falas = seatFalas({
+      demands: [demand({ status: "em_andamento", kind: "resposta", title: titulo, claimedAt: "2026-08-31T09:00:00Z" })],
+      activities: [],
+      now: NOW,
+    });
+    expect(falas.trato[0]!.length).toBeLessThanOrEqual(72);
+    expect(falas.trato[0]!.endsWith("…")).toBe(true);
+  });
+});
+
 describe("teamGraph (rede do Aquário)", () => {
   it("tem 6 nós na constelação e 8 sinapses (4 comando, 1 vaga, 3 colaboração)", () => {
     const graph = teamGraph({ demands: [], activities: [], now: NOW });

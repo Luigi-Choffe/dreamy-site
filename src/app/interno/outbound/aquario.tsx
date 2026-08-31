@@ -1,4 +1,4 @@
-import { seatStatus, TEAM, teamGraph, type SeatStatus, type TeamSeat } from "@/lib/outbound/team";
+import { seatFalas, seatStatus, TEAM, teamGraph, type SeatStatus, type TeamSeat } from "@/lib/outbound/team";
 import { AquarioRede } from "./aquario-rede";
 import type { DashboardData } from "./data";
 
@@ -40,11 +40,36 @@ const GLASS_CSS = `
     70% { box-shadow: 0 0 0 6px rgb(70 235 126 / 0); }
   }
   .aqua-viva { animation: aqua-pulsa 2.6s ease-in-out infinite; }
+  /* Corpo vivo (v4): deriva orgânica do nó, respiração do avatar e piscada do
+     dot — fase própria por cadeira via animation-delay inline. */
+  @keyframes aqua-deriva {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(2.5px, -3.5px); }
+    50% { transform: translate(-2px, 2px); }
+    75% { transform: translate(3px, 2.5px); }
+  }
+  .aqua-corpo { animation: aqua-deriva 12s ease-in-out infinite; }
+  @keyframes aqua-respira {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.035); }
+  }
+  .aqua-respira { animation: aqua-respira 4.8s ease-in-out infinite; }
+  @keyframes aqua-pisca {
+    0%, 91%, 96%, 100% { opacity: 1; }
+    93.5% { opacity: 0.15; }
+  }
+  .aqua-dot { animation: aqua-pisca 7.3s linear infinite; }
+  .aqua-viva.aqua-dot { animation: aqua-pulsa 2.6s ease-in-out infinite, aqua-pisca 7.3s linear infinite; }
+  @keyframes aqua-orbita {
+    to { transform: rotate(360deg); }
+  }
+  .aqua-orbita { animation: aqua-orbita 26s linear infinite; }
 }
 [data-ficha] {
   opacity: 0;
   visibility: hidden;
-  transition: opacity 200ms ease, visibility 200ms;
+  transform: scale(0.96) translateY(5px);
+  transition: opacity 200ms ease, visibility 200ms, transform 340ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 `;
 
@@ -57,7 +82,7 @@ const FICHA_CSS = TEAM.map(
   (seat) =>
     `.aqua-stage:has(li[data-seat="${seat.slug}"]:hover) [data-ficha="${seat.slug}"], ` +
     `.aqua-stage:has(li[data-seat="${seat.slug}"]:focus-visible) [data-ficha="${seat.slug}"] ` +
-    `{ opacity: 1; visibility: visible; }`,
+    `{ opacity: 1; visibility: visible; transform: none; }`,
 ).join("\n");
 
 const dateTimeShort = new Intl.DateTimeFormat("pt-BR", {
@@ -89,7 +114,20 @@ function CadeiraIcon() {
   );
 }
 
-function NoDaRede({ seat, status, x, y }: { seat: TeamSeat; status: SeatStatus; x: number; y: number }) {
+function NoDaRede({
+  seat,
+  status,
+  x,
+  y,
+  fase,
+}: {
+  seat: TeamSeat;
+  status: SeatStatus;
+  x: number;
+  y: number;
+  /** Índice da cadeira: dá a cada nó a própria fase de deriva/respiração. */
+  fase: number;
+}) {
   const isMork = seat.slug === "mork";
   return (
     <li
@@ -100,11 +138,14 @@ function NoDaRede({ seat, status, x, y }: { seat: TeamSeat; status: SeatStatus; 
       style={{ left: `${x}%`, top: `${y}%` }}
       className="group absolute -translate-x-1/2 -translate-y-1/2 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-[#46eb7e]/70"
     >
-      <span className="relative flex flex-col items-center">
+      <span
+        className="aqua-corpo relative flex flex-col items-center"
+        style={{ animationDuration: `${10.5 + fase * 1.1}s`, animationDelay: `${fase * -2.3}s` }}
+      >
         {seat.hired ? (
           <span
             aria-hidden
-            className={`relative inline-flex shrink-0 items-center justify-center rounded-full font-display font-extrabold text-[#052012] ${
+            className={`aqua-respira relative inline-flex shrink-0 items-center justify-center rounded-full font-display font-extrabold text-[#052012] ${
               isMork ? "size-12 text-[0.82rem]" : "size-10 text-[0.68rem]"
             }`}
             style={{
@@ -112,14 +153,23 @@ function NoDaRede({ seat, status, x, y }: { seat: TeamSeat; status: SeatStatus; 
               boxShadow: isMork
                 ? "0 0 0 2px rgb(255 255 255 / 0.9), inset 0 1px 0 rgb(255 255 255 / 0.55), 0 14px 30px -10px rgb(15 124 71 / 0.5)"
                 : "0 0 0 1px rgb(255 255 255 / 0.85), inset 0 1px 0 rgb(255 255 255 / 0.5), 0 10px 22px -8px rgb(15 124 71 / 0.4)",
+              animationDelay: `${fase * -1.3}s`,
             }}
           >
+            {isMork ? (
+              // O anel do maestro: órbita tracejada girando devagar em volta do MORK.
+              <span
+                aria-hidden
+                className="aqua-orbita absolute -inset-2 rounded-full border border-dashed border-[#46eb7e]/45"
+              />
+            ) : null}
             {seat.monogram}
             <span
               aria-hidden
-              className={`absolute -top-0.5 -right-0.5 size-2 rounded-full border border-background ${
+              className={`aqua-dot absolute -top-0.5 -right-0.5 size-2 rounded-full border border-background ${
                 status.live ? "aqua-viva bg-[#46eb7e]" : "bg-border-strong"
               }`}
+              style={{ animationDelay: `${fase * -1.9}s` }}
             />
           </span>
         ) : (
@@ -155,6 +205,7 @@ export function Aquario({
   const graph = teamGraph(statusInput);
   const nodeBySlug = new Map(graph.nodes.map((n) => [n.slug, n]));
   const redeNodes = graph.nodes.map((n) => ({ ...n, big: n.slug === "mork" }));
+  const falas = seatFalas(statusInput);
 
   const ultimas = [...data.agentActivities].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 3);
   const tarefasAbertas = data.tasks.filter((t) => t.status === "aberta").length;
@@ -196,13 +247,13 @@ export function Aquario({
 
         {/* Palco: canvas da rede atrás, nós acessíveis na frente. */}
         <div className="aqua-stage relative mt-2 min-h-0 flex-1">
-          <AquarioRede nodes={redeNodes} links={graph.links} />
+          <AquarioRede nodes={redeNodes} links={graph.links} falas={falas} />
           <ol aria-label="Rede do time do MORK" className="absolute inset-0">
-            {TEAM.map((seat) => {
+            {TEAM.map((seat, i) => {
               const node = nodeBySlug.get(seat.slug);
               const status = statuses.get(seat.slug);
               if (!node || !status) return null;
-              return <NoDaRede key={seat.slug} seat={seat} status={status} x={node.x} y={node.y} />;
+              return <NoDaRede key={seat.slug} seat={seat} status={status} x={node.x} y={node.y} fase={i} />;
             })}
           </ol>
           {/* Painel de fichas DENTRO da lente: acende no hover/foco do nó (FICHA_CSS)

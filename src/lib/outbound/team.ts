@@ -112,12 +112,12 @@ export function seatStatus(
   if (seat.slug === "mork") {
     const last = [...input.activities].filter((a) => a.actor === "mork").sort((a, b) => b.at.localeCompare(a.at))[0];
     if (last && nowMs - Date.parse(last.at) <= TWO_DAYS_MS) return { label: last.summary, live: true };
-    return { label: "coordenando a operação e o disparo diário das 09:05.", live: true };
+    return { label: "Estou coordenando a operação e o disparo diário das 09:05.", live: true };
   }
   const doing = input.demands
     .filter((d) => d.status === "em_andamento" && seat.kinds.includes(d.kind))
     .sort((a, b) => (b.claimedAt ?? b.createdAt).localeCompare(a.claimedAt ?? a.createdAt))[0];
-  if (doing) return { label: `na demanda: ${doing.title}`, live: true };
+  if (doing) return { label: `Estou na demanda: ${doing.title}`, live: true };
   const delivered = input.demands
     .filter(
       (d) =>
@@ -127,8 +127,51 @@ export function seatStatus(
         nowMs - Date.parse(d.doneAt) <= WEEK_MS,
     )
     .sort((a, b) => (b.doneAt as string).localeCompare(a.doneAt as string))[0];
-  if (delivered) return { label: `entregou: ${delivered.title}`, live: false };
-  return { label: "disponível; é só abrir uma demanda na aba Demandas.", live: false };
+  if (delivered) return { label: `Acabei de entregar: ${delivered.title}`, live: false };
+  return { label: "Estou disponível; é só abrir uma demanda na aba Demandas.", live: false };
+}
+
+/* ─── Falas ambiente (Aquário v4: balões de conversa) ────────────────────── */
+
+/** O que cada cadeira vigia quando não há registro recente (verdade de função, não claim de ação). */
+const IDLE_FALAS: Record<SeatSlug, string> = {
+  mork: "De olho no funil e na fila de demandas.",
+  verbo: "De olho na copy das campanhas no ar.",
+  garimpo: "De olho na qualidade da lista e no ICP.",
+  trato: "De olho na caixa de respostas.",
+  forja: "De olho no console e nos testes.",
+  mira: "",
+};
+
+const FALA_MAX = 72;
+
+/**
+ * Falas dos balões do Aquário, por cadeira. Regra anti-enfeite-mentiroso: a
+ * fala é o STATUS real da cadeira (demanda em andamento, entrega recente ou o
+ * registro do MORK — o diário só tem atores mork/console/sistema) mais a
+ * vigília fiel do cargo. Pura e sem PII (labels já são limpos).
+ */
+export function seatFalas(input: {
+  demands: Demand[];
+  activities: AgentActivity[];
+  now?: Date;
+}): Record<SeatSlug, string[]> {
+  const trunca = (s: string) => (s.length > FALA_MAX ? `${s.slice(0, FALA_MAX - 1).trimEnd()}…` : s);
+  const out = {} as Record<SeatSlug, string[]>;
+  for (const seat of TEAM) {
+    if (!seat.hired) {
+      out[seat.slug] = [];
+      continue;
+    }
+    const status = seatStatus(seat, input);
+    const falas: string[] = [];
+    // O status vira fala quando carrega fato (demanda, entrega, registro); o
+    // texto padrão de disponibilidade não entra — a vigília idle cobre o caso.
+    if (!status.label.startsWith("Estou disponível")) falas.push(trunca(status.label));
+    if (IDLE_FALAS[seat.slug]) falas.push(IDLE_FALAS[seat.slug]);
+    out[seat.slug] = falas;
+  }
+  return out;
 }
 
 /* ─── Grafo da rede (Aquário v2: constelação neural) ─────────────────────── */
