@@ -22,7 +22,6 @@ import { consoleHref, demoRequested, loadDashboardData, type SearchParams } from
 import { ConsoleShell } from "./shell";
 import {
   ANCHOR_LABELS,
-  BounceChip,
   CampaignStatusChip,
   Chip,
   Code,
@@ -58,6 +57,22 @@ const TOP_INDUSTRIES = 5;
 
 const SECTION_TITLE = "font-display text-h4 font-bold";
 const CARD_LABEL = "text-xs font-semibold tracking-wide text-foreground-subtle uppercase";
+
+/** Métrica do card de campanha: régua com divisores; zero fica mudo (o olho vai ao que tem valor). */
+function CampMetric({ label, value, destaque }: { label: string; value: number; destaque?: boolean }) {
+  return (
+    <div className="min-w-0 flex-1 px-4 first:pl-0 last:pr-0">
+      <dt className="text-xs text-foreground-subtle">{label}</dt>
+      <dd
+        className={`mt-1 font-display text-h4 leading-none font-bold tabular-nums ${
+          value === 0 ? "text-foreground-subtle" : destaque ? "text-success" : "text-foreground"
+        }`}
+      >
+        {fmtInt(value)}
+      </dd>
+    </div>
+  );
+}
 
 /** Visão geral do console: resultado primeiro, depois campanhas, contatos e operação. */
 export default async function OutboundOverviewPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
@@ -188,6 +203,7 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
   const usados = usedTodayCount(data.sends, now, env.utcOffset);
   const capRampa = rampCap(data.state.firstSendAt, now);
   const topIndustries = [...stats.byIndustry.entries()].sort((a, b) => b[1] - a[1]).slice(0, TOP_INDUSTRIES);
+  const maxIndustria = topIndustries[0]?.[1] ?? 1;
   const imports = [...data.imports].sort((a, b) => Date.parse(b.importedAt) - Date.parse(a.importedAt));
 
   const cards = data.defs.map((def) => ({
@@ -195,6 +211,13 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
     runtime: data.runtimes.find((r) => r.slug === def.slug),
     m: campaignMetrics(def.slug, data),
   }));
+  // Sinal antes do ruído: campanha real (aprovada/pausada ou com atividade) ganha
+  // card completo; rascunho parado vira linha compacta.
+  const principais = cards.filter(
+    ({ def, runtime, m }) =>
+      ["aprovada", "pausada"].includes(campaignDisplayStatus(def, runtime)) || m.sent > 0 || m.enrollmentsTotal > 0,
+  );
+  const rascunhos = cards.filter((c) => !principais.includes(c));
 
   // Agenda: quantos e-mails a cadência prevê para o PRÓXIMO dia útil (aba Agenda).
   const todayKey = sendDateKey(now, env.utcOffset);
@@ -352,66 +375,120 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
               Nenhuma campanha definida em <Code>src/content/outbound</Code>.
             </p>
           ) : (
-            <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {cards.map(({ def, runtime, m }) => (
-                <Card key={def.slug} as="article" padding="sm" interactive className="flex flex-col gap-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <h3 className="font-display text-body leading-snug font-bold">
-                        {/* O link se estica sobre o card inteiro: a superfície que levanta é clicável. */}
+            <>
+              {principais.length > 0 ? (
+                <div className="mt-3 grid grid-cols-1 gap-4 xl:grid-cols-2">
+                  {principais.map(({ def, runtime, m }) => (
+                    <Card key={def.slug} as="article" padding="sm" interactive className="flex flex-col gap-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <h3 className="font-display text-body leading-snug font-bold">
+                            {/* O link se estica sobre o card inteiro: a superfície que levanta é clicável. */}
+                            <Link
+                              href={consoleHref(`/interno/outbound/${def.slug}`, isDemo)}
+                              className="after:absolute after:inset-0 hover:text-brand-strong"
+                            >
+                              {def.industria}
+                            </Link>
+                          </h3>
+                          <p className="mt-0.5 truncate text-xs text-foreground-subtle">
+                            {def.slug} · {ANCHOR_LABELS[def.anchor]}
+                          </p>
+                        </div>
+                        <CampaignStatusChip status={campaignDisplayStatus(def, runtime)} />
+                      </div>
+
+                      {/* Régua de métricas: divisores hairline, zeros mudos, verde só no que vale. */}
+                      <dl className="flex divide-x divide-border">
+                        <CampMetric label="Enviados" value={m.sent} />
+                        <CampMetric label="Entregues" value={m.delivered} />
+                        <CampMetric label="Respostas" value={m.repliesTotal} />
+                        <CampMetric label="Interessados" value={m.interested} destaque />
+                      </dl>
+
+                      {/* Inscritos: barra fina honesta (ativos sobre o total). */}
+                      <div className="flex flex-col gap-1.5">
+                        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 text-xs text-foreground-subtle tabular-nums">
+                          <span>
+                            {fmtInt(m.enrollmentsActive)} de {fmtInt(m.enrollmentsTotal)} inscritos ativos
+                          </span>
+                          <span>
+                            {fmtInt(m.scheduled)} na fila · {fmtInt(m.unsubscribes)} descadastros
+                          </span>
+                        </div>
+                        <div aria-hidden className="h-1 w-full overflow-hidden rounded-full bg-background-secondary">
+                          <div
+                            className="h-full rounded-full bg-brand-strong/70"
+                            style={{
+                              width: `${
+                                m.enrollmentsTotal > 0
+                                  ? Math.max(
+                                      (m.enrollmentsActive / m.enrollmentsTotal) * 100,
+                                      m.enrollmentsActive > 0 ? 2 : 0,
+                                    )
+                                  : 0
+                              }%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <p className="text-xs text-foreground-subtle tabular-nums">
+                        bounce{" "}
+                        {m.rails.sent > 0
+                          ? `${fmtPct(m.rails.bounceRate)} (${fmtInt(m.rails.bounced)} de ${fmtInt(m.rails.sent)})`
+                          : "sem amostra ainda"}{" "}
+                        · abertos* {fmtInt(m.opened)}
+                      </p>
+                      {m.repliesTotal > 0 ? (
+                        <p className="text-xs text-foreground-subtle">
+                          Respostas:{" "}
+                          {[...m.repliesByClass.entries()]
+                            .sort((a, b) => b[1] - a[1])
+                            .map(([cls, n]) => `${REPLY_CLASS_LABELS[cls]} ${fmtInt(n)}`)
+                            .join(" · ")}
+                        </p>
+                      ) : null}
+                      {m.pending > 0 ? (
+                        <p className="text-xs font-semibold text-error">
+                          {fmtInt(m.pending)} envio(s) pendente(s). Resolva antes do próximo disparo.
+                        </p>
+                      ) : null}
+                    </Card>
+                  ))}
+                </div>
+              ) : null}
+
+              {/* Rascunhos parados: linhas compactas (não competem com a campanha real). */}
+              {rascunhos.length > 0 ? (
+                <div className="mt-3 overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
+                  <p className="border-b border-border px-4 py-2 text-xs font-semibold tracking-wide text-foreground-subtle uppercase">
+                    Rascunhos ({fmtInt(rascunhos.length)})
+                  </p>
+                  <ul>
+                    {rascunhos.map(({ def, runtime }) => (
+                      <li
+                        key={def.slug}
+                        className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border px-4 py-2.5 text-small transition-colors duration-(--duration-fast) first:border-t-0 hover:bg-surface-hover"
+                      >
                         <Link
                           href={consoleHref(`/interno/outbound/${def.slug}`, isDemo)}
-                          className="after:absolute after:inset-0 hover:text-brand-strong"
+                          className="font-semibold text-foreground underline-offset-2 hover:text-brand-strong hover:underline"
                         >
                           {def.industria}
                         </Link>
-                      </h3>
-                      <p className="mt-0.5 truncate text-xs text-foreground-subtle">
-                        {def.slug} · {ANCHOR_LABELS[def.anchor]}
-                      </p>
-                    </div>
-                    <CampaignStatusChip status={campaignDisplayStatus(def, runtime)} />
-                  </div>
-
-                  <dl className="grid grid-cols-3 gap-x-3 gap-y-2.5">
-                    <Metric label="Enviados" value={fmtInt(m.sent)} />
-                    <Metric label="Entregues" value={fmtInt(m.delivered)} />
-                    <Metric
-                      label="Bounce"
-                      value={<BounceChip rate={m.rails.bounceRate} sample={m.rails.sent} />}
-                      hint={m.rails.sent > 0 ? `${fmtInt(m.rails.bounced)} de ${fmtInt(m.rails.sent)}` : undefined}
-                    />
-                    <Metric label="Respostas" value={fmtInt(m.repliesTotal)} />
-                    <Metric
-                      label="Interessados"
-                      value={
-                        <span className={m.interested > 0 ? "text-success" : undefined}>{fmtInt(m.interested)}</span>
-                      }
-                    />
-                    <Metric label="Abertos*" value={fmtInt(m.opened)} />
-                  </dl>
-
-                  <p className="text-xs text-foreground-subtle tabular-nums">
-                    {fmtInt(m.enrollmentsActive)} de {fmtInt(m.enrollmentsTotal)} inscritos ativos ·{" "}
-                    {fmtInt(m.scheduled)} na fila · {fmtInt(m.unsubscribes)} descadastros
-                  </p>
-                  {m.repliesTotal > 0 ? (
-                    <p className="text-xs text-foreground-subtle">
-                      Respostas:{" "}
-                      {[...m.repliesByClass.entries()]
-                        .sort((a, b) => b[1] - a[1])
-                        .map(([cls, n]) => `${REPLY_CLASS_LABELS[cls]} ${fmtInt(n)}`)
-                        .join(" · ")}
-                    </p>
-                  ) : null}
-                  {m.pending > 0 ? (
-                    <p className="text-xs font-semibold text-error">
-                      {fmtInt(m.pending)} envio(s) pendente(s). Resolva antes do próximo disparo.
-                    </p>
-                  ) : null}
-                </Card>
-              ))}
-            </div>
+                        <span className="min-w-0 truncate text-xs text-foreground-subtle">
+                          {def.slug} · {ANCHOR_LABELS[def.anchor]}
+                        </span>
+                        <span className="ml-auto">
+                          <CampaignStatusChip status={campaignDisplayStatus(def, runtime)} />
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </>
           )}
           <div className="mt-3">
             <OpenRateNote />
@@ -437,48 +514,74 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
               Ver todos →
             </Link>
           </div>
-          <Card padding="sm" className="mt-3">
-            <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
-              <dl>
-                <Stat label="Total na base" value={fmtInt(stats.total)} />
+          {/* Painel de colunas divididas por hairline: cada bloco tem trilho e alinhamento próprios. */}
+          <Card padding="none" className="mt-3">
+            <div className="grid grid-cols-1 divide-y divide-border lg:grid-cols-[minmax(9rem,1fr)_1.1fr_1.1fr_1.5fr] lg:divide-x lg:divide-y-0">
+              <dl className="p-5">
+                <Stat label="Total na base" value={fmtInt(stats.total)} hint="contatos importados do Clay" />
               </dl>
-              <div>
+              <div className="p-5">
                 <h3 className={CARD_LABEL}>Por status</h3>
-                <dl className="mt-2 flex flex-col gap-1 text-small">
+                <dl className="mt-2.5">
                   {CONTACT_STATUSES.map((status) => (
-                    <div key={status} className="flex justify-between gap-4">
+                    <div
+                      key={status}
+                      className="flex items-baseline justify-between gap-4 border-b border-border/60 py-1.5 text-small last:border-b-0"
+                    >
                       <dt className="text-foreground-muted">{CONTACT_STATUS_LABELS[status]}</dt>
-                      <dd className="font-semibold text-foreground tabular-nums">{fmtInt(stats.byStatus[status])}</dd>
+                      <dd
+                        className={`font-semibold tabular-nums ${
+                          stats.byStatus[status] === 0 ? "text-foreground-subtle" : "text-foreground"
+                        }`}
+                      >
+                        {fmtInt(stats.byStatus[status])}
+                      </dd>
                     </div>
                   ))}
                 </dl>
               </div>
-              <div>
+              <div className="p-5">
                 <h3 className={CARD_LABEL}>Por verificação</h3>
-                <dl className="mt-2 flex flex-col gap-1 text-small">
+                <dl className="mt-2.5">
                   {VERIFICATION_STATUSES.map((status) => (
-                    <div key={status} className="flex justify-between gap-4">
+                    <div
+                      key={status}
+                      className="flex items-baseline justify-between gap-4 border-b border-border/60 py-1.5 text-small last:border-b-0"
+                    >
                       <dt className="text-foreground-muted">{VERIFICATION_LABELS[status]}</dt>
-                      <dd className="font-semibold text-foreground tabular-nums">
+                      <dd
+                        className={`font-semibold tabular-nums ${
+                          stats.byVerification[status] === 0 ? "text-foreground-subtle" : "text-foreground"
+                        }`}
+                      >
                         {fmtInt(stats.byVerification[status])}
                       </dd>
                     </div>
                   ))}
                 </dl>
               </div>
-              <div>
+              <div className="p-5">
                 <h3 className={CARD_LABEL}>Top indústrias</h3>
                 {topIndustries.length > 0 ? (
-                  <dl className="mt-2 flex flex-col gap-1 text-small">
+                  // ul/li (não dl): a barra e a linha aninhadas quebrariam a regra dlitem do axe.
+                  <ul className="mt-2.5 flex flex-col gap-2">
                     {topIndustries.map(([industria, n]) => (
-                      <div key={industria} className="flex justify-between gap-4">
-                        <dt className="min-w-0 truncate text-foreground-muted" title={industria}>
-                          {industria}
-                        </dt>
-                        <dd className="font-semibold text-foreground tabular-nums">{fmtInt(n)}</dd>
-                      </div>
+                      <li key={industria}>
+                        <div className="flex items-baseline justify-between gap-4 text-small">
+                          <span className="min-w-0 truncate text-foreground-muted" title={industria}>
+                            {industria}
+                          </span>
+                          <span className="font-semibold text-foreground tabular-nums">{fmtInt(n)}</span>
+                        </div>
+                        <div aria-hidden className="mt-1 h-1 overflow-hidden rounded-full bg-background-secondary">
+                          <div
+                            className="h-full rounded-full bg-foreground-subtle/50"
+                            style={{ width: `${Math.max((n / maxIndustria) * 100, 3)}%` }}
+                          />
+                        </div>
+                      </li>
                     ))}
-                  </dl>
+                  </ul>
                 ) : (
                   <p className="mt-2 text-xs text-foreground-subtle">Nenhuma indústria registrada.</p>
                 )}
