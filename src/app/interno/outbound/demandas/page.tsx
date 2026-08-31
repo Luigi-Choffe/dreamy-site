@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { requireSession } from "@/lib/outbound/auth";
 import { DEMAND_KINDS } from "@/lib/outbound/demands-core";
 import type { Demand, DemandStatus } from "@/lib/outbound/types";
 import { demoRequested, loadDashboardData, type SearchParams } from "../data";
+import { ConfirmSubmit, PendingPill, SubmitButton } from "../pending";
 import { ConsoleShell } from "../shell";
 import {
   Chip,
@@ -65,16 +65,21 @@ function DemandRow({ demand, isDemo }: { demand: Demand; isDemo: boolean }) {
             <input type="hidden" name="demandId" value={demand.id} />
             <input type="hidden" name="to" value="em_andamento" />
             {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
-            <button type="submit" className={BTN}>
+            <PendingPill className={BTN} pendingLabel="Assumindo…">
               Assumir
-            </button>
+            </PendingPill>
           </form>
           <form action={cancelDemandAction} className="inline">
             <input type="hidden" name="demandId" value={demand.id} />
             {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
-            <button type="submit" className={BTN_GHOST} title="Cancelar (só antes de alguém assumir)">
+            <ConfirmSubmit
+              className={BTN_GHOST}
+              confirmLabel="Confirmar cancelamento"
+              pendingLabel="Cancelando…"
+              title="Cancelar (só antes de alguém assumir)"
+            >
               Cancelar
-            </button>
+            </ConfirmSubmit>
           </form>
         </div>
       ) : null}
@@ -98,9 +103,9 @@ function DemandRow({ demand, isDemo }: { demand: Demand; isDemo: boolean }) {
               <input name="resolution" required className={CONTROL} placeholder="o que foi feito, ou por que não" />
             </label>
             <div>
-              <button type="submit" className={BTN}>
+              <PendingPill className={BTN} pendingLabel="Salvando…">
                 Salvar
-              </button>
+              </PendingPill>
             </div>
           </form>
         </details>
@@ -216,9 +221,9 @@ export default async function OutboundDemandsPage({ searchParams }: { searchPara
               prioridade alta
             </label>
             <div>
-              <Button type="submit" size="sm">
+              <SubmitButton size="sm" loadingLabel="Criando">
                 Criar demanda
-              </Button>
+              </SubmitButton>
             </div>
             <p className="text-xs text-foreground-subtle">
               O MORK vê a fila na hora (mesmo banco) e presta contas na aba MORK.

@@ -1,7 +1,6 @@
 import { Fragment } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Checkbox } from "@/components/ui/Field";
 import { requireSession } from "@/lib/outbound/auth";
@@ -12,6 +11,7 @@ import type { Contact, ReplyClass } from "@/lib/outbound/types";
 import { classifyReplyAction, registerReplyAction } from "../actions";
 import { TriagemIA } from "./triagem-ia";
 import { consoleHref, demoRequested, loadDashboardData, type SearchParams } from "../data";
+import { PendingPill, SubmitButton } from "../pending";
 import { ConsoleShell } from "../shell";
 import {
   Chip,
@@ -233,9 +233,9 @@ export default async function OutboundRepliesPage({ searchParams }: { searchPara
                                     </option>
                                   ))}
                                 </select>
-                                <button type="submit" className={BTN_SM}>
+                                <PendingPill className={BTN_SM} pendingLabel="Salvando…">
                                   Salvar
-                                </button>
+                                </PendingPill>
                               </form>
                             </td>
                           </tr>
@@ -366,9 +366,9 @@ export default async function OutboundRepliesPage({ searchParams }: { searchPara
                 </details>
                 <Checkbox id="registrar-suppress" name="suppress" value="1" label="pediu para não receber (opt-out)" />
                 <div>
-                  <Button type="submit" size="sm">
+                  <SubmitButton size="sm" loadingLabel="Registrando">
                     Registrar resposta
-                  </Button>
+                  </SubmitButton>
                 </div>
               </form>
             )}

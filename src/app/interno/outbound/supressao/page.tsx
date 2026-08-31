@@ -4,6 +4,7 @@ import { requireSession } from "@/lib/outbound/auth";
 import type { SuppressionReason } from "@/lib/outbound/types";
 import { suppressContactAction } from "../actions";
 import { demoRequested, loadDashboardData, type SearchParams } from "../data";
+import { ConfirmSubmit } from "../pending";
 import { ConsoleShell } from "../shell";
 import { Chip, type ChipTone, Code, countBy, EmptyState, fmtDateTime, fmtInt, SUPPRESSION_REASON_LABELS } from "../ui";
 
@@ -220,12 +221,12 @@ export default async function OutboundSuppressionPage({ searchParams }: { search
                     ))}
                   </select>
                 </div>
-                <button
-                  type="submit"
-                  className="h-9 shrink-0 rounded-md border border-error/40 px-4 text-small font-semibold text-error hover:bg-error-soft"
+                <ConfirmSubmit
+                  confirmLabel="Confirmar supressão (permanente)"
+                  className="h-9 shrink-0 rounded-full border border-error/40 px-4 text-small font-semibold text-error transition-colors duration-(--duration-fast) hover:bg-error-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                 >
                   Suprimir contato
-                </button>
+                </ConfirmSubmit>
               </form>
             )}
             {activeContacts.length > SELECT_LIMIT ? (

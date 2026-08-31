@@ -162,13 +162,20 @@ export default async function OutboundAgendaPage({ searchParams }: { searchParam
                                     {deal.reuniaoEm ? horaFmt.format(new Date(deal.reuniaoEm)) : ""}
                                   </span>
                                   <span className="min-w-0 truncate">
-                                    Reunião com {deal.empresa ?? contact?.empresa ?? "(empresa)"}
                                     {contact ? (
-                                      <span className="text-foreground-subtle">
-                                        {" "}
-                                        · {[contact.nome, contact.sobrenome].filter(Boolean).join(" ")}
-                                      </span>
-                                    ) : null}
+                                      <Link
+                                        href={consoleHref(`/interno/outbound/contatos/${contact.id}`, isDemo)}
+                                        className="underline-offset-2 hover:text-brand-strong hover:underline"
+                                      >
+                                        Reunião com {deal.empresa ?? contact.empresa ?? "(empresa)"}
+                                        <span className="text-foreground-subtle">
+                                          {" "}
+                                          · {[contact.nome, contact.sobrenome].filter(Boolean).join(" ")}
+                                        </span>
+                                      </Link>
+                                    ) : (
+                                      <>Reunião com {deal.empresa ?? "(empresa)"}</>
+                                    )}
                                   </span>
                                 </li>
                               );
@@ -221,7 +228,12 @@ export default async function OutboundAgendaPage({ searchParams }: { searchParam
                                     </span>
                                     <span className="w-7 text-xs text-foreground-muted uppercase">{send.stepId}</span>
                                     {contact ? (
-                                      <ContactCell contact={contact} />
+                                      <Link
+                                        href={consoleHref(`/interno/outbound/contatos/${contact.id}`, isDemo)}
+                                        className="underline-offset-2 hover:text-brand-strong hover:underline"
+                                      >
+                                        <ContactCell contact={contact} />
+                                      </Link>
                                     ) : (
                                       <span className="text-foreground-subtle">(contato)</span>
                                     )}
@@ -247,7 +259,12 @@ export default async function OutboundAgendaPage({ searchParams }: { searchParam
                                     </span>
                                     <span className="w-7 text-xs text-foreground-muted uppercase">{item.stepId}</span>
                                     {contact ? (
-                                      <ContactCell contact={contact} />
+                                      <Link
+                                        href={consoleHref(`/interno/outbound/contatos/${contact.id}`, isDemo)}
+                                        className="underline-offset-2 hover:text-brand-strong hover:underline"
+                                      >
+                                        <ContactCell contact={contact} />
+                                      </Link>
                                     ) : (
                                       <span className="text-foreground-subtle">(contato)</span>
                                     )}

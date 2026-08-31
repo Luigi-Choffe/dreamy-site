@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { requireSession } from "@/lib/outbound/auth";
 import type { SolutionAnchor } from "@/lib/outbound/types";
 import { saveSettingsAction } from "../crm-actions";
 import { defaultWorkspaceSettings, demoRequested, loadDashboardData, type SearchParams } from "../data";
+import { SubmitButton } from "../pending";
 import { ConsoleShell } from "../shell";
 import { fmtDateTime } from "../ui";
 
@@ -106,9 +106,9 @@ export default async function OutboundSettingsPage({ searchParams }: { searchPar
           </fieldset>
 
           <div className="flex flex-wrap items-center gap-3">
-            <Button type="submit" size="sm">
+            <SubmitButton size="sm" loadingLabel="Salvando">
               Salvar
-            </Button>
+            </SubmitButton>
             <p className="text-xs text-foreground-subtle tabular-nums">
               Última alteração: {fmtDateTime(data.settings.atualizadoEm)}
               {data.settings.atualizadoPor ? ` por ${data.settings.atualizadoPor}` : ""}

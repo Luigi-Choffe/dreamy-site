@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Button } from "@/components/ui/Button";
 import { requireSession } from "@/lib/outbound/auth";
-import { DEAL_STAGES } from "@/lib/outbound/crm-core";
-import type { Contact, Deal, DealStage } from "@/lib/outbound/types";
-import { moveDealStageAction, reconcileDealsAction } from "../crm-actions";
+import type { Deal } from "@/lib/outbound/types";
+import { reconcileDealsAction } from "../crm-actions";
 import { demoRequested, loadDashboardData, type SearchParams } from "../data";
+import { SubmitButton } from "../pending";
 import { ConsoleShell } from "../shell";
-import { Chip, DEAL_STAGE_LABELS, DEAL_STAGE_TONES, EmptyState, fmtBRL, fmtInt } from "../ui";
+import { EmptyState } from "../ui";
+import { PipelineBoard, type BoardDeal } from "./board";
 
 /** Sempre dinâmico: lê o store (arquivos ou Postgres) a cada request. */
 export const dynamic = "force-dynamic";
@@ -16,96 +16,17 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const CONTROL_CLASS =
-  "h-8 w-full rounded-md border border-border bg-surface px-2 text-xs text-foreground " +
-  "placeholder:text-foreground-subtle/80 hover:border-border-strong " +
-  "focus:border-brand-strong focus:ring-3 focus:ring-brand-strong/20 focus:outline-none";
-
 function daysInStage(deal: Deal, now: Date): number {
   const ms = now.getTime() - Date.parse(deal.stageChangedAt);
   return ms > 0 ? Math.floor(ms / 86_400_000) : 0;
 }
 
-function DealCard({ deal, contact, isDemo, now }: { deal: Deal; contact?: Contact; isDemo: boolean; now: Date }) {
-  const nome = contact ? [contact.nome, contact.sobrenome].filter(Boolean).join(" ") : "(contato removido)";
-  const empresa = deal.empresa ?? contact?.empresa ?? nome;
-  const dias = daysInStage(deal, now);
-  return (
-    <article
-      className={`relative flex flex-col gap-2 overflow-hidden rounded-xl border bg-surface p-3 shadow-sm transition-[box-shadow,transform] duration-(--duration-fast) ease-(--ease-out) hover:shadow-md motion-safe:hover:-translate-y-px ${
-        deal.stage === "ganho" ? "border-brand-soft-strong" : "border-border"
-      }`}
-    >
-      {/* Vitória merece o verde: fio no topo do card ganho. */}
-      {deal.stage === "ganho" ? <span aria-hidden className="absolute inset-x-0 top-0 h-0.5 bg-brand" /> : null}
-      {/* PII: e-mail só em tooltip, nunca como texto visível. */}
-      <div className="min-w-0" title={contact?.email}>
-        <p className="truncate text-small font-semibold text-foreground">{empresa}</p>
-        <p className="truncate text-xs text-foreground-muted">
-          {nome}
-          {contact?.cargo ? <span className="text-foreground-subtle"> · {contact.cargo}</span> : null}
-        </p>
-      </div>
-      <p className="text-xs text-foreground-subtle tabular-nums">
-        {deal.campaignSlug ?? "manual"} · {fmtInt(dias)}d no estágio
-        {deal.valorEstimado ? ` · ${fmtBRL(deal.valorEstimado)}` : ""}
-      </p>
-      {deal.stage === "reuniao_marcada" && deal.reuniaoEm ? (
-        <p className="text-xs font-semibold text-success tabular-nums">
-          reunião {new Date(deal.reuniaoEm).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}
-        </p>
-      ) : null}
-      {deal.stage === "perdido" && deal.lostReason ? (
-        <p className="text-xs text-foreground-subtle">motivo: {deal.lostReason}</p>
-      ) : null}
-      <details className="text-xs">
-        <summary className="cursor-pointer font-semibold text-foreground-muted transition-colors duration-(--duration-fast) hover:text-foreground">
-          Mover
-        </summary>
-        <form action={moveDealStageAction} className="mt-2 flex flex-col gap-1.5">
-          <input type="hidden" name="dealId" value={deal.id} />
-          {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
-          <label className="flex flex-col gap-0.5">
-            <span className="text-foreground-subtle">novo estágio</span>
-            <select name="stage" defaultValue={deal.stage} className={CONTROL_CLASS}>
-              {DEAL_STAGES.map((stage) => (
-                <option key={stage} value={stage}>
-                  {DEAL_STAGE_LABELS[stage]}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="flex flex-col gap-0.5">
-            <span className="text-foreground-subtle">reunião (se marcar)</span>
-            <input type="datetime-local" name="reuniaoEm" className={CONTROL_CLASS} />
-          </label>
-          <label className="flex flex-col gap-0.5">
-            <span className="text-foreground-subtle">motivo (se perdido)</span>
-            <input type="text" name="motivo" className={CONTROL_CLASS} />
-          </label>
-          <label className="flex flex-col gap-0.5">
-            <span className="text-foreground-subtle">valor estimado (R$)</span>
-            <input
-              type="text"
-              name="valor"
-              inputMode="numeric"
-              defaultValue={deal.valorEstimado ?? ""}
-              className={CONTROL_CLASS}
-            />
-          </label>
-          <button
-            type="submit"
-            className="mt-0.5 rounded-full bg-brand-soft px-2.5 py-1 text-xs font-semibold text-brand-strong transition-colors duration-(--duration-fast) hover:bg-brand-soft-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-          >
-            Mover
-          </button>
-        </form>
-      </details>
-    </article>
-  );
-}
-
-/** Pipeline de negócios: 8 estágios; novo/contatado/respondeu vêm do outbound. */
+/**
+ * Pipeline de negócios: kanban com drag and drop (board.tsx) sobre 8 estágios;
+ * novo/contatado/respondeu vêm do outbound (piso automático do reconcile).
+ * O servidor só monta os dados (dias no estágio calculados aqui para não
+ * divergir na hidratação); toda a interação vive no client.
+ */
 export default async function OutboundPipelinePage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const session = await requireSession();
 
@@ -115,18 +36,36 @@ export default async function OutboundPipelinePage({ searchParams }: { searchPar
   const now = new Date();
 
   const contactById = new Map(data.contacts.map((c) => [c.id, c]));
-  const byStage = new Map<DealStage, Deal[]>(DEAL_STAGES.map((s) => [s, []]));
-  for (const deal of data.deals) byStage.get(deal.stage)?.push(deal);
-  for (const list of byStage.values()) {
-    list.sort((a, b) => b.stageChangedAt.localeCompare(a.stageChangedAt));
-  }
+  const boardDeals: BoardDeal[] = [...data.deals]
+    .sort((a, b) => b.stageChangedAt.localeCompare(a.stageChangedAt))
+    .map((deal) => {
+      const contact = contactById.get(deal.contactId);
+      const nome = contact
+        ? [contact.nome, contact.sobrenome].filter(Boolean).join(" ") || "(sem nome)"
+        : "(contato removido)";
+      return {
+        id: deal.id,
+        stage: deal.stage,
+        floor: deal.autoStage ?? "novo",
+        empresa: deal.empresa ?? contact?.empresa ?? nome,
+        nome,
+        cargo: contact?.cargo,
+        // PII: segue só para tooltip no card, nunca texto visível.
+        email: contact?.email,
+        campaignSlug: deal.campaignSlug,
+        valorEstimado: deal.valorEstimado,
+        reuniaoEm: deal.reuniaoEm,
+        lostReason: deal.lostReason,
+        diasNoEstagio: daysInStage(deal, now),
+      };
+    });
 
   const sync = (
     <form action={reconcileDealsAction}>
       {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
-      <Button type="submit" variant="secondary" size="sm" className="min-h-8 px-3.5 py-1 text-xs">
+      <SubmitButton variant="secondary" size="sm" className="min-h-8 px-3.5 py-1 text-xs" loadingLabel="Sincronizando">
         Sincronizar pipeline
-      </Button>
+      </SubmitButton>
     </form>
   );
 
@@ -135,7 +74,7 @@ export default async function OutboundPipelinePage({ searchParams }: { searchPar
       active="pipeline"
       data={data}
       title="Pipeline"
-      subtitle="Negócios por estágio. Novo, contatado e respondeu andam sozinhos com o outbound; do meio em diante a decisão é sua."
+      subtitle="Arraste o cartão entre estágios. Novo, contatado e respondeu andam sozinhos com o outbound; do meio em diante a decisão é sua."
       headerExtra={sync}
       sessionEmail={session.email}
     >
@@ -144,51 +83,13 @@ export default async function OutboundPipelinePage({ searchParams }: { searchPar
           Mover um cartão NÃO pausa nem cancela e-mails. Para parar envios de um contato, use Suprimir na aba Contatos
           ou registre a resposta dele.
         </p>
-        {data.deals.length === 0 ? (
+        {boardDeals.length === 0 ? (
           <EmptyState>
             Nenhum negócio ainda. Clique em <span className="font-semibold">Sincronizar pipeline</span> para criar os
             negócios a partir das sequências do outbound.
           </EmptyState>
         ) : (
-          <div
-            tabIndex={0}
-            role="region"
-            aria-label="Pipeline de negócios"
-            className="snap-x snap-proximity overflow-x-auto pb-2"
-          >
-            <div className="grid min-w-[80rem] grid-cols-8 gap-3">
-              {DEAL_STAGES.map((stage) => {
-                const list = byStage.get(stage) ?? [];
-                const total = list.reduce((sum, d) => sum + (d.valorEstimado ?? 0), 0);
-                return (
-                  <section
-                    key={stage}
-                    aria-label={DEAL_STAGE_LABELS[stage]}
-                    className="flex min-w-0 snap-start flex-col gap-2 rounded-xl bg-background-secondary/50 p-2"
-                  >
-                    <header className="flex items-center justify-between gap-2 border-b border-border px-1 pb-2">
-                      <Chip tone={DEAL_STAGE_TONES[stage]}>{DEAL_STAGE_LABELS[stage]}</Chip>
-                      <span className="text-xs text-foreground-subtle tabular-nums">
-                        {fmtInt(list.length)}
-                        {total > 0 ? ` · ${fmtBRL(total)}` : ""}
-                      </span>
-                    </header>
-                    <div className="flex flex-col gap-2">
-                      {list.map((deal) => (
-                        <DealCard
-                          key={deal.id}
-                          deal={deal}
-                          contact={contactById.get(deal.contactId)}
-                          isDemo={isDemo}
-                          now={now}
-                        />
-                      ))}
-                    </div>
-                  </section>
-                );
-              })}
-            </div>
-          </div>
+          <PipelineBoard deals={boardDeals} isDemo={isDemo} />
         )}
       </div>
     </ConsoleShell>

@@ -6,6 +6,7 @@ import { nextBusinessDay, pendingFollowUps } from "@/lib/outbound/crm-core";
 import type { Contact, CrmTask } from "@/lib/outbound/types";
 import { completeTaskAction, createTaskAction, rescheduleTaskAction } from "../crm-actions";
 import { consoleHref, demoRequested, loadDashboardData, type SearchParams } from "../data";
+import { PendingPill } from "../pending";
 import { ConsoleShell } from "../shell";
 import { Chip, ContactCell, EmptyState, fmtInt } from "../ui";
 
@@ -60,18 +61,18 @@ function TaskRow({
         <form action={completeTaskAction} className="inline">
           <input type="hidden" name="taskId" value={task.id} />
           {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
-          <button type="submit" className={BTN_PRIMARY}>
+          <PendingPill className={BTN_PRIMARY} pendingLabel="Concluindo…">
             Concluir
-          </button>
+          </PendingPill>
         </form>
         {reagendas.map((r) => (
           <form key={r.date} action={rescheduleTaskAction} className="inline">
             <input type="hidden" name="taskId" value={task.id} />
             <input type="hidden" name="dueDate" value={r.date} />
             {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
-            <button type="submit" className={BTN_GHOST} title={`Reagendar para ${r.date}`}>
+            <PendingPill className={BTN_GHOST} pendingLabel="Movendo…" title={`Reagendar para ${r.date}`}>
               {r.label}
-            </button>
+            </PendingPill>
           </form>
         ))}
       </span>
@@ -177,9 +178,9 @@ export default async function OutboundTodayPage({ searchParams }: { searchParams
                     <input type="hidden" name="titulo" value="Responder e propor reunião" />
                     <input type="hidden" name="dueDate" value={d1} />
                     {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
-                    <button type="submit" className={BTN_PRIMARY}>
+                    <PendingPill className={BTN_PRIMARY} pendingLabel="Criando…">
                       Criar tarefa de reunião
-                    </button>
+                    </PendingPill>
                   </form>
                 </li>
               ))}

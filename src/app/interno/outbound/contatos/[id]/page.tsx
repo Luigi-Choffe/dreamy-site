@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Checkbox } from "@/components/ui/Field";
 import { requireSession } from "@/lib/outbound/auth";
@@ -11,6 +10,7 @@ import type { ReplyClass } from "@/lib/outbound/types";
 import { registerReplyAction, suppressContactAction } from "../../actions";
 import { addNoteAction, createTaskAction } from "../../crm-actions";
 import { consoleHref, demoRequested, loadDashboardData, type SearchParams } from "../../data";
+import { ConfirmSubmit, SubmitButton } from "../../pending";
 import { ConsoleShell } from "../../shell";
 import { Chip, DEAL_STAGE_LABELS, DEAL_STAGE_TONES, EmptyState, fmtDateTime, REPLY_CLASS_LABELS } from "../../ui";
 
@@ -93,13 +93,13 @@ export default async function ContactAccountPage({
             <form action={suppressContactAction}>
               <input type="hidden" name="contactId" value={contact.id} />
               {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
-              <button
-                type="submit"
+              <ConfirmSubmit
                 title="Suprimir: sai de todas as campanhas e nunca mais recebe e-mail (permanente)"
+                confirmLabel="Confirmar supressão (permanente)"
                 className="rounded-full border border-error/40 px-2.5 py-1 text-xs font-semibold text-error transition-colors duration-(--duration-fast) hover:bg-error-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
               >
                 Suprimir
-              </button>
+              </ConfirmSubmit>
             </form>
           ) : (
             <Chip tone="error">suprimido</Chip>
@@ -171,9 +171,9 @@ export default async function ContactAccountPage({
                 placeholder="ex.: dono quer ver casos de incorporadoras antes da call"
               />
               <div>
-                <Button type="submit" size="sm">
+                <SubmitButton size="sm" loadingLabel="Salvando">
                   Salvar nota
-                </Button>
+                </SubmitButton>
               </div>
               <p className="text-xs text-foreground-subtle">Notas são permanentes: sem editar nem excluir.</p>
             </form>
@@ -221,9 +221,9 @@ export default async function ContactAccountPage({
                 />
               </div>
               <div>
-                <Button type="submit" size="sm" variant="secondary">
+                <SubmitButton size="sm" variant="secondary" loadingLabel="Criando">
                   Criar tarefa
-                </Button>
+                </SubmitButton>
               </div>
             </form>
           </Card>
@@ -258,9 +258,9 @@ export default async function ContactAccountPage({
               </div>
               <Checkbox id="conta-suppress" name="suppress" value="1" label="pediu para não receber (opt-out)" />
               <div>
-                <Button type="submit" size="sm">
+                <SubmitButton size="sm" loadingLabel="Registrando">
                   Registrar
-                </Button>
+                </SubmitButton>
               </div>
             </form>
           </Card>

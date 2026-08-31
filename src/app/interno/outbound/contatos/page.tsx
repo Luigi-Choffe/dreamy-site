@@ -6,6 +6,7 @@ import { contactStats } from "@/lib/outbound/metrics";
 import type { ContactStatus, SendRecord, VerificationStatus } from "@/lib/outbound/types";
 import { suppressContactAction } from "../actions";
 import { consoleHref, demoRequested, loadDashboardData, type SearchParams } from "../data";
+import { ConfirmSubmit } from "../pending";
 import { ConsoleShell } from "../shell";
 import {
   Chip,
@@ -450,13 +451,13 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
                               <form action={suppressContactAction} className="inline-block">
                                 <input type="hidden" name="contactId" value={contact.id} />
                                 {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
-                                <button
-                                  type="submit"
+                                <ConfirmSubmit
                                   title="Suprimir: sai de todas as campanhas e nunca mais recebe e-mail (permanente)"
-                                  className="rounded-full border border-error/40 px-2.5 py-1 text-xs font-semibold text-error transition-colors duration-(--duration-fast) hover:bg-error-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                                  confirmLabel="Confirmar supressão"
+                                  className="rounded-full border border-error/40 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-error transition-colors duration-(--duration-fast) hover:bg-error-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                                 >
                                   Suprimir
-                                </button>
+                                </ConfirmSubmit>
                               </form>
                             ) : null}
                           </td>

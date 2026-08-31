@@ -239,13 +239,27 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
                 label="Interessados"
                 value={fmtInt(interested)}
                 tone={interested > 0 ? "success" : "default"}
-                hint="respostas classificadas como interessado"
+                hint={
+                  <Link
+                    href={consoleHref("/interno/outbound/respostas", isDemo)}
+                    className="underline underline-offset-2 hover:text-brand-strong"
+                  >
+                    respostas classificadas como interessado
+                  </Link>
+                }
               />
               <Stat
                 label="Reuniões"
                 value={fmtInt(reunioes.geradas)}
                 tone={reunioes.geradas > 0 ? "success" : "default"}
-                hint="negócios que chegaram a reunião marcada"
+                hint={
+                  <Link
+                    href={consoleHref("/interno/outbound/pipeline", isDemo)}
+                    className="underline underline-offset-2 hover:text-brand-strong"
+                  >
+                    negócios que chegaram a reunião marcada
+                  </Link>
+                }
               />
               <Stat
                 label="Amanhã na cadência"

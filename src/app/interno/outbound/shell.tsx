@@ -66,14 +66,37 @@ const PILL_TONES: Record<PillTone, string> = {
   crit: "bg-error-soft text-error pulse-crit",
 };
 
-/** Pílula do fio de saúde: ponto de estado + rótulo curto; detalhe fica no title. */
-function HealthPill({ tone, title, children }: { tone: PillTone; title?: string; children: ReactNode }) {
+/**
+ * Pílula do fio de saúde: ponto de estado + rótulo curto; detalhe fica no
+ * title. Com `href`, a pílula vira link para a aba onde se age (achado da
+ * auditoria de usabilidade: a ação não pode morar só no tooltip).
+ */
+function HealthPill({
+  tone,
+  title,
+  href,
+  children,
+}: {
+  tone: PillTone;
+  title?: string;
+  href?: string;
+  children: ReactNode;
+}) {
+  const className = `inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs leading-none font-semibold whitespace-nowrap tabular-nums ${PILL_TONES[tone]} ${
+    href ? "underline-offset-2 transition-shadow duration-(--duration-fast) hover:underline hover:shadow-sm" : ""
+  }`;
+  const dot = <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-current" />;
+  if (href) {
+    return (
+      <Link href={href} title={title} className={className}>
+        {dot}
+        {children}
+      </Link>
+    );
+  }
   return (
-    <span
-      title={title}
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs leading-none font-semibold whitespace-nowrap tabular-nums ${PILL_TONES[tone]}`}
-    >
-      <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-current" />
+    <span title={title} className={className}>
+      {dot}
       {children}
     </span>
   );
@@ -97,6 +120,8 @@ export function ConsoleShell({
   const orphans = orphanScheduled(data.sends, data.contacts, data.enrollments).length;
   const demandasPendentes = data.demands.filter((d) => d.status === "pendente").length;
   const breakerAt = data.state.breakerTrippedAt;
+  // A página de campanha vive sob a Visão geral (não tem aba própria).
+  const activeTab: ConsoleTab = active === "campanha" ? "visao-geral" : active;
 
   // Faixas do PRD §21 (mesmas do BounceChip): verde < 2% · âmbar 2–3% · vermelho ≥ 3%.
   const bounceTone: PillTone =
@@ -186,14 +211,16 @@ export function ConsoleShell({
 
           <HealthPill
             tone={cap > 0 && usados >= cap ? "warn" : "neutral"}
-            title="Envios agendados/feitos hoje sobre o cap do dia (rampa do PRD §17)."
+            title="Envios agendados/feitos hoje sobre o cap do dia (rampa do PRD §17). Ver a Agenda."
+            href={consoleHref("/interno/outbound/agenda", data.isDemo)}
           >
             envios hoje {fmtInt(usados)}/{fmtInt(cap)}
           </HealthPill>
 
           <HealthPill
             tone={bounceTone}
-            title="Taxa de bounce global — verde < 2% · âmbar 2–3% · vermelho ≥ 3% (PRD §21)."
+            title="Taxa de bounce global — verde < 2% · âmbar 2–3% · vermelho ≥ 3% (PRD §21). Ver a Atividade."
+            href={consoleHref("/interno/outbound/atividade", data.isDemo)}
           >
             bounce{" "}
             {rails.sent > 0 ? `${fmtPct(rails.bounceRate)} · ${fmtInt(rails.bounced)}/${fmtInt(rails.sent)}` : "—"}
@@ -224,7 +251,11 @@ export function ConsoleShell({
           ) : null}
 
           {demandasPendentes > 0 ? (
-            <HealthPill tone="warn" title="Demandas do time aguardando o MORK assumir (aba Demandas).">
+            <HealthPill
+              tone="warn"
+              title="Demandas do time aguardando o MORK assumir. Ver as Demandas."
+              href={consoleHref("/interno/outbound/demandas", data.isDemo)}
+            >
               {fmtInt(demandasPendentes)} demanda(s) pendente(s)
             </HealthPill>
           ) : null}
@@ -239,9 +270,9 @@ export function ConsoleShell({
             <Link
               key={tab.id}
               href={consoleHref(tab.href, data.isDemo)}
-              aria-current={tab.id === active ? "page" : undefined}
+              aria-current={tab.id === activeTab ? "page" : undefined}
               className={
-                tab.id === active
+                tab.id === activeTab
                   ? "rounded-full bg-white px-3.5 py-1.5 font-semibold text-brand-strong shadow-sm"
                   : "rounded-full px-3.5 py-1.5 text-foreground-muted transition-colors duration-(--duration-fast) hover:bg-white/55 hover:text-foreground"
               }

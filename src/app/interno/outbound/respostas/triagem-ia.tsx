@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useToast } from "@/components/ui/Toast";
+import { classifyReplyAction } from "../actions";
 
 const CLASSE_LABELS: Record<string, string> = {
   interested: "interessado",
@@ -47,6 +49,39 @@ export function TriagemIA({
   const [out, setOut] = useState<Suggestion | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [applying, startApplying] = useTransition();
+  const { toast } = useToast();
+
+  /** Um clique aplica a classe sugerida (o seletor da linha segue como override). */
+  function aplicarClasse(classe: string) {
+    startApplying(async () => {
+      const fd = new FormData();
+      fd.set("replyId", replyId);
+      fd.set("classification", classe);
+      if (isDemo) fd.set("demo", "1");
+      try {
+        await classifyReplyAction(fd);
+        toast({ variant: "success", title: `Classe "${CLASSE_LABELS[classe] ?? classe}" aplicada.` });
+      } catch {
+        toast({
+          variant: "error",
+          title: "Não deu para aplicar a classe.",
+          description: "Use o seletor da linha ou tente de novo em instantes.",
+        });
+      }
+    });
+  }
+
+  async function copiarRascunho(rascunho: string) {
+    try {
+      await navigator.clipboard.writeText(rascunho);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast({ variant: "error", title: "Não deu para copiar. Selecione o texto e copie manualmente." });
+    }
+  }
 
   async function sugerir() {
     setLoading(true);
@@ -109,6 +144,20 @@ export function TriagemIA({
                 aria-label="Rascunho de resposta gerado por IA"
               />
             ) : null}
+            <div className="flex flex-wrap items-center gap-1.5">
+              <button type="button" onClick={() => aplicarClasse(out.classe)} disabled={applying} className={BTN}>
+                {applying ? "Aplicando…" : "Aplicar classe sugerida"}
+              </button>
+              {out.rascunho ? (
+                <button
+                  type="button"
+                  onClick={() => copiarRascunho(out.rascunho)}
+                  className="rounded-full px-2.5 py-1 font-semibold text-foreground-muted transition-colors duration-(--duration-fast) hover:bg-background-secondary hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                >
+                  {copied ? "Copiado" : "Copiar rascunho"}
+                </button>
+              ) : null}
+            </div>
             <p className="text-foreground-subtle">
               Rascunho de IA: revise e envie você mesmo{replyTo ? ` pela caixa ${replyTo}` : ""}. Nada é enviado nem
               gravado sozinho.
