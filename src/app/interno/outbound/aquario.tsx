@@ -3,32 +3,33 @@ import { AquarioRede } from "./aquario-rede";
 import type { DashboardData } from "./data";
 
 /**
- * AQUÁRIO v2 — a rede neural viva do time do MORK (lente 9:19).
+ * AQUÁRIO v3 — a rede do time do MORK flutuando na página (lente 9:19).
  *
- * Assinatura do console: constelação de agentes num tanque de vidro escuro,
- * sinapses curvas ligando quem trabalha com quem (canvas em aquario-rede.tsx),
- * pulsos fortes SÓ quando há demanda real em andamento, cadeira vazia em
- * tracejado. Nós e fichas são HTML acessível (Tab + hover); o canvas é 100%
- * decorativo. Vidro = aproximação web de "liquid glass" (backdrop-filter em
- * camadas), NÃO o material oficial da Apple; com fallback sólido para
- * prefers-reduced-transparency. Sem PII em lugar nenhum.
+ * Sem tanque: a constelação vive direto sobre o fundo claro do console, como
+ * uma projeção. O único material é VIDRO FOSCO claro (base e fichas;
+ * aproximação web de "liquid glass" com backdrop-filter, NÃO o material
+ * oficial da Apple), e toda a luz é o verde do logo Dreamy (--brand-primary
+ * #46eb7e). Sinapses curvas no canvas (aquario-rede.tsx); pulsos fortes SÓ
+ * quando há demanda real em andamento; cadeira vazia em tracejado. Nós e
+ * fichas são HTML acessível (Tab + hover); o canvas é 100% decorativo.
+ * Fallback sólido para prefers-reduced-transparency. Sem PII em lugar nenhum.
  */
 
 const GLASS_CSS = `
 .aqua-glass {
-  border: 1px solid rgb(255 255 255 / 0.16);
-  background: linear-gradient(135deg, rgb(255 255 255 / 0.12), rgb(255 255 255 / 0.04)), rgb(10 23 18 / 0.55);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.2), 0 14px 40px -18px rgb(0 0 0 / 0.6);
+  border: 1px solid rgb(11 11 12 / 0.08);
+  background: linear-gradient(150deg, rgb(255 255 255 / 0.78), rgb(255 255 255 / 0.42));
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.95), 0 18px 44px -22px rgb(11 11 12 / 0.28);
 }
 .aqua-ficha {
-  background: linear-gradient(135deg, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0.03)), rgb(8 18 13 / 0.93);
+  background: linear-gradient(150deg, rgb(255 255 255 / 0.95), rgb(255 255 255 / 0.84));
 }
 @media (prefers-reduced-transparency: reduce) {
   .aqua-glass,
   .aqua-ficha {
-    background: rgb(9 20 15 / 0.97);
+    background: var(--surface);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
@@ -73,7 +74,7 @@ function CadeiraIcon() {
 
 function NoDaRede({ seat, status, x, y }: { seat: TeamSeat; status: SeatStatus; x: number; y: number }) {
   const isMork = seat.slug === "mork";
-  // Sempre para a ESQUERDA do nó: o tanque mora na borda direita da tela, então
+  // Sempre para a ESQUERDA do nó: o Aquário mora na borda direita da tela, então
   // abrir para a direita cortaria a ficha no viewport (achado do espelho v2).
   const fichaSide = "right-[calc(100%+0.75rem)] top-1/2 -translate-y-1/2";
   return (
@@ -93,31 +94,31 @@ function NoDaRede({ seat, status, x, y }: { seat: TeamSeat; status: SeatStatus; 
             style={{
               background: "linear-gradient(135deg, #46eb7e 0%, #bff5d1 100%)",
               boxShadow: isMork
-                ? "0 0 0 2px rgb(255 255 255 / 0.3), inset 0 1px 0 rgb(255 255 255 / 0.55), 0 0 30px rgb(70 235 126 / 0.45)"
-                : "0 0 0 1px rgb(255 255 255 / 0.25), inset 0 1px 0 rgb(255 255 255 / 0.5), 0 0 16px rgb(70 235 126 / 0.3)",
+                ? "0 0 0 2px rgb(255 255 255 / 0.9), inset 0 1px 0 rgb(255 255 255 / 0.55), 0 14px 30px -10px rgb(15 124 71 / 0.5)"
+                : "0 0 0 1px rgb(255 255 255 / 0.85), inset 0 1px 0 rgb(255 255 255 / 0.5), 0 10px 22px -8px rgb(15 124 71 / 0.4)",
             }}
           >
             {seat.monogram}
             <span
               aria-hidden
-              className={`absolute -top-0.5 -right-0.5 size-2 rounded-full border border-[#06170e] ${
-                status.live ? "aqua-viva bg-[#46eb7e]" : "bg-[#40584c]"
+              className={`absolute -top-0.5 -right-0.5 size-2 rounded-full border border-background ${
+                status.live ? "aqua-viva bg-[#46eb7e]" : "bg-border-strong"
               }`}
             />
           </span>
         ) : (
           <span
             aria-hidden
-            className="inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-dashed border-[#5d6f66] bg-white/[0.03] text-[#7a9587]"
+            className="inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-dashed border-border-strong bg-white/50 text-foreground-subtle"
           >
             <CadeiraIcon />
           </span>
         )}
         <span className="pointer-events-none mt-1 text-center">
-          <span className="block font-display text-[0.64rem] leading-tight font-bold tracking-wide text-[#eaf7ee]">
+          <span className="block font-display text-[0.64rem] leading-tight font-bold tracking-wide text-foreground">
             {seat.hired ? seat.nome : "VAGA"}
           </span>
-          {isMork ? <span className="block text-[0.55rem] font-semibold text-[#46eb7e]">no comando</span> : null}
+          {isMork ? <span className="block text-[0.55rem] font-semibold text-brand-strong">no comando</span> : null}
         </span>
       </span>
 
@@ -126,22 +127,22 @@ function NoDaRede({ seat, status, x, y }: { seat: TeamSeat; status: SeatStatus; 
         role="note"
         className={`aqua-glass aqua-ficha pointer-events-none invisible absolute z-40 w-60 rounded-2xl p-3.5 opacity-0 transition-opacity duration-200 group-hover:visible group-hover:opacity-100 group-focus-visible:visible group-focus-visible:opacity-100 ${fichaSide}`}
       >
-        <span className="block font-display text-sm font-bold text-[#eaf7ee]">
+        <span className="block font-display text-sm font-bold text-foreground">
           {seat.hired ? seat.nome : "Cadeira vazia"}
         </span>
-        <span className="mt-0.5 block text-[0.66rem] font-semibold tracking-[0.14em] text-[#46eb7e] uppercase">
+        <span className="mt-0.5 block text-[0.66rem] font-semibold tracking-[0.14em] text-brand-strong uppercase">
           {seat.cargo}
         </span>
-        <span className="mt-2 block text-[0.72rem] leading-relaxed text-[#c9dcd1]">
-          <span className="font-semibold text-[#eaf7ee]">Função: </span>
+        <span className="mt-2 block text-[0.72rem] leading-relaxed text-foreground-muted">
+          <span className="font-semibold text-foreground">Função: </span>
           {seat.funcao}
         </span>
-        <span className="mt-1.5 block text-[0.72rem] leading-relaxed text-[#c9dcd1]">
-          <span className="font-semibold text-[#eaf7ee]">Por que existe: </span>
+        <span className="mt-1.5 block text-[0.72rem] leading-relaxed text-foreground-muted">
+          <span className="font-semibold text-foreground">Por que existe: </span>
           {seat.motivo}
         </span>
-        <span className="mt-1.5 block text-[0.72rem] leading-relaxed text-[#c9dcd1]">
-          <span className="font-semibold text-[#eaf7ee]">Agora: </span>
+        <span className="mt-1.5 block text-[0.72rem] leading-relaxed text-foreground-muted">
+          <span className="font-semibold text-foreground">Agora: </span>
           {status.label}
         </span>
       </span>
@@ -169,39 +170,26 @@ export function Aquario({ data }: { data: DashboardData }) {
     >
       <style>{GLASS_CSS}</style>
 
-      {/* Tanque (decorativo, clipado): água funda + leve grade de dados + luz. */}
-      <div aria-hidden className="absolute inset-0 overflow-hidden rounded-[1.75rem] border border-white/10">
-        <div
-          className="absolute inset-0"
-          style={{ background: "linear-gradient(178deg, #103324 0%, #0a1d15 48%, #060f0b 100%)" }}
-        />
-        <div
-          className="absolute inset-0 opacity-[0.08]"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgb(70 235 126 / 0.5) 1px, transparent 1px), linear-gradient(90deg, rgb(70 235 126 / 0.5) 1px, transparent 1px)",
-            backgroundSize: "30px 30px",
-          }}
-        />
-        <div
-          className="absolute -top-20 left-1/2 h-60 w-80 -translate-x-1/2 rounded-full opacity-25 blur-3xl"
-          style={{ background: "radial-gradient(closest-side, #46eb7e, transparent)" }}
-        />
-        <div
-          className="absolute inset-y-5 left-2.5 w-9 rounded-full opacity-[0.09]"
-          style={{ background: "linear-gradient(90deg, #ffffff, transparent)", filter: "blur(6px)" }}
-        />
-        <div
-          className="absolute inset-x-0 top-0 h-16"
-          style={{ background: "linear-gradient(180deg, rgb(255 255 255 / 0.1), transparent)" }}
-        />
-      </div>
+      {/* Luz ambiente (decorativa): a projeção se assenta num brilho da marca. */}
+      <div
+        aria-hidden
+        className="absolute inset-x-0 top-10 bottom-4 opacity-60 blur-3xl"
+        style={{
+          background:
+            "radial-gradient(55% 40% at 50% 36%, rgb(70 235 126 / 0.18), transparent 70%), radial-gradient(45% 18% at 50% 94%, rgb(70 235 126 / 0.14), transparent 75%)",
+        }}
+      />
 
-      {/* Lente. */}
-      <div className="relative flex h-full flex-col px-4 pt-5 pb-4">
+      <div className="relative flex h-full flex-col">
         <header className="flex items-baseline justify-between px-1">
-          <p className="font-display text-[0.68rem] font-bold tracking-[0.24em] text-[#bff5d1] uppercase">Aquário</p>
-          <p className="text-[0.64rem] text-[#8fae9d] tabular-nums">
+          <p className="font-display text-[0.68rem] font-bold tracking-[0.24em] text-foreground-muted uppercase">
+            Aquário
+          </p>
+          <p
+            className={`text-[0.64rem] tabular-nums ${
+              sinapsesAtivas > 0 ? "font-semibold text-brand-strong" : "text-foreground-subtle"
+            }`}
+          >
             {sinapsesAtivas > 0 ? `${sinapsesAtivas} sinapse(s) ativa(s)` : "rede em repouso"}
           </p>
         </header>
@@ -219,17 +207,22 @@ export function Aquario({ data }: { data: DashboardData }) {
           </ol>
         </div>
 
-        <footer className="aqua-glass mt-3 rounded-xl p-3">
-          <p className="text-[0.6rem] font-bold tracking-[0.18em] text-[#8fae9d] uppercase">Últimas atividades</p>
+        {/* Base em vidro fosco: o "pé" da projeção. */}
+        <footer className="aqua-glass mt-3 rounded-2xl p-3">
+          <p className="text-[0.6rem] font-bold tracking-[0.18em] text-foreground-subtle uppercase">
+            Últimas atividades
+          </p>
           {ultimas.length === 0 ? (
-            <p className="mt-1.5 text-[0.7rem] leading-snug text-[#c9dcd1]">
-              Silêncio no tanque. A primeira ação registrada acende a rede.
+            <p className="mt-1.5 text-[0.7rem] leading-snug text-foreground-muted">
+              Silêncio na rede. A primeira ação registrada acende as sinapses.
             </p>
           ) : (
             <ul className="mt-1.5 flex flex-col gap-1">
               {ultimas.map((a) => (
-                <li key={a.id} className="flex gap-2 text-[0.7rem] leading-snug text-[#c9dcd1]">
-                  <span className="shrink-0 text-[#6f8d7e] tabular-nums">{dateTimeShort.format(new Date(a.at))}</span>
+                <li key={a.id} className="flex gap-2 text-[0.7rem] leading-snug text-foreground-muted">
+                  <span className="shrink-0 text-foreground-subtle tabular-nums">
+                    {dateTimeShort.format(new Date(a.at))}
+                  </span>
                   <span className="min-w-0 truncate" title={a.summary}>
                     {a.summary}
                   </span>
@@ -237,7 +230,7 @@ export function Aquario({ data }: { data: DashboardData }) {
               ))}
             </ul>
           )}
-          <p className="mt-2 border-t border-white/10 pt-1.5 text-[0.62rem] text-[#8fae9d] tabular-nums">
+          <p className="mt-2 border-t border-border pt-1.5 text-[0.62rem] text-foreground-subtle tabular-nums">
             {tarefasAbertas} tarefa(s) aberta(s) · {demandasPendentes} demanda(s) na fila · pulso forte = trabalho real
             em andamento
           </p>

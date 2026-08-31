@@ -3,7 +3,9 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Camada viva do Aquário: canvas 2D desenhando a rede neural do time.
+ * Camada viva do Aquário: canvas 2D desenhando a rede neural do time,
+ * flutuando direto sobre o fundo CLARO da página (v3: sem tanque e sem
+ * composição aditiva — toda a luz é o verde do logo Dreamy com alfa).
  * Folha de cliente isolada (regra da casa e da skill de design): rAF com
  * cleanup estrito, DPR limitado, ResizeObserver, e prefers-reduced-motion
  * vira UM quadro estático (sinapses sem pulsos).
@@ -12,7 +14,7 @@ import { useEffect, useRef } from "react";
  * - pulso viajando numa sinapse = fluxo de trabalho MORK ↔ agente (forte e
  *   frequente só quando há demanda REAL em andamento);
  * - halo respirando num nó = agente trabalhando agora;
- * - plâncton ao fundo = ambiente do tanque (único elemento puramente cênico,
+ * - poeira de luz ao fundo = ambiente (único elemento puramente cênico,
  *   lento e quase imperceptível de propósito).
  */
 
@@ -52,8 +54,8 @@ const PLANKTON: Array<{ x: number; y: number; r: number; vx: number; vy: number 
   { x: 44, y: 35, r: 0.8, vx: 0.004, vy: -0.005 },
 ];
 
+/** Verde do logo Dreamy (--brand-primary #46eb7e) — a única cor da rede. */
 const GREEN = (alpha: number) => `rgba(70, 235, 126, ${alpha})`;
-const MIST = (alpha: number) => `rgba(191, 245, 209, ${alpha})`;
 
 function quadPoint(a: Pt, c: Pt, b: Pt, t: number): Pt {
   const u = 1 - t;
@@ -123,7 +125,6 @@ export function AquarioRede({ nodes, links }: { nodes: RedeNode[]; links: RedeLi
 
     const draw = (time: number) => {
       ctx.clearRect(0, 0, w, h);
-      ctx.globalCompositeOperation = "lighter";
 
       // Plâncton (cenário, quase parado).
       for (const p of plankton) {
@@ -133,7 +134,7 @@ export function AquarioRede({ nodes, links }: { nodes: RedeNode[]; links: RedeLi
         }
         ctx.beginPath();
         ctx.arc((p.x / 100) * w, (p.y / 100) * h, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = MIST(0.14);
+        ctx.fillStyle = GREEN(0.35);
         ctx.fill();
       }
 
@@ -147,14 +148,20 @@ export function AquarioRede({ nodes, links }: { nodes: RedeNode[]; links: RedeLi
         ctx.quadraticCurveTo(c.x, c.y, b.x, b.y);
         if (link.kind === "vaga") {
           ctx.setLineDash([3, 6]);
-          ctx.strokeStyle = GREEN(0.2);
+          ctx.strokeStyle = GREEN(0.4);
           ctx.lineWidth = 1;
         } else {
           ctx.setLineDash([]);
-          ctx.strokeStyle = GREEN(link.active ? 0.5 : 0.16);
-          ctx.lineWidth = link.active ? 1.5 : 1;
+          ctx.strokeStyle = GREEN(link.active ? 0.9 : 0.5);
+          ctx.lineWidth = link.active ? 1.6 : 1.1;
+        }
+        if (link.active) {
+          // Brilho só onde há trabalho real: a sinapse ativa emite luz.
+          ctx.shadowColor = GREEN(0.5);
+          ctx.shadowBlur = 6;
         }
         ctx.stroke();
+        ctx.shadowBlur = 0;
         ctx.setLineDash([]);
       });
 
@@ -171,7 +178,7 @@ export function AquarioRede({ nodes, links }: { nodes: RedeNode[]; links: RedeLi
           const q = quadPoint(a, c, b, pulse.t);
           const r = link.active ? 3 : 1.6;
           const glow = ctx.createRadialGradient(q.x, q.y, 0, q.x, q.y, r * 4);
-          glow.addColorStop(0, GREEN(link.active ? 0.9 : 0.35));
+          glow.addColorStop(0, GREEN(link.active ? 0.95 : 0.4));
           glow.addColorStop(1, GREEN(0));
           ctx.fillStyle = glow;
           ctx.beginPath();
@@ -188,15 +195,13 @@ export function AquarioRede({ nodes, links }: { nodes: RedeNode[]; links: RedeLi
         const breath = n.live && !reduce ? 3 + 3 * Math.sin(time * 0.0025 + p.x) : 0;
         const radius = (base + breath) * 1.9;
         const halo = ctx.createRadialGradient(p.x, p.y, 2, p.x, p.y, radius);
-        halo.addColorStop(0, GREEN(n.live ? 0.4 : 0.16));
+        halo.addColorStop(0, GREEN(n.live ? 0.22 : 0.08));
         halo.addColorStop(1, GREEN(0));
         ctx.fillStyle = halo;
         ctx.beginPath();
         ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
         ctx.fill();
       }
-
-      ctx.globalCompositeOperation = "source-over";
     };
 
     let raf = 0;
