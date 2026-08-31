@@ -20,7 +20,14 @@ const SUGESTOES = ["Como está o funil hoje?", "O que o time fez esta semana?", 
 /** Últimas trocas enviadas como contexto (a rota também limita). */
 const HISTORICO_MAX = 6;
 
-export function AquarioChat({ isDemo, alto = false }: { isDemo: boolean; alto?: boolean }) {
+export function AquarioChat({
+  isDemo,
+  variante = "cartao",
+}: {
+  isDemo: boolean;
+  /** "cartao": bloco avulso com moldura. "sala": preenche a área dedicada da sala lateral. */
+  variante?: "cartao" | "sala";
+}) {
   const [msgs, setMsgs] = useState<ChatMsg[]>([]);
   const [texto, setTexto] = useState("");
   const [loading, setLoading] = useState(false);
@@ -68,7 +75,11 @@ export function AquarioChat({ isDemo, alto = false }: { isDemo: boolean; alto?: 
   return (
     <section
       aria-label="Pergunte ao MORK"
-      className={alto ? "p-3" : "rounded-2xl border border-border bg-surface p-3 shadow-sm"}
+      className={
+        variante === "sala"
+          ? "flex h-full min-h-0 flex-col"
+          : "rounded-2xl border border-border bg-surface p-3 shadow-sm"
+      }
     >
       <header className="flex items-baseline justify-between gap-2 px-1">
         <h2 className="font-display text-[0.68rem] font-bold tracking-[0.24em] text-foreground-muted uppercase">
@@ -80,7 +91,7 @@ export function AquarioChat({ isDemo, alto = false }: { isDemo: boolean; alto?: 
       <div
         aria-live="polite"
         className={`no-scrollbar mt-2 flex min-h-0 flex-col gap-2 overflow-y-auto pr-0.5 ${
-          alto ? "max-h-[55dvh] min-h-[16rem]" : "max-h-64"
+          variante === "sala" ? "flex-1" : "max-h-64"
         }`}
       >
         {msgs.length === 0 && !loading ? (

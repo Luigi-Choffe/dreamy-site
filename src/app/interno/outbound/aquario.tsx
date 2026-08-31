@@ -141,7 +141,14 @@ function NoDaRede({ seat, status, x, y }: { seat: TeamSeat; status: SeatStatus; 
   );
 }
 
-export function Aquario({ data }: { data: DashboardData }) {
+export function Aquario({
+  data,
+  variante = "coluna",
+}: {
+  data: DashboardData;
+  /** "coluna": lente 9:19 completa (aba MORK). "sala": preenche o slot da sala lateral, sem rodapé. */
+  variante?: "coluna" | "sala";
+}) {
   const now = new Date();
   const statusInput = { demands: data.demands, activities: data.agentActivities, now };
   const statuses = new Map(TEAM.map((seat) => [seat.slug, seatStatus(seat, statusInput)] as const));
@@ -157,7 +164,9 @@ export function Aquario({ data }: { data: DashboardData }) {
   return (
     <section
       aria-label="Aquário: a rede viva do time do MORK"
-      className="relative aspect-[9/19] w-[19.5rem] select-none"
+      className={
+        variante === "sala" ? "relative h-full w-full select-none" : "relative aspect-[9/19] w-[19.5rem] select-none"
+      }
     >
       <style>{GLASS_CSS + FICHA_CSS}</style>
 
@@ -234,8 +243,8 @@ export function Aquario({ data }: { data: DashboardData }) {
           </div>
         </div>
 
-        {/* Base em vidro fosco: o "pé" da projeção. */}
-        <footer className="aqua-glass mt-3 rounded-2xl p-3">
+        {/* Base em vidro fosco: o "pé" da projeção (só na lente completa; na sala, o chat assume). */}
+        <footer className={variante === "sala" ? "hidden" : "aqua-glass mt-3 rounded-2xl p-3"}>
           <p className="text-[0.6rem] font-bold tracking-[0.18em] text-foreground-subtle uppercase">
             Últimas atividades
           </p>

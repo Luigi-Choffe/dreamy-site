@@ -4,9 +4,10 @@ import { getOutboundEnv } from "@/lib/outbound/config";
 import { dailyCap, usedTodayCount } from "@/lib/outbound/engine";
 import { evaluateGuardRails } from "@/lib/outbound/guardrails";
 import { orphanScheduled } from "@/lib/outbound/metrics";
+import { Aquario } from "./aquario";
+import { AquarioChat } from "./aquario-chat";
 import { AtalhosDoConsole } from "./atalhos";
 import { MaterialRoot } from "./material-root";
-import { MorkFlutuante } from "./mork-flutuante";
 import { consoleHref, type DashboardData } from "./data";
 import { Code, fmtDateTime, fmtInt, fmtPct } from "./ui";
 
@@ -292,9 +293,20 @@ export function ConsoleShell({
         <div>{children}</div>
       </div>
 
-      {/* Mundos separados (pedido do Luigi): o CRM fica com a largura toda; o
-          Aquário mora na aba MORK; o chat é o painel flutuante, em toda aba. */}
-      <MorkFlutuante isDemo={data.isDemo} />
+      {/* A SALA DO MORK (pedido do Luigi): área lateral DEDICADA, separada do CRM
+          por uma parede de vidro própria. Em cima, a rede neural do time; abaixo
+          da linha, a área de chat em altura cheia. */}
+      <aside aria-label="Sala do MORK" className="hidden w-[21rem] shrink-0 2xl:block">
+        <div className="sticky top-0 flex h-dvh flex-col border-l border-border bg-white/35 py-5 pr-2 pl-6 backdrop-blur-md">
+          <div className="min-h-[17rem] shrink-0 basis-[42%]">
+            <Aquario data={data} variante="sala" />
+          </div>
+          <div className="mt-4 mb-3 shrink-0 border-t border-border" />
+          <div className="min-h-0 flex-1">
+            <AquarioChat isDemo={data.isDemo} variante="sala" />
+          </div>
+        </div>
+      </aside>
     </div>
   );
 }
