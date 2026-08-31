@@ -491,6 +491,18 @@
       animation: console-viva 2.6s ease-in-out infinite;
     }
   }
+  /* Rolagem interna visível e discreta (coluna lateral do console). */
+  [data-app="console"] .scroll-slim {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+  [data-app="console"] .scroll-slim::-webkit-scrollbar {
+    width: 6px;
+  }
+  [data-app="console"] .scroll-slim::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 3px;
+  }
   [data-app="console"] :where(.bg-surface) {
     backdrop-filter: blur(14px) saturate(150%);
     -webkit-backdrop-filter: blur(14px) saturate(150%);

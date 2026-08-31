@@ -41,7 +41,24 @@ const GLASS_CSS = `
   }
   .aqua-viva { animation: aqua-pulsa 2.6s ease-in-out infinite; }
 }
+[data-ficha] {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 200ms ease, visibility 200ms;
+}
 `;
+
+/**
+ * Uma regra :has por cadeira: hover/foco no nó acende a ficha correspondente no
+ * painel central. A ficha vive DENTRO da lente e nunca mais é cortada por
+ * rolagem ou borda de tela (P0 #1 de docs/MELHORIAS-CONSOLE.md).
+ */
+const FICHA_CSS = TEAM.map(
+  (seat) =>
+    `.aqua-stage:has(li[data-seat="${seat.slug}"]:hover) [data-ficha="${seat.slug}"], ` +
+    `.aqua-stage:has(li[data-seat="${seat.slug}"]:focus-visible) [data-ficha="${seat.slug}"] ` +
+    `{ opacity: 1; visibility: visible; }`,
+).join("\n");
 
 const dateTimeShort = new Intl.DateTimeFormat("pt-BR", {
   timeZone: "America/Sao_Paulo",
@@ -74,12 +91,11 @@ function CadeiraIcon() {
 
 function NoDaRede({ seat, status, x, y }: { seat: TeamSeat; status: SeatStatus; x: number; y: number }) {
   const isMork = seat.slug === "mork";
-  // Sempre para a ESQUERDA do nó: o Aquário mora na borda direita da tela, então
-  // abrir para a direita cortaria a ficha no viewport (achado do espelho v2).
-  const fichaSide = "right-[calc(100%+0.75rem)] top-1/2 -translate-y-1/2";
   return (
     <li
       tabIndex={0}
+      data-seat={seat.slug}
+      aria-describedby={`ficha-${seat.slug}`}
       aria-label={`${seat.hired ? seat.nome : "vaga aberta"}: ${seat.cargo}`}
       style={{ left: `${x}%`, top: `${y}%` }}
       className="group absolute -translate-x-1/2 -translate-y-1/2 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-[#46eb7e]/70"
@@ -121,31 +137,6 @@ function NoDaRede({ seat, status, x, y }: { seat: TeamSeat; status: SeatStatus; 
           {isMork ? <span className="block text-[0.55rem] font-semibold text-brand-strong">no comando</span> : null}
         </span>
       </span>
-
-      {/* Ficha do agente (hover/foco): abre para o lado livre do nó. */}
-      <span
-        role="note"
-        className={`aqua-glass aqua-ficha pointer-events-none invisible absolute z-40 w-60 rounded-2xl p-3.5 opacity-0 transition-opacity duration-200 group-hover:visible group-hover:opacity-100 group-focus-visible:visible group-focus-visible:opacity-100 ${fichaSide}`}
-      >
-        <span className="block font-display text-sm font-bold text-foreground">
-          {seat.hired ? seat.nome : "Cadeira vazia"}
-        </span>
-        <span className="mt-0.5 block text-[0.66rem] font-semibold tracking-[0.14em] text-brand-strong uppercase">
-          {seat.cargo}
-        </span>
-        <span className="mt-2 block text-[0.72rem] leading-relaxed text-foreground-muted">
-          <span className="font-semibold text-foreground">Função: </span>
-          {seat.funcao}
-        </span>
-        <span className="mt-1.5 block text-[0.72rem] leading-relaxed text-foreground-muted">
-          <span className="font-semibold text-foreground">Por que existe: </span>
-          {seat.motivo}
-        </span>
-        <span className="mt-1.5 block text-[0.72rem] leading-relaxed text-foreground-muted">
-          <span className="font-semibold text-foreground">Agora: </span>
-          {status.label}
-        </span>
-      </span>
     </li>
   );
 }
@@ -168,7 +159,7 @@ export function Aquario({ data }: { data: DashboardData }) {
       aria-label="Aquário: a rede viva do time do MORK"
       className="relative aspect-[9/19] w-[19.5rem] select-none"
     >
-      <style>{GLASS_CSS}</style>
+      <style>{GLASS_CSS + FICHA_CSS}</style>
 
       {/* Luz ambiente (decorativa): a projeção se assenta num brilho da marca. */}
       <div
@@ -195,7 +186,7 @@ export function Aquario({ data }: { data: DashboardData }) {
         </header>
 
         {/* Palco: canvas da rede atrás, nós acessíveis na frente. */}
-        <div className="relative mt-2 min-h-0 flex-1">
+        <div className="aqua-stage relative mt-2 min-h-0 flex-1">
           <AquarioRede nodes={redeNodes} links={graph.links} />
           <ol aria-label="Rede do time do MORK" className="absolute inset-0">
             {TEAM.map((seat) => {
@@ -205,6 +196,42 @@ export function Aquario({ data }: { data: DashboardData }) {
               return <NoDaRede key={seat.slug} seat={seat} status={status} x={node.x} y={node.y} />;
             })}
           </ol>
+          {/* Painel de fichas DENTRO da lente: acende no hover/foco do nó (FICHA_CSS)
+              e é imune a clipping de rolagem ou borda de tela, em qualquer largura. */}
+          <div className="pointer-events-none absolute inset-x-0 top-1/2 z-40 grid -translate-y-1/2 px-1">
+            {TEAM.map((seat) => {
+              const status = statuses.get(seat.slug);
+              if (!status) return null;
+              return (
+                <div
+                  key={seat.slug}
+                  id={`ficha-${seat.slug}`}
+                  data-ficha={seat.slug}
+                  role="note"
+                  className="aqua-glass aqua-ficha rounded-2xl p-3.5 [grid-area:1/1]"
+                >
+                  <span className="block font-display text-sm font-bold text-foreground">
+                    {seat.hired ? seat.nome : "Cadeira vazia"}
+                  </span>
+                  <span className="mt-0.5 block text-[0.66rem] font-semibold tracking-[0.14em] text-brand-strong uppercase">
+                    {seat.cargo}
+                  </span>
+                  <span className="mt-2 block text-[0.72rem] leading-relaxed text-foreground-muted">
+                    <span className="font-semibold text-foreground">Função: </span>
+                    {seat.funcao}
+                  </span>
+                  <span className="mt-1.5 block text-[0.72rem] leading-relaxed text-foreground-muted">
+                    <span className="font-semibold text-foreground">Por que existe: </span>
+                    {seat.motivo}
+                  </span>
+                  <span className="mt-1.5 block text-[0.72rem] leading-relaxed text-foreground-muted">
+                    <span className="font-semibold text-foreground">Agora: </span>
+                    {status.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* Base em vidro fosco: o "pé" da projeção. */}

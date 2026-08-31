@@ -289,7 +289,8 @@ export function ConsoleShell({
       {/* Aquário + chat do MORK (telas largas; a aba MORK cobre as demais).
           A coluna é sticky e rola por dentro quando o conjunto passa da tela. */}
       <aside className="hidden w-[19.5rem] shrink-0 pt-14 2xl:block">
-        <div className="no-scrollbar sticky top-6 max-h-[calc(100dvh-3rem)] overflow-y-auto">
+        {/* scroll-slim: rolagem visível e honesta (P0 #2 de docs/MELHORIAS-CONSOLE.md). */}
+        <div className="scroll-slim sticky top-6 max-h-[calc(100dvh-3rem)] overflow-y-auto pr-1">
           <Aquario data={data} />
           {/* A linha divide o tanque da conversa: em cima o time, embaixo as perguntas. */}
           <div className="mt-5 border-t border-border pt-5">
