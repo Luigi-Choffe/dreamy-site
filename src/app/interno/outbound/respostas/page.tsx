@@ -8,11 +8,14 @@ import { getOutboundEnv } from "@/lib/outbound/config";
 import { wasSent } from "@/lib/outbound/metrics";
 import { replyStepId } from "@/lib/outbound/ops-core";
 import type { Contact, ReplyClass } from "@/lib/outbound/types";
-import { classifyReplyAction, registerReplyAction } from "../actions";
+import { classifyReplyAction } from "../actions";
+import { ComboContato } from "./combo-contato";
 import { TriagemIA } from "./triagem-ia";
 import { consoleHref, demoRequested, loadDashboardData, type SearchParams } from "../data";
+import { FormComEstado } from "../form-com-estado";
 import { PendingPill, SubmitButton } from "../pending";
 import { ConsoleShell } from "../shell";
+import { registrarRespostaComEstado } from "../stateful-actions";
 import {
   Chip,
   Code,
@@ -55,7 +58,7 @@ const LABEL = "text-xs font-semibold text-foreground";
 
 function contactOptionLabel(contact: Contact): string {
   const name = [contact.nome, contact.sobrenome].filter(Boolean).join(" ") || "(sem nome)";
-  return contact.empresa ? `${name} — ${contact.empresa}` : name;
+  return contact.empresa ? `${name} · ${contact.empresa}` : name;
 }
 
 /**
@@ -285,24 +288,20 @@ export default async function OutboundRepliesPage({ searchParams }: { searchPara
                 Nenhum contato inscrito em campanha ainda — inscreva com <Code>pnpm outbound:enroll</Code>.
               </p>
             ) : (
-              <form action={registerReplyAction} className="mt-4 flex flex-col gap-3">
+              <FormComEstado action={registrarRespostaComEstado} resetOnOk className="mt-4 flex flex-col gap-3">
                 {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
                 <div className="flex flex-col gap-1">
                   <label htmlFor="registrar-contato" className={LABEL}>
                     Contato
                   </label>
-                  {/* defaultValue vazio + required: um clique acidental no botão não pode
-                      registrar resposta do 1º contato da lista (achado da revisão). */}
-                  <select id="registrar-contato" name="contactId" required defaultValue="" className={CONTROL}>
-                    <option value="" disabled>
-                      selecione o contato…
-                    </option>
-                    {contactOptions.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {contactOptionLabel(c)}
-                      </option>
-                    ))}
-                  </select>
+                  {/* Combobox (P1 #6): filtro por texto sobre o select nativo; defaultValue
+                      vazio + required seguem valendo (clique acidental não registra o 1º). */}
+                  <ComboContato
+                    id="registrar-contato"
+                    name="contactId"
+                    controlClass={CONTROL}
+                    options={contactOptions.map((c) => ({ value: c.id, label: contactOptionLabel(c) }))}
+                  />
                   {eligible.length > contactOptions.length ? (
                     <p className="text-xs text-foreground-subtle">
                       Mostrando {fmtInt(contactOptions.length)} de {fmtInt(eligible.length)} contatos inscritos — para
@@ -370,7 +369,7 @@ export default async function OutboundRepliesPage({ searchParams }: { searchPara
                     Registrar resposta
                   </SubmitButton>
                 </div>
-              </form>
+              </FormComEstado>
             )}
           </Card>
         </div>

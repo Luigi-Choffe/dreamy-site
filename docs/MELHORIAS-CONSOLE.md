@@ -31,11 +31,11 @@ com a coluna) e 1720px.
 | --- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------ |
 | 3   | Atividade corta em 200 eventos sem paginação nem busca                                  | "Mostrar mais" (mesmo padrão de Contatos) + busca por contato + filtro de período                                        | feito · 2026-08-31 |
 | 4   | Supressão sem busca ("este e-mail está suprimido?" exige varrer tooltips)               | Busca no servidor contra o e-mail completo (exibição continua mascarada) + filtro por motivo                             | feito · 2026-08-31 |
-| 5   | Erro de formulário derruba a página inteira (error boundary) e perde o que foi digitado | `useActionState` nos forms multi-campo (configuração, nova demanda, registrar resposta): erro inline, campos preservados | aberto             |
-| 6   | Registrar resposta: select nativo com até 200 contatos sem busca                        | Combobox leve (input filtra as opções, mesmo name no submit)                                                             | aberto             |
-| 7   | Ações de escrita sem feedback de sucesso (a página só recarrega)                        | Toast de confirmação nos forms do console (nota salva, demanda criada, resposta registrada)                              | aberto             |
+| 5   | Erro de formulário derruba a página inteira (error boundary) e perde o que foi digitado | `useActionState` nos forms multi-campo (configuração, nova demanda, registrar resposta): erro inline, campos preservados | feito · 2026-08-31 |
+| 6   | Registrar resposta: select nativo com até 200 contatos sem busca                        | Combobox leve (input filtra as opções, mesmo name no submit)                                                             | feito · 2026-08-31 |
+| 7   | Ações de escrita sem feedback de sucesso (a página só recarrega)                        | Toast de confirmação nos forms do console (nota salva, demanda criada, resposta registrada)                              | feito · 2026-08-31 |
 | 8   | Sincronizar pipeline não mostra resultado                                               | Linha de status pós-ação ("2 criados, 1 avançado" ou "nada novo")                                                        | feito · 2026-08-31 |
-| 9   | Sem atalhos de teclado                                                                  | `/` foca a busca da página; atalhos de navegação entre abas                                                              | aberto             |
+| 9   | Sem atalhos de teclado                                                                  | `/` foca a busca da página; atalhos de navegação entre abas                                                              | feito · 2026-08-31 |
 
 ## P2 — polimento (depois dos P1)
 

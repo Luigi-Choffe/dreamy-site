@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import { Card } from "@/components/ui/Card";
 import { requireSession } from "@/lib/outbound/auth";
 import type { SolutionAnchor } from "@/lib/outbound/types";
-import { saveSettingsAction } from "../crm-actions";
 import { defaultWorkspaceSettings, demoRequested, loadDashboardData, type SearchParams } from "../data";
+import { FormComEstado } from "../form-com-estado";
 import { SubmitButton } from "../pending";
 import { ConsoleShell } from "../shell";
+import { salvarConfiguracaoComEstado } from "../stateful-actions";
 import { fmtDateTime } from "../ui";
 
 /** Sempre dinâmico: lê o store (arquivos ou Postgres) a cada request. */
@@ -44,7 +45,8 @@ export default async function OutboundSettingsPage({ searchParams }: { searchPar
       subtitle="Marca e ofertas do workspace. Só apresentação: nada aqui toca copy, assinatura ou motor de envio."
     >
       <Card padding="md" className="max-w-2xl">
-        <form action={saveSettingsAction} className="flex flex-col gap-5">
+        {/* Erro inline preservando os 8 campos digitados; sucesso vira toast (P1 #5/#7). */}
+        <FormComEstado action={salvarConfiguracaoComEstado} className="flex flex-col gap-5">
           {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1">
@@ -118,7 +120,7 @@ export default async function OutboundSettingsPage({ searchParams }: { searchPar
             Estes campos existem para o piloto ser demonstrável com a marca de um cliente. A copy das campanhas, a
             assinatura dos e-mails e o motor de envio NÃO leem nada daqui (gates do ADR-020 continuam valendo).
           </p>
-        </form>
+        </FormComEstado>
       </Card>
     </ConsoleShell>
   );

@@ -6,6 +6,7 @@ import { evaluateGuardRails } from "@/lib/outbound/guardrails";
 import { orphanScheduled } from "@/lib/outbound/metrics";
 import { Aquario } from "./aquario";
 import { AquarioChat } from "./aquario-chat";
+import { AtalhosDoConsole } from "./atalhos";
 import { consoleHref, type DashboardData } from "./data";
 import { Code, fmtDateTime, fmtInt, fmtPct } from "./ui";
 
@@ -130,6 +131,8 @@ export function ConsoleShell({
 
   return (
     <div data-app="console" className="mx-auto flex max-w-[105rem] justify-center gap-10 px-6 py-8">
+      {/* Atalhos: "/" foca a busca; Alt+1..9 troca de aba (P1 #9 do plano). */}
+      <AtalhosDoConsole hrefs={TABS.slice(0, 9).map((tab) => consoleHref(tab.href, data.isDemo))} />
       {/* Luz ambiente do app (decorativa): dá matéria para o vidro fosco desfocar. */}
       <div
         aria-hidden
@@ -267,10 +270,11 @@ export function ConsoleShell({
           aria-label="Seções do console"
           className="mb-8 flex flex-wrap gap-1 rounded-2xl border border-border bg-surface p-1.5 text-small shadow-sm"
         >
-          {TABS.map((tab) => (
+          {TABS.map((tab, idx) => (
             <Link
               key={tab.id}
               href={consoleHref(tab.href, data.isDemo)}
+              title={idx < 9 ? `Alt+${idx + 1}` : undefined}
               aria-current={tab.id === activeTab ? "page" : undefined}
               className={
                 tab.id === activeTab

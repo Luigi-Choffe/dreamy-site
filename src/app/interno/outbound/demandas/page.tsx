@@ -4,8 +4,10 @@ import { requireSession } from "@/lib/outbound/auth";
 import { DEMAND_KINDS } from "@/lib/outbound/demands-core";
 import type { Demand, DemandStatus } from "@/lib/outbound/types";
 import { demoRequested, loadDashboardData, type SearchParams } from "../data";
+import { FormComEstado } from "../form-com-estado";
 import { ConfirmSubmit, PendingPill, SubmitButton } from "../pending";
 import { ConsoleShell } from "../shell";
+import { criarDemandaComEstado } from "../stateful-actions";
 import {
   Chip,
   Code,
@@ -16,7 +18,7 @@ import {
   fmtDateTime,
   fmtInt,
 } from "../ui";
-import { cancelDemandAction, createDemandAction, updateDemandStatusAction } from "./actions";
+import { cancelDemandAction, updateDemandStatusAction } from "./actions";
 
 /** Sempre dinâmico: lê o store (arquivos ou Postgres) a cada request. */
 export const dynamic = "force-dynamic";
@@ -168,7 +170,8 @@ export default async function OutboundDemandsPage({ searchParams }: { searchPara
           <h2 id="demanda-nova-title" className="font-display text-h4 font-bold">
             Nova demanda
           </h2>
-          <form action={createDemandAction} className="mt-3 flex flex-col gap-3">
+          {/* Erro inline sem perder o texto; sucesso vira toast e limpa (P1 #5/#7). */}
+          <FormComEstado action={criarDemandaComEstado} resetOnOk className="mt-3 flex flex-col gap-3">
             {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
             <div className="flex flex-col gap-1">
               <label htmlFor="demanda-title" className={LABEL}>
@@ -228,7 +231,7 @@ export default async function OutboundDemandsPage({ searchParams }: { searchPara
             <p className="text-xs text-foreground-subtle">
               O MORK vê a fila na hora (mesmo banco) e presta contas na aba MORK.
             </p>
-          </form>
+          </FormComEstado>
         </Card>
       </div>
     </ConsoleShell>
