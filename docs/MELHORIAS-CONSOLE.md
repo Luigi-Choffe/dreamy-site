@@ -27,15 +27,15 @@ com a coluna) e 1720px.
 
 ## P1 — usabilidade que falta (auditorias de 2026-08-30, ainda abertas)
 
-| #   | Item                                                                                    | Correção                                                                                                                 | Status |
-| --- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------ |
-| 3   | Atividade corta em 200 eventos sem paginação nem busca                                  | "Mostrar mais" (mesmo padrão de Contatos) + busca por contato + filtro de período                                        | aberto |
-| 4   | Supressão sem busca ("este e-mail está suprimido?" exige varrer tooltips)               | Busca no servidor contra o e-mail completo (exibição continua mascarada) + filtro por motivo                             | aberto |
-| 5   | Erro de formulário derruba a página inteira (error boundary) e perde o que foi digitado | `useActionState` nos forms multi-campo (configuração, nova demanda, registrar resposta): erro inline, campos preservados | aberto |
-| 6   | Registrar resposta: select nativo com até 200 contatos sem busca                        | Combobox leve (input filtra as opções, mesmo name no submit)                                                             | aberto |
-| 7   | Ações de escrita sem feedback de sucesso (a página só recarrega)                        | Toast de confirmação nos forms do console (nota salva, demanda criada, resposta registrada)                              | aberto |
-| 8   | Sincronizar pipeline não mostra resultado                                               | Linha de status pós-ação ("2 criados, 1 avançado" ou "nada novo")                                                        | aberto |
-| 9   | Sem atalhos de teclado                                                                  | `/` foca a busca da página; atalhos de navegação entre abas                                                              | aberto |
+| #   | Item                                                                                    | Correção                                                                                                                 | Status             |
+| --- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------ |
+| 3   | Atividade corta em 200 eventos sem paginação nem busca                                  | "Mostrar mais" (mesmo padrão de Contatos) + busca por contato + filtro de período                                        | feito · 2026-08-31 |
+| 4   | Supressão sem busca ("este e-mail está suprimido?" exige varrer tooltips)               | Busca no servidor contra o e-mail completo (exibição continua mascarada) + filtro por motivo                             | feito · 2026-08-31 |
+| 5   | Erro de formulário derruba a página inteira (error boundary) e perde o que foi digitado | `useActionState` nos forms multi-campo (configuração, nova demanda, registrar resposta): erro inline, campos preservados | aberto             |
+| 6   | Registrar resposta: select nativo com até 200 contatos sem busca                        | Combobox leve (input filtra as opções, mesmo name no submit)                                                             | aberto             |
+| 7   | Ações de escrita sem feedback de sucesso (a página só recarrega)                        | Toast de confirmação nos forms do console (nota salva, demanda criada, resposta registrada)                              | aberto             |
+| 8   | Sincronizar pipeline não mostra resultado                                               | Linha de status pós-ação ("2 criados, 1 avançado" ou "nada novo")                                                        | feito · 2026-08-31 |
+| 9   | Sem atalhos de teclado                                                                  | `/` foca a busca da página; atalhos de navegação entre abas                                                              | aberto             |
 
 ## P2 — polimento (depois dos P1)
 

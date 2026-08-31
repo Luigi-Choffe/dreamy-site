@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { logger } from "@/lib/observability/logger";
 import { requireSession } from "@/lib/outbound/auth";
 import { applyStageMove, buildManualDeal, DEAL_STAGES, reconcileDeals } from "@/lib/outbound/crm-core";
@@ -66,7 +67,8 @@ function optionalValor(formData: FormData, name: string): number | undefined {
 
 /** Sincroniza o pipeline com o outbound (botão do console; idempotente). */
 export async function reconcileDealsAction(formData: FormData): Promise<void> {
-  await withCrmContext(formData, "crm-reconcile", async ({ store, isDemo }) => {
+  const demo = formData.get("demo") === "1";
+  const { created, advanced } = await withCrmContext(formData, "crm-reconcile", async ({ store, isDemo }) => {
     const [contacts, enrollments, sends, replies, deals] = await Promise.all([
       store.contacts(),
       store.enrollments(),
@@ -88,7 +90,10 @@ export async function reconcileDealsAction(formData: FormData): Promise<void> {
       await store.saveAgentActivities(activities);
     }
     logger.info("outbound.crm.reconcile", { isDemo, created: result.created, advanced: result.advanced });
+    return { created: result.created, advanced: result.advanced };
   });
+  // Resultado visível na tela (P1 #8 do plano): a página lê ?sync= e mostra a linha de status.
+  redirect(`/interno/outbound/pipeline?sync=${created}:${advanced}${demo ? "&demo=1" : ""}`);
 }
 
 /** Move um negócio de estágio (reunião/proposta/ganho/perdido são sempre humanos). */

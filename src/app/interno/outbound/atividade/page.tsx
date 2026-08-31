@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { requireSession } from "@/lib/outbound/auth";
 import type { OutboundEvent, OutboundEventType } from "@/lib/outbound/types";
+import { FiltroSelect } from "../contatos/filtros";
 import { consoleHref, demoRequested, loadDashboardData, type SearchParams } from "../data";
 import { ConsoleShell } from "../shell";
 import {
@@ -39,8 +40,16 @@ const EVENT_TYPES: OutboundEventType[] = [
   "suppressed",
 ];
 
-/** Teto da timeline — o resto fica no store (relatórios via CLI). */
-const TIMELINE_LIMIT = 200;
+/** A página cresce de 200 em 200 pelo "Mostrar mais" (?limite=), com teto de sanidade. */
+const LIMITE_PASSO = 200;
+const LIMITE_TETO = 2000;
+
+/** Filtro de período sobre occurredAt (?periodo=7|30; vazio = tudo). */
+const PERIODOS = [
+  { value: "", label: "todo o histórico" },
+  { value: "7", label: "últimos 7 dias" },
+  { value: "30", label: "últimos 30 dias" },
+] as const;
 
 // Densidade de console: controles e células compactos, coerentes com o design system.
 const TH = "px-3 py-2 text-left text-xs font-semibold tracking-wide text-foreground-subtle uppercase";
@@ -56,6 +65,11 @@ function firstString(value: string | string[] | undefined): string | undefined {
   if (typeof value === "string") return value;
   if (Array.isArray(value)) return value[0];
   return undefined;
+}
+
+/** Comparação case/acento-insensitive (pt-BR): "São" casa com "sao". */
+function fold(text: string): string {
+  return text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 }
 
 /**
@@ -80,10 +94,43 @@ export default async function OutboundActivityPage({ searchParams }: { searchPar
   const sendsById = new Map(sends.map((s) => [s.id, s]));
   const contactsById = new Map(contacts.map((c) => [c.id, c]));
 
+  const q = firstString(sp.q)?.trim() ?? "";
+  const qFold = fold(q);
+  const periodoRaw = firstString(sp.periodo);
+  const periodo = periodoRaw === "7" || periodoRaw === "30" ? periodoRaw : "";
+  const cutoff = periodo ? new Date().getTime() - Number(periodo) * 86_400_000 : 0;
+  const limiteRaw = Number.parseInt(firstString(sp.limite) ?? "", 10);
+  const limite = Number.isFinite(limiteRaw) ? Math.min(Math.max(limiteRaw, LIMITE_PASSO), LIMITE_TETO) : LIMITE_PASSO;
+
   const filtered = events
-    .filter((e) => (!tipo || e.type === tipo) && (!campanha || e.campaignSlug === campanha))
+    .filter((e) => {
+      if (tipo && e.type !== tipo) return false;
+      if (campanha && e.campaignSlug !== campanha) return false;
+      if (cutoff && Date.parse(e.occurredAt) < cutoff) return false;
+      if (qFold) {
+        // Busca pelo contato do evento (nome/empresa; e-mail casa no filtro mas nunca vira texto).
+        const send = sendsById.get(e.sendId);
+        const contact = send ? contactsById.get(send.contactId) : undefined;
+        if (!contact) return false;
+        const hay = fold([contact.nome, contact.sobrenome ?? "", contact.empresa ?? "", contact.email].join(" "));
+        if (!hay.includes(qFold)) return false;
+      }
+      return true;
+    })
     .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt) || b.recordedAt.localeCompare(a.recordedAt));
-  const shown = filtered.slice(0, TIMELINE_LIMIT);
+  const shown = filtered.slice(0, limite);
+
+  /** Href do "Mostrar mais": preserva filtros e demo. */
+  const maisHref = (() => {
+    const params = new URLSearchParams();
+    if (isDemo) params.set("demo", "1");
+    if (tipo) params.set("tipo", tipo);
+    if (campanha) params.set("campanha", campanha);
+    if (q) params.set("q", q);
+    if (periodo) params.set("periodo", periodo);
+    params.set("limite", String(Math.min(limite + LIMITE_PASSO, LIMITE_TETO)));
+    return `/interno/outbound/atividade?${params.toString()}`;
+  })();
 
   // Agrupamento por dia (fuso de São Paulo) — a ordenação garante grupos contíguos.
   const groups: Array<{ date: string; rows: OutboundEvent[] }> = [];
@@ -94,7 +141,7 @@ export default async function OutboundActivityPage({ searchParams }: { searchPar
     else groups.push({ date, rows: [event] });
   }
 
-  const hasFilter = Boolean(tipo || campanha);
+  const hasFilter = Boolean(tipo || campanha || q || periodo);
   const hasOpened = shown.some((e) => e.type === "opened");
 
   return (
@@ -110,30 +157,55 @@ export default async function OutboundActivityPage({ searchParams }: { searchPar
           <form method="get" action="/interno/outbound/atividade" className="flex flex-wrap items-end gap-3">
             {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
             <div className="flex flex-col gap-1">
+              <label htmlFor="filtro-contato" className={LABEL}>
+                Contato
+              </label>
+              <input
+                id="filtro-contato"
+                type="search"
+                name="q"
+                defaultValue={q}
+                placeholder="nome ou empresa"
+                className={`${CONTROL} w-52`}
+              />
+            </div>
+            <div className="flex flex-col gap-1">
               <label htmlFor="filtro-tipo" className={LABEL}>
                 Tipo de evento
               </label>
-              <select id="filtro-tipo" name="tipo" defaultValue={tipo ?? ""} className={CONTROL}>
+              <FiltroSelect id="filtro-tipo" name="tipo" defaultValue={tipo ?? ""} className={CONTROL}>
                 <option value="">todos</option>
                 {EVENT_TYPES.map((t) => (
                   <option key={t} value={t}>
                     {EVENT_TYPE_LABELS[t]}
                   </option>
                 ))}
-              </select>
+              </FiltroSelect>
             </div>
             <div className="flex flex-col gap-1">
               <label htmlFor="filtro-campanha" className={LABEL}>
                 Campanha
               </label>
-              <select id="filtro-campanha" name="campanha" defaultValue={campanha ?? ""} className={CONTROL}>
+              <FiltroSelect id="filtro-campanha" name="campanha" defaultValue={campanha ?? ""} className={CONTROL}>
                 <option value="">todas</option>
                 {defs.map((d) => (
                   <option key={d.slug} value={d.slug}>
                     {d.industria} ({d.slug})
                   </option>
                 ))}
-              </select>
+              </FiltroSelect>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="filtro-periodo" className={LABEL}>
+                Período
+              </label>
+              <FiltroSelect id="filtro-periodo" name="periodo" defaultValue={periodo} className={CONTROL}>
+                {PERIODOS.map((p) => (
+                  <option key={p.value} value={p.value}>
+                    {p.label}
+                  </option>
+                ))}
+              </FiltroSelect>
             </div>
             <button type="submit" className={BTN_SM}>
               Filtrar
@@ -238,13 +310,21 @@ export default async function OutboundActivityPage({ searchParams }: { searchPar
                     </tbody>
                   ))}
                 </table>
+                {/* A timeline cresce aqui mesmo, preservando os filtros (P1 #3 do plano). */}
+                {filtered.length > shown.length ? (
+                  <div className="border-t border-border bg-background-secondary/30 px-3 py-2.5 text-center text-small">
+                    <Link
+                      href={maisHref}
+                      className="font-semibold text-brand-strong underline-offset-2 hover:underline"
+                    >
+                      Mostrar mais {fmtInt(Math.min(LIMITE_PASSO, filtered.length - shown.length))}
+                    </Link>{" "}
+                    <span className="text-foreground-subtle tabular-nums">
+                      · exibindo {fmtInt(shown.length)} de {fmtInt(filtered.length)}
+                    </span>
+                  </div>
+                ) : null}
               </div>
-              {filtered.length > shown.length ? (
-                <p className="mt-2 text-xs text-foreground-subtle">
-                  Mostrando os {fmtInt(shown.length)} eventos mais recentes de {fmtInt(filtered.length)} — o histórico
-                  completo fica no store.
-                </p>
-              ) : null}
               {hasOpened ? (
                 <div className="mt-2">
                   <OpenRateNote />

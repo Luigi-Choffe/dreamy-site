@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { requireSession } from "@/lib/outbound/auth";
 import type { SuppressionReason } from "@/lib/outbound/types";
 import { suppressContactAction } from "../actions";
+import { FiltroSelect } from "../contatos/filtros";
 import { demoRequested, loadDashboardData, type SearchParams } from "../data";
 import { ConfirmSubmit } from "../pending";
 import { ConsoleShell } from "../shell";
@@ -50,6 +52,19 @@ const REASON_TONES: Record<SuppressionReason, ChipTone> = {
   client: "brand",
 };
 
+const CONTROL =
+  "h-9 rounded-md border border-border bg-surface px-3 text-small text-foreground " +
+  "placeholder:text-foreground-subtle/80 hover:border-border-strong " +
+  "focus:border-brand-strong focus:ring-3 focus:ring-brand-strong/20 focus:outline-none";
+const LABEL = "text-xs font-semibold tracking-wide text-foreground-subtle uppercase";
+
+function param(sp: SearchParams, name: string): string {
+  const value = sp[name];
+  if (typeof value === "string") return value.trim();
+  if (Array.isArray(value) && typeof value[0] === "string") return value[0].trim();
+  return "";
+}
+
 /** "maria@dominio.com.br" → "m•••@dominio.com.br" (PII: completo só no tooltip). */
 function maskEmail(email: string): string {
   const at = email.indexOf("@");
@@ -66,7 +81,20 @@ export default async function OutboundSuppressionPage({ searchParams }: { search
   const data = await loadDashboardData(isDemo);
 
   const byReason = countBy(data.suppressions, (s) => s.reason);
-  const suppressions = [...data.suppressions].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+
+  // Busca no servidor contra o e-mail COMPLETO e a origem; a exibição segue mascarada (P1 #4 do plano).
+  const q = param(sp, "q");
+  const qL = q.toLowerCase();
+  const motivoRaw = param(sp, "motivo");
+  const motivoFilter = REASONS.some((r) => r.reason === motivoRaw) ? (motivoRaw as SuppressionReason) : "";
+  const hasFiltro = Boolean(q || motivoFilter);
+  const suppressions = [...data.suppressions]
+    .filter(
+      (s) =>
+        (!motivoFilter || s.reason === motivoFilter) &&
+        (!qL || s.email.toLowerCase().includes(qL) || (s.origin ?? "").toLowerCase().includes(qL)),
+    )
+    .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
 
   const collator = new Intl.Collator("pt-BR", { sensitivity: "base" });
   const activeContacts = data.contacts
@@ -112,11 +140,60 @@ export default async function OutboundSuppressionPage({ searchParams }: { search
               ({fmtInt(suppressions.length)})
             </span>
           </h2>
+          <form method="get" action="/interno/outbound/supressao" className="mt-3 flex flex-wrap items-end gap-3">
+            {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
+            <div className="flex flex-col gap-1">
+              <label htmlFor="supressao-q" className={LABEL}>
+                E-mail ou origem
+              </label>
+              <input
+                id="supressao-q"
+                type="search"
+                name="q"
+                defaultValue={q}
+                placeholder="este e-mail está suprimido?"
+                className={`${CONTROL} w-64`}
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="supressao-motivo" className={LABEL}>
+                Motivo
+              </label>
+              <FiltroSelect id="supressao-motivo" name="motivo" defaultValue={motivoFilter} className={CONTROL}>
+                <option value="">todos</option>
+                {REASONS.map(({ reason }) => (
+                  <option key={reason} value={reason}>
+                    {SUPPRESSION_REASON_LABELS[reason]}
+                  </option>
+                ))}
+              </FiltroSelect>
+            </div>
+            <button
+              type="submit"
+              className="h-9 rounded-full border border-border-strong bg-transparent px-4 text-small font-semibold text-foreground transition-colors duration-(--duration-fast) hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            >
+              Buscar
+            </button>
+            {hasFiltro ? (
+              <Link
+                href={isDemo ? "/interno/outbound/supressao?demo=1" : "/interno/outbound/supressao"}
+                className="py-1.5 text-xs text-foreground-subtle underline hover:text-brand-strong"
+              >
+                limpar
+              </Link>
+            ) : null}
+          </form>
           {suppressions.length === 0 ? (
             <div className="mt-4">
               <EmptyState>
-                Nenhum e-mail suprimido até agora — descadastros, bounces e complaints entram aqui automaticamente
-                conforme acontecem.
+                {hasFiltro ? (
+                  <>Nada corresponde à busca. Se o e-mail não aparece aqui, ele NÃO está suprimido.</>
+                ) : (
+                  <>
+                    Nenhum e-mail suprimido até agora — descadastros, bounces e complaints entram aqui automaticamente
+                    conforme acontecem.
+                  </>
+                )}
               </EmptyState>
             </div>
           ) : (

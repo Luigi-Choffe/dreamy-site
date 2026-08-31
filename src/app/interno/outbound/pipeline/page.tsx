@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { requireSession } from "@/lib/outbound/auth";
 import type { Deal } from "@/lib/outbound/types";
 import { reconcileDealsAction } from "../crm-actions";
 import { demoRequested, loadDashboardData, type SearchParams } from "../data";
 import { SubmitButton } from "../pending";
 import { ConsoleShell } from "../shell";
-import { EmptyState } from "../ui";
+import { EmptyState, fmtInt } from "../ui";
 import { PipelineBoard, type BoardDeal } from "./board";
 
 /** Sempre dinâmico: lê o store (arquivos ou Postgres) a cada request. */
@@ -34,6 +35,11 @@ export default async function OutboundPipelinePage({ searchParams }: { searchPar
   const isDemo = demoRequested(sp);
   const data = await loadDashboardData(isDemo);
   const now = new Date();
+
+  // Resultado do "Sincronizar pipeline" (?sync=criados:avancados), dispensável com um clique.
+  const syncRaw = typeof sp.sync === "string" ? sp.sync : Array.isArray(sp.sync) ? (sp.sync[0] ?? "") : "";
+  const syncMatch = /^(\d+):(\d+)$/.exec(syncRaw);
+  const syncInfo = syncMatch ? { criados: Number(syncMatch[1]), avancados: Number(syncMatch[2]) } : null;
 
   const contactById = new Map(data.contacts.map((c) => [c.id, c]));
   const boardDeals: BoardDeal[] = [...data.deals]
@@ -83,6 +89,25 @@ export default async function OutboundPipelinePage({ searchParams }: { searchPar
           Mover um cartão NÃO pausa nem cancela e-mails. Para parar envios de um contato, use Suprimir na aba Contatos
           ou registre a resposta dele.
         </p>
+        {syncInfo ? (
+          <div
+            role="status"
+            className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-brand-strong/30 bg-brand-soft px-4 py-2.5 text-small text-foreground"
+          >
+            <span className="font-semibold">Pipeline sincronizado:</span>
+            <span>
+              {syncInfo.criados + syncInfo.avancados > 0
+                ? `${fmtInt(syncInfo.criados)} negócio(s) criado(s) · ${fmtInt(syncInfo.avancados)} avançado(s).`
+                : "nada novo no outbound desde a última sincronização."}
+            </span>
+            <Link
+              href={isDemo ? "/interno/outbound/pipeline?demo=1" : "/interno/outbound/pipeline"}
+              className="ml-auto text-xs font-semibold text-brand-strong underline-offset-2 hover:underline"
+            >
+              ok
+            </Link>
+          </div>
+        ) : null}
         {boardDeals.length === 0 ? (
           <EmptyState>
             Nenhum negócio ainda. Clique em <span className="font-semibold">Sincronizar pipeline</span> para criar os
