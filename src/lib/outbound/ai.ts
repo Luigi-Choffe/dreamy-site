@@ -250,6 +250,46 @@ export function parseTriageResponse(raw: string): TriageSuggestion {
   return { classe, resumo, rascunho };
 }
 
+/* ─── Chat do console (Pergunte ao MORK) ──────────────────────────────────── */
+
+export interface ConsoleChatTurn {
+  papel: "voce" | "mork";
+  texto: string;
+}
+
+/**
+ * Prompt do chat lateral: o MORK responde SOMENTE com os agregados do console
+ * (sem PII: e-mails redigidos aqui e o contexto já nasce sem contato pessoal).
+ * Gate humano absoluto: o chat nunca executa ação nenhuma.
+ */
+export function buildConsoleChatPrompt(contexto: string, historico: ConsoleChatTurn[], pergunta: string): string {
+  const conversa = historico
+    .map((t) => `${t.papel === "voce" ? "Usuário" : "MORK"}: ${redactEmails(t.texto)}`)
+    .join("\n");
+  return [
+    "Você é o MORK, o agente de vendas da Dreamy, respondendo dentro do console interno da plataforma (CRM).",
+    "Responda em português do Brasil, direto e específico, em no máximo 120 palavras.",
+    "Use SOMENTE os dados do contexto abaixo. Se o dado pedido não estiver lá, diga que ele não está à mão e aponte a aba do console mais próxima (Visão geral, Hoje, Agenda, Pipeline, Contatos, Respostas, Atividade, Demandas, MORK, Supressão).",
+    "Você não executa nada por aqui: se pedirem uma ação, explique onde fazer (aba do console ou CLI do MORK).",
+    "Nunca invente números. Não use travessão.",
+    "",
+    "=== CONTEXTO DO WORKSPACE (agora) ===",
+    redactEmails(contexto),
+    conversa ? "\n=== CONVERSA ATÉ AQUI ===\n" + conversa : "",
+    "",
+    `Usuário: ${redactEmails(pergunta)}`,
+    "MORK:",
+  ].join("\n");
+}
+
+export async function answerConsoleQuestion(
+  contexto: string,
+  historico: ConsoleChatTurn[],
+  pergunta: string,
+): Promise<string> {
+  return sanitizeAiText(await callAi(buildConsoleChatPrompt(contexto, historico, pergunta), 500));
+}
+
 export async function suggestReplyTriage(input: TriageInput): Promise<TriageSuggestion> {
   return parseTriageResponse(await callAi(buildTriagePrompt(input), 700));
 }

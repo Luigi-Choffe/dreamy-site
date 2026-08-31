@@ -5,6 +5,7 @@ import { dailyCap, usedTodayCount } from "@/lib/outbound/engine";
 import { evaluateGuardRails } from "@/lib/outbound/guardrails";
 import { orphanScheduled } from "@/lib/outbound/metrics";
 import { Aquario } from "./aquario";
+import { AquarioChat } from "./aquario-chat";
 import { consoleHref, type DashboardData } from "./data";
 import { Code, fmtDateTime, fmtInt, fmtPct } from "./ui";
 
@@ -285,10 +286,15 @@ export function ConsoleShell({
         <div>{children}</div>
       </div>
 
-      {/* Aquário: o time do MORK ao vivo (telas largas; a aba MORK cobre as demais). */}
+      {/* Aquário + chat do MORK (telas largas; a aba MORK cobre as demais).
+          A coluna é sticky e rola por dentro quando o conjunto passa da tela. */}
       <aside className="hidden w-[19.5rem] shrink-0 pt-14 2xl:block">
-        <div className="sticky top-6">
+        <div className="no-scrollbar sticky top-6 max-h-[calc(100dvh-3rem)] overflow-y-auto">
           <Aquario data={data} />
+          {/* A linha divide o tanque da conversa: em cima o time, embaixo as perguntas. */}
+          <div className="mt-5 border-t border-border pt-5">
+            <AquarioChat isDemo={data.isDemo} />
+          </div>
         </div>
       </aside>
     </div>

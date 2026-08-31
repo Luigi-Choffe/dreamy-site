@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/Card";
 import { requireSession } from "@/lib/outbound/auth";
 import type { AgentActivity } from "@/lib/outbound/types";
 import { Aquario } from "../aquario";
+import { AquarioChat } from "../aquario-chat";
 import { consoleHref, demoRequested, loadDashboardData, type SearchParams } from "../data";
 import { ConsoleShell } from "../shell";
 import { AGENT_ACTIVITY_LABELS, Code, EmptyState, fmtDate, fmtDateTime, fmtInt, Stat } from "../ui";
@@ -80,9 +81,12 @@ export default async function MorkPage({ searchParams }: { searchParams: Promise
           </Card>
         </section>
 
-        {/* Aquário para telas menores (nas largas ele mora fixo à direita do console). */}
+        {/* Aquário + chat para telas menores (nas largas moram fixos à direita do console). */}
         <section aria-label="Aquário do time" className="flex justify-center 2xl:hidden">
           <Aquario data={data} />
+        </section>
+        <section className="mx-auto w-full max-w-md 2xl:hidden">
+          <AquarioChat isDemo={isDemo} />
         </section>
 
         <section aria-labelledby="mork-timeline-title">
