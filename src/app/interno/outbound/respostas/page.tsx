@@ -1,4 +1,3 @@
-import { Fragment } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
@@ -24,6 +23,7 @@ import {
   EmptyState,
   fmtInt,
   fmtPct,
+  MenuLinha,
   Quando,
   REPLY_CLASS_LABELS,
   REPLY_CLASS_TONES,
@@ -44,7 +44,6 @@ const REPLY_CLASSES: ReplyClass[] = ["interested", "not_now", "referral", "negat
 const CONTACT_OPTION_LIMIT = 200;
 
 // Densidade de console: controles e células compactos, coerentes com o design system.
-const TH = "px-3 py-2 text-left text-xs font-semibold tracking-wide text-foreground-subtle uppercase";
 const CONTROL =
   "w-full rounded-md border border-border bg-surface px-2.5 py-1.5 text-small text-foreground " +
   "hover:border-border-strong focus:border-brand-strong focus:ring-3 focus:ring-brand-strong/20 focus:outline-none";
@@ -172,9 +171,20 @@ export default async function OutboundRepliesPage({ searchParams }: { searchPara
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
           <section aria-labelledby="respostas-lista-title">
-            <h2 id="respostas-lista-title" className="font-display text-h4 font-bold">
-              Respostas registradas
-            </h2>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h2 id="respostas-lista-title" className="font-display text-h4 font-bold">
+                Respostas registradas
+              </h2>
+              {ordered.length > 1 ? (
+                <Link
+                  href={respostasHref({ ordem: ordemAsc ? undefined : "recebida", limite: undefined })}
+                  title="Inverter a ordem da lista"
+                  className="text-xs font-semibold text-foreground-muted tabular-nums underline-offset-2 hover:text-brand-strong hover:underline"
+                >
+                  {ordemAsc ? "antigas primeiro ↑" : "recentes primeiro ↓"}
+                </Link>
+              ) : null}
+            </div>
             {ordered.length === 0 ? (
               <div className="mt-4">
                 <EmptyState>
@@ -184,76 +194,77 @@ export default async function OutboundRepliesPage({ searchParams }: { searchPara
                 </EmptyState>
               </div>
             ) : (
-              <div
-                tabIndex={0}
-                role="region"
-                aria-label="Lista de respostas"
-                className="mt-4 overflow-x-auto rounded-xl border border-border bg-surface shadow-sm"
-              >
-                <table className="w-full min-w-[44rem] text-small">
-                  <thead>
-                    <tr>
-                      <th scope="col" className={TH}>
-                        Contato
-                      </th>
-                      <th scope="col" className={TH}>
-                        Campanha
-                      </th>
-                      <th scope="col" className={TH}>
-                        Passo provável
-                      </th>
-                      <th scope="col" aria-sort={ordemAsc ? "ascending" : "descending"} className={TH}>
-                        <Link
-                          href={respostasHref({ ordem: ordemAsc ? undefined : "recebida", limite: undefined })}
-                          title="Ordenar por data (clique para inverter)"
-                          className="inline-flex items-center gap-1 text-foreground underline-offset-2 hover:underline"
-                        >
-                          Recebida em
-                          <span aria-hidden className="text-[0.6rem]">
-                            {ordemAsc ? "↑" : "↓"}
-                          </span>
-                        </Link>
-                      </th>
-                      <th scope="col" className={TH}>
-                        Classe
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ordered.map((reply) => {
-                      const contact = contactsById.get(reply.contactId);
-                      const def = defsBySlug.get(reply.campaignSlug);
-                      const step = replyStepId(sends, reply);
-                      return (
-                        <Fragment key={reply.id}>
-                          <tr className="border-t border-border align-top">
-                            <td className="px-3 py-2">
-                              {contact ? (
-                                <ContactCell contact={contact} />
-                              ) : (
-                                <span className="text-foreground-subtle">(contato não encontrado)</span>
-                              )}
-                            </td>
-                            <td className="px-3 py-2">
-                              <Link
-                                href={consoleHref(`/interno/outbound/${reply.campaignSlug}`, isDemo)}
-                                className="text-foreground underline decoration-border underline-offset-2 hover:decoration-foreground"
-                                title={reply.campaignSlug}
+              <div className="mt-4 overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
+                {/* Linha da casa (T3): identidade · contexto · ações — a classe atual é
+                    um chip; reclassificar mora no ⋯ (o formulário parou de gritar 12×). */}
+                <ol aria-label="Lista de respostas">
+                  {ordered.map((reply) => {
+                    const contact = contactsById.get(reply.contactId);
+                    const def = defsBySlug.get(reply.campaignSlug);
+                    const step = replyStepId(sends, reply);
+                    return (
+                      <li
+                        key={reply.id}
+                        className="grid grid-cols-1 gap-x-5 gap-y-2 border-t border-border px-4 py-3 transition-colors duration-(--duration-fast) first:border-t-0 even:bg-background-secondary/25 hover:bg-surface-hover sm:grid-cols-[minmax(12rem,15rem)_minmax(0,1fr)_auto]"
+                      >
+                        <div className="min-w-0">
+                          {contact ? (
+                            <ContactCell contact={contact} variante="empilhada" />
+                          ) : (
+                            <span className="text-foreground-subtle">(contato não encontrado)</span>
+                          )}
+                          <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs">
+                            <Link
+                              href={consoleHref(`/interno/outbound/${reply.campaignSlug}`, isDemo)}
+                              title={reply.campaignSlug}
+                              className="inline-block max-w-[11rem] truncate rounded-full bg-background-secondary px-2 py-0.5 whitespace-nowrap text-foreground-muted transition-colors duration-(--duration-fast) hover:bg-brand-soft hover:text-brand-strong"
+                            >
+                              {def?.industria ?? reply.campaignSlug}
+                            </Link>
+                            {step ? (
+                              <span className="text-foreground-subtle uppercase tabular-nums" title="Passo provável">
+                                {step}
+                              </span>
+                            ) : null}
+                          </p>
+                        </div>
+                        <div className="min-w-0">
+                          {reply.notes ? (
+                            <p className="text-small leading-snug text-foreground">“{reply.notes}”</p>
+                          ) : (
+                            <p className="text-small text-foreground-subtle">Sem texto registrado.</p>
+                          )}
+                          <div className="mt-1">
+                            <TriagemIA
+                              replyId={reply.id}
+                              contactId={contact?.id}
+                              textoInicial={reply.notes}
+                              isDemo={isDemo}
+                              replyTo={replyTo}
+                            />
+                          </div>
+                        </div>
+                        <div className="flex items-start justify-between gap-2 sm:justify-end">
+                          <div className="flex flex-col gap-1 sm:items-end">
+                            <Chip tone={REPLY_CLASS_TONES[reply.classification]}>
+                              {REPLY_CLASS_LABELS[reply.classification]}
+                            </Chip>
+                            <Quando
+                              iso={reply.receivedAt}
+                              className="text-xs whitespace-nowrap text-foreground-subtle tabular-nums"
+                            />
+                          </div>
+                          <MenuLinha rotulo="Reclassificar resposta">
+                            <form action={classifyReplyAction} className="px-1.5 py-1">
+                              <input type="hidden" name="replyId" value={reply.id} />
+                              {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
+                              <label
+                                htmlFor={`classe-${reply.id}`}
+                                className="block px-1.5 pb-1 text-xs font-semibold tracking-wider text-foreground-subtle uppercase"
                               >
-                                {def?.industria ?? reply.campaignSlug}
-                              </Link>
-                            </td>
-                            <td className="px-3 py-2 text-foreground-muted uppercase tabular-nums">{step ?? "—"}</td>
-                            <td className="px-3 py-2 whitespace-nowrap text-foreground-muted tabular-nums">
-                              <Quando iso={reply.receivedAt} />
-                            </td>
-                            <td className="px-3 py-2">
-                              <form action={classifyReplyAction} className="flex items-center gap-1.5">
-                                <input type="hidden" name="replyId" value={reply.id} />
-                                {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
-                                <label htmlFor={`classe-${reply.id}`} className="sr-only">
-                                  Classe da resposta
-                                </label>
+                                Reclassificar
+                              </label>
+                              <div className="flex items-center gap-1.5">
                                 <select
                                   id={`classe-${reply.id}`}
                                   name="classification"
@@ -269,32 +280,14 @@ export default async function OutboundRepliesPage({ searchParams }: { searchPara
                                 <PendingPill className={BTN_SM} pendingLabel="Salvando…">
                                   Salvar
                                 </PendingPill>
-                              </form>
-                            </td>
-                          </tr>
-                          {reply.notes ? (
-                            <tr>
-                              <td colSpan={5} className="px-3 pt-0 pb-2 text-xs text-foreground-subtle">
-                                {reply.notes}
-                              </td>
-                            </tr>
-                          ) : null}
-                          <tr>
-                            <td colSpan={5} className="px-3 pt-0 pb-2.5">
-                              <TriagemIA
-                                replyId={reply.id}
-                                contactId={contact?.id}
-                                textoInicial={reply.notes}
-                                isDemo={isDemo}
-                                replyTo={replyTo}
-                              />
-                            </td>
-                          </tr>
-                        </Fragment>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                              </div>
+                            </form>
+                          </MenuLinha>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ol>
                 {todas.length > ordered.length ? (
                   <div className="border-t border-border bg-background-secondary/30 px-3 py-2.5 text-center text-small">
                     <Link
