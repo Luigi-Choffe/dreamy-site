@@ -8,7 +8,7 @@ import { completeTaskAction, createTaskAction, rescheduleTaskAction } from "../c
 import { consoleHref, demoRequested, loadDashboardData, type SearchParams } from "../data";
 import { PendingPill } from "../pending";
 import { ConsoleShell } from "../shell";
-import { Chip, ContactCell, EmptyState, TituloSecao } from "../ui";
+import { Chip, ContactCell, EmptyState, MenuLinha, TituloSecao } from "../ui";
 
 /** Sempre dinâmico: lê o store (arquivos ou Postgres) a cada request. */
 export const dynamic = "force-dynamic";
@@ -23,7 +23,6 @@ const BTN_BASE =
   "rounded-full px-2.5 py-1 text-xs font-semibold transition-colors duration-(--duration-fast) ease-(--ease-out) " +
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-[0.98]";
 const BTN_PRIMARY = `${BTN_BASE} bg-brand-soft text-brand-strong hover:bg-brand-soft-strong`;
-const BTN_GHOST = `${BTN_BASE} text-foreground-muted hover:bg-background-secondary hover:text-foreground`;
 
 function dueLabel(dateKey: string): string {
   return `${dateKey.slice(8, 10)}/${dateKey.slice(5, 7)}`;
@@ -43,20 +42,26 @@ function TaskRow({
   reagendas: Array<{ label: string; date: string }>;
 }) {
   return (
-    <li className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-border px-4 py-2.5 transition-colors duration-(--duration-fast) first:border-t-0 hover:bg-surface-hover">
+    // Linha da casa (T3/R1): data · título+chips · contato · ações — as três datas
+    // de reagendar pararam de se repetir como texto solto e moram no menu "adiar ▾".
+    <li className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-border px-4 py-2.5 transition-colors duration-(--duration-fast) first:border-t-0 even:bg-background-secondary/25 hover:bg-surface-hover sm:grid sm:grid-cols-[2.75rem_minmax(0,1fr)_minmax(10rem,14rem)_auto] sm:items-center">
       <span className="text-xs whitespace-nowrap text-foreground-subtle tabular-nums">{dueLabel(task.dueDate)}</span>
-      {task.dueDate < todayKey ? <Chip tone="error">vencida</Chip> : null}
-      {task.origin === "regra" ? <Chip tone="brand">regra</Chip> : null}
-      <span className="min-w-0 flex-1 text-small font-medium text-foreground">{task.titulo}</span>
-      {contact ? (
-        <Link
-          href={consoleHref(`/interno/outbound/contatos/${contact.id}`, isDemo)}
-          className="text-xs text-foreground-muted underline-offset-2 hover:text-brand-strong hover:underline"
-        >
-          <ContactCell contact={contact} />
-        </Link>
-      ) : null}
-      <span className="flex flex-wrap items-center gap-1.5">
+      <span className="flex min-w-0 flex-wrap items-center gap-1.5">
+        <span className="min-w-0 text-small font-medium text-foreground">{task.titulo}</span>
+        {task.dueDate < todayKey ? <Chip tone="error">vencida</Chip> : null}
+        {task.origin === "regra" ? <Chip tone="brand">regra</Chip> : null}
+      </span>
+      <span className="min-w-0 text-xs">
+        {contact ? (
+          <Link
+            href={consoleHref(`/interno/outbound/contatos/${contact.id}`, isDemo)}
+            className="text-foreground-muted underline-offset-2 hover:text-brand-strong hover:underline"
+          >
+            <ContactCell contact={contact} />
+          </Link>
+        ) : null}
+      </span>
+      <span className="flex items-center gap-1.5 sm:justify-self-end">
         <form action={completeTaskAction} className="inline">
           <input type="hidden" name="taskId" value={task.id} />
           {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
@@ -64,16 +69,22 @@ function TaskRow({
             Concluir
           </PendingPill>
         </form>
-        {reagendas.map((r) => (
-          <form key={r.date} action={rescheduleTaskAction} className="inline">
-            <input type="hidden" name="taskId" value={task.id} />
-            <input type="hidden" name="dueDate" value={r.date} />
-            {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
-            <PendingPill className={BTN_GHOST} pendingLabel="Movendo…" title={`Reagendar para ${r.date}`}>
-              {r.label}
-            </PendingPill>
-          </form>
-        ))}
+        <MenuLinha rotulo="Adiar a tarefa" gatilho="adiar">
+          {reagendas.map((r) => (
+            <form key={r.date} action={rescheduleTaskAction}>
+              <input type="hidden" name="taskId" value={task.id} />
+              <input type="hidden" name="dueDate" value={r.date} />
+              {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
+              <PendingPill
+                className="block w-full rounded-lg px-3 py-1.5 text-left text-xs font-semibold whitespace-nowrap text-foreground transition-colors duration-(--duration-fast) hover:bg-background-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                pendingLabel="Movendo…"
+                title={`Reagendar para ${r.date}`}
+              >
+                {r.label} · {dueLabel(r.date)}
+              </PendingPill>
+            </form>
+          ))}
+        </MenuLinha>
       </span>
     </li>
   );
@@ -104,9 +115,9 @@ export default async function OutboundTodayPage({ searchParams }: { searchParams
   const d3 = nextBusinessDay(new Date(now.getTime() + 2 * 86_400_000), off);
   const semana = nextBusinessDay(new Date(now.getTime() + 6 * 86_400_000), off);
   const reagendas = [
-    { label: `+1d (${dueLabel(d1)})`, date: d1 },
-    { label: `+3d (${dueLabel(d3)})`, date: d3 },
-    { label: `semana (${dueLabel(semana)})`, date: semana },
+    { label: "+1 dia útil", date: d1 },
+    { label: "+3 dias", date: d3 },
+    { label: "próxima semana", date: semana },
   ];
 
   return (

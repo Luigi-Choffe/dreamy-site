@@ -401,19 +401,47 @@ export function ContactCell({
  * moram atrás de um "⋯" discreto. details/summary puro (funciona sem JS, fecha
  * ao clicar fora via backdrop no CSS do console), painel de vidro à direita.
  */
-export function MenuLinha({ rotulo = "Ações da linha", children }: { rotulo?: string; children: ReactNode }) {
+export function MenuLinha({
+  rotulo = "Ações da linha",
+  gatilho,
+  children,
+}: {
+  rotulo?: string;
+  /** Sem gatilho: o "⋯" discreto. Com gatilho: pill rotulada com chevron ("adiar ▾"). */
+  gatilho?: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <details className="menu-linha relative inline-block text-left">
       <summary
-        aria-label={rotulo}
+        aria-label={gatilho ? undefined : rotulo}
         title={rotulo}
-        className="inline-flex size-7 cursor-pointer list-none items-center justify-center rounded-full text-foreground-subtle transition-colors duration-(--duration-fast) hover:bg-background-secondary hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        className={
+          gatilho
+            ? "inline-flex cursor-pointer list-none items-center gap-1 rounded-full border border-border-strong px-3 py-1 text-xs font-semibold whitespace-nowrap text-foreground transition-colors duration-(--duration-fast) hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            : "inline-flex size-7 cursor-pointer list-none items-center justify-center rounded-full text-foreground-subtle transition-colors duration-(--duration-fast) hover:bg-background-secondary hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        }
       >
-        <svg viewBox="0 0 16 16" className="size-4" fill="currentColor" aria-hidden focusable="false">
-          <circle cx="3" cy="8" r="1.4" />
-          <circle cx="8" cy="8" r="1.4" />
-          <circle cx="13" cy="8" r="1.4" />
-        </svg>
+        {gatilho ?? (
+          <svg viewBox="0 0 16 16" className="size-4" fill="currentColor" aria-hidden focusable="false">
+            <circle cx="3" cy="8" r="1.4" />
+            <circle cx="8" cy="8" r="1.4" />
+            <circle cx="13" cy="8" r="1.4" />
+          </svg>
+        )}
+        {gatilho ? (
+          <svg
+            viewBox="0 0 12 12"
+            className="size-3"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            aria-hidden
+            focusable="false"
+          >
+            <path d="M3 4.5 6 7.5 9 4.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        ) : null}
       </summary>
       <div className="absolute right-0 z-30 mt-1 w-max min-w-[13rem] rounded-xl border border-border bg-surface p-1.5 text-left shadow-md">
         {children}

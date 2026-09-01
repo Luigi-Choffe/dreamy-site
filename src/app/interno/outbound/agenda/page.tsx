@@ -65,6 +65,26 @@ export default async function OutboundAgendaPage({ searchParams }: { searchParam
   const defsBySlug = new Map(data.defs.map((d) => [d.slug, d]));
   const totalPrevistos = agenda.days.reduce((sum, d) => sum + d.previstos.length + d.agendados.length, 0);
 
+  /** R2 do redesign: dias livres consecutivos colapsam numa faixa única; só o
+   * Hoje ganha cartão mesmo vazio (é o centro de gravidade da página). */
+  type DiaAgenda = (typeof agenda.days)[number];
+  type Bloco = { tipo: "dia"; day: DiaAgenda; ordem: number } | { tipo: "livres"; dias: string[] };
+  const blocos: Bloco[] = [];
+  let ordemDia = 0;
+  for (const day of agenda.days) {
+    const semNada =
+      day.previstos.length === 0 && day.agendados.length === 0 && day.tarefas.length === 0 && day.reunioes.length === 0;
+    if (semNada && day.dateKey !== todayKey) {
+      const anterior = blocos.at(-1);
+      if (anterior?.tipo === "livres") anterior.dias.push(day.dateKey);
+      else blocos.push({ tipo: "livres", dias: [day.dateKey] });
+    } else {
+      blocos.push({ tipo: "dia", day, ordem: ordemDia });
+      ordemDia += 1;
+    }
+  }
+  const dataCurta = (k: string) => `${k.slice(8, 10)}/${k.slice(5, 7)}`;
+
   return (
     <ConsoleShell
       sessionEmail={session.email}
@@ -109,7 +129,21 @@ export default async function OutboundAgendaPage({ searchParams }: { searchParam
           </EmptyState>
         ) : (
           <ol className="flex flex-col gap-4">
-            {agenda.days.map((day, index) => {
+            {blocos.map((bloco) => {
+              if (bloco.tipo === "livres") {
+                const ini = bloco.dias[0] as string;
+                const fim = bloco.dias.at(-1) as string;
+                return (
+                  <li key={`livres-${ini}`}>
+                    <p className="rounded-xl border border-dashed border-border bg-background-secondary/25 px-4 py-2 text-small text-foreground-subtle tabular-nums">
+                      {bloco.dias.length === 1
+                        ? `${dataCurta(ini)} · dia livre na cadência`
+                        : `${dataCurta(ini)} a ${dataCurta(fim)} · ${plural(bloco.dias.length, "dia livre", "dias livres")} na cadência`}
+                    </p>
+                  </li>
+                );
+              }
+              const { day, ordem } = bloco;
               const vazio =
                 day.previstos.length === 0 &&
                 day.agendados.length === 0 &&
@@ -212,7 +246,7 @@ export default async function OutboundAgendaPage({ searchParams }: { searchParam
                         ) : null}
 
                         {day.agendados.length + day.previstos.length > 0 ? (
-                          <details open={index < 2}>
+                          <details open={ordem < 2}>
                             <summary className="cursor-pointer text-small font-semibold text-brand-strong">
                               {plural(emails, "e-mail de campanha", "e-mails de campanha")}
                               {day.previstos.length > 0
