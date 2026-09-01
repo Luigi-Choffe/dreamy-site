@@ -1,4 +1,9 @@
 import { writeFileSync } from "node:fs";
+try {
+  process.loadEnvFile(".env.local");
+} catch {
+  // sem .env.local — vale a env do shell
+}
 import { campaigns } from "../../src/content/outbound";
 import { buildEmail } from "../../src/lib/outbound/render";
 import { openStore } from "../../src/lib/outbound/store";
@@ -7,7 +12,10 @@ const campaign = campaigns.find((c) => c.slug === slug)!;
 async function main() {
   const store = openStore();
   const [contacts, enrollments] = await Promise.all([store.contacts(), store.enrollments()]);
-  const contact = contacts.find((c) => c.id === enrollments.find((e) => e.campaignSlug === slug)?.contactId)!;
+  // Campanha ainda sem inscritos (draft): usa o primeiro contato ativo do segmento-alvo.
+  const contact =
+    contacts.find((c) => c.id === enrollments.find((e) => e.campaignSlug === slug)?.contactId) ??
+    contacts.find((c) => c.status === "active" && c.industria === campaign.industria)!;
   const blocks = campaign.steps.map((step) => {
     const b = buildEmail(contact, campaign, step, { replyTo: "contact@bedreamy.com.br" });
     return `<div style="margin:24px auto;max-width:640px;border:1px solid #ddd;border-radius:8px;overflow:hidden;font-family:Arial,sans-serif">

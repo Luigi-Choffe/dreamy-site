@@ -1,8 +1,10 @@
 import type { CampaignDefinition } from "../../lib/outbound/types";
 import { construcaoNovaReceita } from "./construcao-nova-receita";
+import { engenhariaAgentesIa } from "./engenharia-agentes-ia";
 import { exemploAgentes } from "./exemplo-agentes";
 import { exemploNovaReceita } from "./exemplo-nova-receita";
 import { exemploSistemas } from "./exemplo-sistemas";
+import { obrasSistemasSobMedida } from "./obras-sistemas-sob-medida";
 
 /**
  * Registro das campanhas de outbound (copy versionada — PRD outbound §20).
@@ -10,6 +12,8 @@ import { exemploSistemas } from "./exemplo-sistemas";
  */
 export const campaigns: CampaignDefinition[] = [
   construcaoNovaReceita,
+  obrasSistemasSobMedida,
+  engenhariaAgentesIa,
   exemploNovaReceita,
   exemploSistemas,
   exemploAgentes,

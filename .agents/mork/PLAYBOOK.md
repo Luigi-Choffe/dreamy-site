@@ -112,15 +112,25 @@ como tendência; número ruim se reporta igual número bom.
 | Time de agentes (subagentes do MORK)   | `.claude/agents/`: verbo (copy), garimpo (leads/ICP), trato (respostas/CRM), forja (plataforma); 5ª vaga MIRA reservada; demitir só com permissão do Luigi                                      |
 | Spec e decisões                        | `docs/PRD-EMAIL-OUTBOUND.md` (§28 operação, §29 plataforma) · ADR-019…024 em `docs/DECISIONS.md`                                                                                                |
 
-## 6. Estado em 2026-08-30 (atualizar quando mudar de fase)
+## 6. Estado em 2026-09-01 (atualizar quando mudar de fase)
 
-Campanha `construcao-nova-receita` (16 incorporadoras SP) aprovada e ARMADA;
-1º disparo 2026-08-31 09:05 (15 E1 + 1 na terça) pela tarefa local
-`DreamyOutboundAuto` (PC do Luigi ligado). 42 contatos ativos no store
-(17 obras p/ terceiros, 6 serviços de engenharia e 2 fornecedores ainda SEM
-campanha — próximos alvos; obras → âncora Sistemas Sob Medida). Domínio
-bedreamy.com.br (DKIM/SPF ok, respostas via Hostinger). Tracking de
-abertura/clique desligado por decisão (entregabilidade > pixel).
+**3 campanhas reais aprovadas e rodando** (todas na voz do Luigi, rampa comum):
+
+- `construcao-nova-receita` (16 incorporadoras · nova-receita): 16/16 E1 na rua
+  (15 entregues seg 2026-08-31, 16º ter 2026-09-01); E2 na quinta pela cadência.
+- `obras-sistemas-sob-medida` (17 obras p/ terceiros · sistema): aprovada
+  2026-09-01 ("Pode seguir! Está aprovado!"); 8 E1 agendados no mesmo dia,
+  9 restantes no ciclo de 2026-09-02.
+- `engenharia-agentes-ia` (6 serviços de engenharia · agente-ia): aprovada
+  2026-09-01; 6/6 E1 agendados no mesmo dia.
+
+2 fornecedores sem campanha (volume baixo; ICP futuro). 1º disparo geral foi
+2026-08-31 09:05 pela tarefa `DreamyOutboundAuto` (PC do Luigi ligado); 0 bounce,
+0 complaint até aqui. Validação pré-inscrição de campanha nova:
+`pnpm tsx scripts/dev/lint-campanha-alvo.ts <slug>` (renderiza e linta contra os
+contatos reais do segmento). Domínio bedreamy.com.br (DKIM/SPF ok, respostas via
+Hostinger). Tracking de abertura/clique desligado por decisão
+(entregabilidade > pixel).
 
 **Pivô 2026-08-29 — plataforma hospedada** (PRD §29, ADR-023/024): o repo virou
 a plataforma de vendas da Dreamy; o site institucional ficou com o sócio. Console
