@@ -265,7 +265,10 @@ export default async function OutboundSuppressionPage({ searchParams }: { search
                 </thead>
                 <tbody>
                   {suppressions.map((s) => (
-                    <tr key={`${s.email}-${s.createdAt}`} className="border-b border-border last:border-b-0">
+                    <tr
+                      key={`${s.email}-${s.createdAt}`}
+                      className="border-b border-border last:border-b-0 even:bg-background-secondary/25"
+                    >
                       <td className="px-3 py-2">
                         {/* PII: e-mail mascarado no texto; completo só no tooltip. */}
                         <span title={s.email} className="font-mono text-xs text-foreground">

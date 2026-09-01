@@ -16,6 +16,7 @@ import {
   ContactCell,
   EmptyState,
   fmtInt,
+  MenuLinha,
   Metric,
   Quando,
   VERIFICATION_LABELS,
@@ -411,22 +412,23 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
                     <tr className="border-b border-border bg-background-secondary/60 text-left">
                       {(
                         [
-                          { label: "Contato", campo: "empresa" as Ordem },
+                          // Identidade com largura mínima: o nome NUNCA quebra em número órfão (lei 1).
+                          { label: "Contato", campo: "empresa" as Ordem, extra: "min-w-[15rem]" },
                           { label: "Cargo" },
                           { label: "Indústria" },
                           { label: "Verificação", campo: "verificacao" as Ordem },
                           { label: "Status" },
                           { label: "Campanha ativa" },
                           { label: "Último envio", campo: "ultimo_envio" as Ordem },
-                        ] as Array<{ label: string; campo?: Ordem }>
-                      ).map(({ label, campo }) => {
+                        ] as Array<{ label: string; campo?: Ordem; extra?: string }>
+                      ).map(({ label, campo, extra }) => {
                         const ativa = campo !== undefined && campo === ordemCampo;
                         return (
                           <th
                             key={label}
                             scope="col"
                             aria-sort={ativa ? (ordemDesc ? "descending" : "ascending") : undefined}
-                            className="px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase"
+                            className={`px-3 py-2 text-xs font-semibold tracking-wider text-foreground-subtle uppercase ${extra ?? ""}`}
                           >
                             {campo ? (
                               <Link
@@ -467,12 +469,12 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
                       return (
                         <tr
                           key={contact.id}
-                          className="border-b border-border transition-colors duration-(--duration-fast) last:border-b-0 hover:bg-surface-hover"
+                          className="border-b border-border transition-colors duration-(--duration-fast) last:border-b-0 even:bg-background-secondary/25 hover:bg-surface-hover"
                         >
                           <td className="px-3 py-2">
                             <Link
                               href={consoleHref(`/interno/outbound/contatos/${contact.id}`, isDemo)}
-                              className="flex items-center gap-2.5 hover:text-brand-strong"
+                              className="flex min-w-0 items-center gap-2.5 hover:text-brand-strong"
                               title="Abrir a conta do contato"
                             >
                               <span
@@ -481,7 +483,7 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
                               >
                                 {monogram(contact)}
                               </span>
-                              <ContactCell contact={contact} />
+                              <ContactCell contact={contact} variante="empilhada" />
                             </Link>
                           </td>
                           <td className="px-3 py-2 text-foreground-muted">
@@ -505,12 +507,14 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
                           </td>
                           <td className="px-3 py-2">
                             {activeSlugs.length > 0 ? (
-                              <span className="flex flex-col gap-0.5">
+                              <span className="flex flex-wrap gap-1">
+                                {/* Chip curto que NUNCA dobra em duas linhas (lei 1). */}
                                 {activeSlugs.map((slug) => (
                                   <Link
                                     key={slug}
                                     href={consoleHref(`/interno/outbound/${slug}`, isDemo)}
-                                    className="text-xs text-foreground-muted underline-offset-2 hover:text-brand-strong hover:underline"
+                                    title={slug}
+                                    className="inline-block max-w-[10rem] truncate rounded-full bg-background-secondary px-2 py-0.5 text-xs whitespace-nowrap text-foreground-muted transition-colors duration-(--duration-fast) hover:bg-brand-soft hover:text-brand-strong"
                                   >
                                     {slug}
                                   </Link>
@@ -530,18 +534,21 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
                             )}
                           </td>
                           <td className="px-3 py-2 text-right">
+                            {/* Destrutivo fora do carpete (lei 2): mora atrás do ⋯; vermelho só na confirmação. */}
                             {contact.status !== "suppressed" ? (
-                              <form action={suppressContactAction} className="inline-block">
-                                <input type="hidden" name="contactId" value={contact.id} />
-                                {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
-                                <ConfirmSubmit
-                                  title="Suprimir: sai de todas as campanhas e nunca mais recebe e-mail (permanente)"
-                                  confirmLabel="Confirmar supressão"
-                                  className="rounded-full border border-error/40 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-error transition-colors duration-(--duration-fast) hover:bg-error-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                                >
-                                  Suprimir
-                                </ConfirmSubmit>
-                              </form>
+                              <MenuLinha rotulo={`Ações de ${contact.nome ?? "contato"}`}>
+                                <form action={suppressContactAction}>
+                                  <input type="hidden" name="contactId" value={contact.id} />
+                                  {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
+                                  <ConfirmSubmit
+                                    title="Suprimir: sai de todas as campanhas e nunca mais recebe e-mail (permanente)"
+                                    confirmLabel="Confirmar supressão permanente"
+                                    className="block w-full rounded-lg px-3 py-1.5 text-left text-xs font-semibold whitespace-nowrap text-error transition-colors duration-(--duration-fast) hover:bg-error-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                                  >
+                                    Suprimir e-mail
+                                  </ConfirmSubmit>
+                                </form>
+                              </MenuLinha>
                             ) : null}
                           </td>
                         </tr>

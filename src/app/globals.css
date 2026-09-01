@@ -504,6 +504,21 @@
     background: var(--border-strong);
     border-radius: 3px;
   }
+  /* Menu de ações da linha (REDESIGN T2): sem marcador nativo; aberto ganha um
+     backdrop invisível no próprio summary — clicar fora fecha sem JS. */
+  [data-app="console"] details.menu-linha > summary {
+    list-style: none;
+  }
+  [data-app="console"] details.menu-linha > summary::-webkit-details-marker {
+    display: none;
+  }
+  [data-app="console"] details.menu-linha[open] > summary::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    cursor: default;
+  }
   [data-app="console"] :where(.bg-surface),
   html[data-app-root="console"] :where(.bg-surface) {
     backdrop-filter: blur(14px) saturate(150%);

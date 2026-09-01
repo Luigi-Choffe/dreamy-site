@@ -361,13 +361,64 @@ export function Metric({ label, value, hint }: { label: string; value: ReactNode
  * Contato em tabelas: nome + empresa (uso interno correto).
  * O e-mail (PII) só aparece em `title` — nunca como texto visível.
  */
-export function ContactCell({ contact }: { contact: Pick<Contact, "nome" | "sobrenome" | "empresa" | "email"> }) {
+export function ContactCell({
+  contact,
+  variante = "inline",
+}: {
+  contact: Pick<Contact, "nome" | "sobrenome" | "empresa" | "email">;
+  /**
+   * "inline": nome e empresa como unidades INQUEBRÁVEIS (a linha só dobra entre
+   * elas — nunca mais número órfão nem "·" pendurado; lei 1 do redesign).
+   * "empilhada": nome sobre empresa, cada um truncando com title (tabelas).
+   */
+  variante?: "inline" | "empilhada";
+}) {
   const name = [contact.nome, contact.sobrenome].filter(Boolean).join(" ") || "(sem nome)";
+  if (variante === "empilhada") {
+    return (
+      <span title={contact.email} className="block min-w-0">
+        <span className="block truncate font-medium text-foreground" title={name}>
+          {name}
+        </span>
+        {contact.empresa ? (
+          <span className="block truncate text-xs text-foreground-subtle" title={contact.empresa}>
+            {contact.empresa}
+          </span>
+        ) : null}
+      </span>
+    );
+  }
   return (
     <span title={contact.email}>
-      <span className="font-medium text-foreground">{name}</span>
-      {contact.empresa ? <span className="text-foreground-subtle"> · {contact.empresa}</span> : null}
+      <span className="font-medium whitespace-nowrap text-foreground">{name}</span>
+      {contact.empresa ? <span className="whitespace-nowrap text-foreground-subtle"> · {contact.empresa}</span> : null}
     </span>
+  );
+}
+
+/**
+ * Menu de ações da linha (T2): ações secundárias/destrutivas saem do carpete e
+ * moram atrás de um "⋯" discreto. details/summary puro (funciona sem JS, fecha
+ * ao clicar fora via backdrop no CSS do console), painel de vidro à direita.
+ */
+export function MenuLinha({ rotulo = "Ações da linha", children }: { rotulo?: string; children: ReactNode }) {
+  return (
+    <details className="menu-linha relative inline-block text-left">
+      <summary
+        aria-label={rotulo}
+        title={rotulo}
+        className="inline-flex size-7 cursor-pointer list-none items-center justify-center rounded-full text-foreground-subtle transition-colors duration-(--duration-fast) hover:bg-background-secondary hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      >
+        <svg viewBox="0 0 16 16" className="size-4" fill="currentColor" aria-hidden focusable="false">
+          <circle cx="3" cy="8" r="1.4" />
+          <circle cx="8" cy="8" r="1.4" />
+          <circle cx="13" cy="8" r="1.4" />
+        </svg>
+      </summary>
+      <div className="absolute right-0 z-30 mt-1 w-max min-w-[13rem] rounded-xl border border-border bg-surface p-1.5 text-left shadow-md">
+        {children}
+      </div>
+    </details>
   );
 }
 
