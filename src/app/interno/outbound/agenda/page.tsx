@@ -6,7 +6,7 @@ import { buildAgenda } from "@/lib/outbound/agenda-core";
 import { getOutboundEnv, sendDateKey } from "@/lib/outbound/config";
 import { consoleHref, demoRequested, loadDashboardData, type SearchParams } from "../data";
 import { ConsoleShell } from "../shell";
-import { Chip, Code, ContactCell, DEAL_STAGE_LABELS, DEAL_STAGE_TONES, EmptyState, fmtInt } from "../ui";
+import { Chip, Code, ContactCell, DEAL_STAGE_LABELS, DEAL_STAGE_TONES, EmptyState, fmtInt, plural } from "../ui";
 
 /** Sempre dinâmico: a previsão é recalculada a cada abertura. */
 export const dynamic = "force-dynamic";
@@ -73,7 +73,7 @@ export default async function OutboundAgendaPage({ searchParams }: { searchParam
       title="Agenda"
       subtitle="O futuro da operação: e-mails da cadência, fila do Resend, tarefas e reuniões, dia a dia."
     >
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-8">
         {agenda.blockedReason ? (
           <div className="rounded-lg border border-error/50 bg-error-soft px-4 py-3 text-small text-foreground">
             <span className="font-semibold text-error">Operação travada: </span>
@@ -94,7 +94,7 @@ export default async function OutboundAgendaPage({ searchParams }: { searchParam
                   href={consoleHref("/interno/outbound/hoje", isDemo)}
                   className="font-semibold text-warning underline underline-offset-2"
                 >
-                  {fmtInt(agenda.tarefasAtrasadas)} tarefa(s) vencida(s)
+                  {plural(agenda.tarefasAtrasadas, "tarefa vencida", "tarefas vencidas")}
                 </Link>{" "}
                 esperando na aba Hoje.
               </>
@@ -116,6 +116,15 @@ export default async function OutboundAgendaPage({ searchParams }: { searchParam
                 day.tarefas.length === 0 &&
                 day.reunioes.length === 0;
               const isHoje = day.dateKey === todayKey;
+              const emails = day.previstos.length + day.agendados.length;
+              // Zeros são mudos (REDESIGN-CONSOLE, lei 4): só conta o que existe.
+              const contagens = [
+                emails > 0 ? plural(emails, "e-mail", "e-mails") : null,
+                day.tarefas.length > 0 ? plural(day.tarefas.length, "tarefa") : null,
+                day.reunioes.length > 0 ? plural(day.reunioes.length, "reunião", "reuniões") : null,
+              ]
+                .filter(Boolean)
+                .join(" · ");
               return (
                 <li key={day.dateKey}>
                   {/* Hoje é o centro de gravidade; dia vazio recua para linha fantasma. */}
@@ -141,10 +150,7 @@ export default async function OutboundAgendaPage({ searchParams }: { searchParam
                         ) : null}
                         {tituloDoDia(day.dateKey, todayKey, amanhaKey)}
                       </h2>
-                      <p className="text-xs text-foreground-subtle tabular-nums">
-                        {fmtInt(day.previstos.length + day.agendados.length)} e-mail(s) · {fmtInt(day.tarefas.length)}{" "}
-                        tarefa(s) · {fmtInt(day.reunioes.length)} reunião(ões)
-                      </p>
+                      {contagens ? <p className="text-xs text-foreground-subtle tabular-nums">{contagens}</p> : null}
                     </div>
 
                     {vazio ? (
@@ -208,7 +214,7 @@ export default async function OutboundAgendaPage({ searchParams }: { searchParam
                         {day.agendados.length + day.previstos.length > 0 ? (
                           <details open={index < 2}>
                             <summary className="cursor-pointer text-small font-semibold text-brand-strong">
-                              {fmtInt(day.agendados.length + day.previstos.length)} e-mail(s) de campanha
+                              {plural(emails, "e-mail de campanha", "e-mails de campanha")}
                               {day.previstos.length > 0
                                 ? ` (${day.agendados.length > 0 ? `${fmtInt(day.agendados.length)} na fila + ` : ""}${fmtInt(day.previstos.length)} previstos)`
                                 : " na fila do Resend"}

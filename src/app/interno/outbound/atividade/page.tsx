@@ -13,9 +13,10 @@ import {
   EVENT_TYPE_LABELS,
   EVENT_TYPE_TONES,
   fmtDate,
-  fmtDateTime,
   fmtInt,
   OpenRateNote,
+  plural,
+  Quando,
 } from "../ui";
 
 /** Sempre dinâmico: lê o store local (`.outbound/` ou `.outbound-demo/`) a cada request. */
@@ -267,7 +268,7 @@ export default async function OutboundActivityPage({ searchParams }: { searchPar
                           colSpan={5}
                           className="px-3 py-1.5 text-left text-xs font-semibold text-foreground-muted tabular-nums"
                         >
-                          {group.date} · {fmtInt(group.rows.length)} evento(s)
+                          {group.date} · {plural(group.rows.length, "evento")}
                         </th>
                       </tr>
                       {group.rows.map((event) => {
@@ -302,7 +303,7 @@ export default async function OutboundActivityPage({ searchParams }: { searchPar
                               )}
                             </td>
                             <td className="px-3 py-2 whitespace-nowrap text-foreground-muted tabular-nums">
-                              {fmtDateTime(event.occurredAt)}
+                              <Quando iso={event.occurredAt} />
                             </td>
                           </tr>
                         );

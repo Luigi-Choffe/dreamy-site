@@ -84,7 +84,7 @@ export async function reconcileDealsAction(formData: FormData): Promise<void> {
         id: newId(),
         actor: "console",
         kind: "crm",
-        summary: `Pipeline sincronizado: ${result.created} negócio(s) criado(s), ${result.advanced} avançado(s).`,
+        summary: `Pipeline sincronizado: ${result.created} ${result.created === 1 ? "negócio criado" : "negócios criados"}, ${result.advanced} ${result.advanced === 1 ? "avançado" : "avançados"}.`,
         at: new Date().toISOString(),
       });
       await store.saveAgentActivities(activities);

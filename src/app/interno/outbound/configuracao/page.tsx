@@ -7,7 +7,7 @@ import { FormComEstado } from "../form-com-estado";
 import { SubmitButton } from "../pending";
 import { ConsoleShell } from "../shell";
 import { salvarConfiguracaoComEstado } from "../stateful-actions";
-import { fmtDateTime } from "../ui";
+import { Quando } from "../ui";
 
 /** Sempre dinâmico: lê o store (arquivos ou Postgres) a cada request. */
 export const dynamic = "force-dynamic";
@@ -112,7 +112,7 @@ export default async function OutboundSettingsPage({ searchParams }: { searchPar
               Salvar
             </SubmitButton>
             <p className="text-xs text-foreground-subtle tabular-nums">
-              Última alteração: {fmtDateTime(data.settings.atualizadoEm)}
+              Última alteração: <Quando iso={data.settings.atualizadoEm} />
               {data.settings.atualizadoPor ? ` por ${data.settings.atualizadoPor}` : ""}
             </p>
           </div>

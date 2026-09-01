@@ -12,7 +12,7 @@ import { addNoteAction, createTaskAction } from "../../crm-actions";
 import { consoleHref, demoRequested, loadDashboardData, type SearchParams } from "../../data";
 import { ConfirmSubmit, SubmitButton } from "../../pending";
 import { ConsoleShell } from "../../shell";
-import { Chip, DEAL_STAGE_LABELS, DEAL_STAGE_TONES, EmptyState, fmtDateTime, REPLY_CLASS_LABELS } from "../../ui";
+import { Chip, DEAL_STAGE_LABELS, DEAL_STAGE_TONES, EmptyState, plural, Quando, REPLY_CLASS_LABELS } from "../../ui";
 
 /** Sempre dinâmico: lê o store (arquivos ou Postgres) a cada request. */
 export const dynamic = "force-dynamic";
@@ -137,7 +137,7 @@ export default async function ContactAccountPage({
                   className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-t border-border px-4 py-2.5 transition-colors duration-(--duration-fast) first:border-t-0 hover:bg-surface-hover"
                 >
                   <span className="w-32 shrink-0 text-xs whitespace-nowrap text-foreground-subtle tabular-nums">
-                    {fmtDateTime(item.at)}
+                    <Quando iso={item.at} />
                   </span>
                   <span className="flex w-20 shrink-0 items-center gap-1.5 text-xs font-semibold text-foreground-muted">
                     <span aria-hidden className={`size-1.5 rounded-full ${TIMELINE_STYLE[item.kind].dot}`} />
@@ -185,7 +185,7 @@ export default async function ContactAccountPage({
             </h2>
             {openTasks.length > 0 ? (
               <p className="mt-1 text-xs text-foreground-subtle">
-                {openTasks.length} tarefa(s) aberta(s) desta conta na aba{" "}
+                {plural(openTasks.length, "tarefa aberta", "tarefas abertas")} desta conta na aba{" "}
                 <Link href={consoleHref("/interno/outbound/hoje", isDemo)} className="underline underline-offset-2">
                   Hoje
                 </Link>

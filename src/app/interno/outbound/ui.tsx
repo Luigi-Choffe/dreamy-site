@@ -67,6 +67,57 @@ export function fmtDate(iso: string): string {
   return dateFmt.format(new Date(iso));
 }
 
+const quandoFmt = new Intl.DateTimeFormat("pt-BR", {
+  timeZone: "America/Sao_Paulo",
+  day: "2-digit",
+  month: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+/** Data curta da casa: "01/09 14:59" (lei 2 do redesign — o carimbo completo vai no title). */
+export function fmtQuando(iso: string): string {
+  return quandoFmt.format(new Date(iso)).replace(",", "");
+}
+
+/** Carimbo curto com o completo no tooltip (REDESIGN-CONSOLE T4). */
+export function Quando({ iso, className }: { iso: string; className?: string }) {
+  return (
+    <time dateTime={iso} title={fmtDateTime(iso)} className={className ?? "whitespace-nowrap tabular-nums"}>
+      {fmtQuando(iso)}
+    </time>
+  );
+}
+
+/** Plural pt-BR de verdade — nunca mais "(s)": plural(2, "tarefa") → "2 tarefas". */
+export function plural(n: number, singular: string, pluralForm?: string): string {
+  return `${intFmt.format(n)} ${n === 1 ? singular : (pluralForm ?? `${singular}s`)}`;
+}
+
+/** Título de seção da casa: contagem esmaecida ao lado, sem parênteses (REDESIGN-CONSOLE T1). */
+export function TituloSecao({
+  id,
+  children,
+  contagem,
+  as: Tag = "h2",
+}: {
+  id?: string;
+  children: ReactNode;
+  contagem?: number;
+  as?: "h2" | "h3";
+}) {
+  return (
+    <Tag id={id} className="font-display text-h4 font-bold">
+      {children}
+      {contagem !== undefined ? (
+        <span className="ml-2 text-base font-semibold text-foreground-subtle tabular-nums">
+          {intFmt.format(contagem)}
+        </span>
+      ) : null}
+    </Tag>
+  );
+}
+
 /** Agrupa e conta por chave (ignora chaves ausentes). */
 export function countBy<T>(rows: T[], key: (row: T) => string | undefined): Map<string, number> {
   const map = new Map<string, number>();

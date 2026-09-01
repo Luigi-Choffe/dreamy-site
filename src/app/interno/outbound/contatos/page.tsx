@@ -15,9 +15,9 @@ import {
   CONTACT_STATUS_LABELS,
   ContactCell,
   EmptyState,
-  fmtDateTime,
   fmtInt,
   Metric,
+  Quando,
   VERIFICATION_LABELS,
 } from "../ui";
 import { FiltroSelect } from "./filtros";
@@ -222,7 +222,7 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
       title="Contatos"
       subtitle="Base importada do Clay — filtre, audite e suprima contato a contato."
     >
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-8">
         <section aria-labelledby="filtros-title">
           <h2 id="filtros-title" className="sr-only">
             Filtros
@@ -523,8 +523,7 @@ export default async function OutboundContactsPage({ searchParams }: { searchPar
                           <td className="px-3 py-2 whitespace-nowrap text-foreground-muted">
                             {lastSend && lastIso ? (
                               <>
-                                {SEND_STATUS_LABELS[lastSend.status]} ·{" "}
-                                <span className="tabular-nums">{fmtDateTime(lastIso)}</span>
+                                {SEND_STATUS_LABELS[lastSend.status]} · <Quando iso={lastIso} />
                               </>
                             ) : (
                               "—"

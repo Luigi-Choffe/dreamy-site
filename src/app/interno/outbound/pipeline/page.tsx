@@ -6,7 +6,7 @@ import { reconcileDealsAction } from "../crm-actions";
 import { demoRequested, loadDashboardData, type SearchParams } from "../data";
 import { SubmitButton } from "../pending";
 import { ConsoleShell } from "../shell";
-import { EmptyState, fmtInt } from "../ui";
+import { EmptyState, plural } from "../ui";
 import { PipelineBoard, type BoardDeal } from "./board";
 
 /** Sempre dinâmico: lê o store (arquivos ou Postgres) a cada request. */
@@ -97,7 +97,7 @@ export default async function OutboundPipelinePage({ searchParams }: { searchPar
             <span className="font-semibold">Pipeline sincronizado:</span>
             <span>
               {syncInfo.criados + syncInfo.avancados > 0
-                ? `${fmtInt(syncInfo.criados)} negócio(s) criado(s) · ${fmtInt(syncInfo.avancados)} avançado(s).`
+                ? `${plural(syncInfo.criados, "negócio criado", "negócios criados")} · ${plural(syncInfo.avancados, "avançado")}.`
                 : "nada novo no outbound desde a última sincronização."}
             </span>
             <Link

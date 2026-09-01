@@ -15,8 +15,8 @@ import {
   DEMAND_STATUS_LABELS,
   DEMAND_STATUS_TONES,
   EmptyState,
-  fmtDateTime,
-  fmtInt,
+  Quando,
+  TituloSecao,
 } from "../ui";
 import { cancelDemandAction, updateDemandStatusAction } from "./actions";
 
@@ -52,7 +52,7 @@ function DemandRow({ demand, isDemo }: { demand: Demand; isDemo: boolean }) {
       </div>
       {demand.details ? <p className="text-xs text-foreground-muted">{demand.details}</p> : null}
       <p className="text-xs text-foreground-subtle tabular-nums">
-        pedida por {demand.createdBy} em {fmtDateTime(demand.createdAt)}
+        pedida por {demand.createdBy} em <Quando iso={demand.createdAt} />
         {demand.claimedBy ? ` · assumida por ${demand.claimedBy}` : ""}
         {demand.campaignSlug ? ` · campanha ${demand.campaignSlug}` : ""}
       </p>
@@ -152,9 +152,9 @@ export default async function OutboundDemandsPage({ searchParams }: { searchPara
               if (list.length === 0) return null;
               return (
                 <div key={status}>
-                  <h3 className="font-display text-h4 font-bold">
-                    {DEMAND_STATUS_LABELS[status]} ({fmtInt(list.length)})
-                  </h3>
+                  <TituloSecao as="h3" contagem={list.length}>
+                    {DEMAND_STATUS_LABELS[status]}
+                  </TituloSecao>
                   <ol className="mt-2 rounded-lg border border-border bg-surface">
                     {list.map((demand) => (
                       <DemandRow key={demand.id} demand={demand} isDemo={isDemo} />

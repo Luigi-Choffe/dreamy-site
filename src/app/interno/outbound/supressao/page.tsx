@@ -8,7 +8,7 @@ import { FiltroSelect } from "../contatos/filtros";
 import { demoRequested, loadDashboardData, type SearchParams } from "../data";
 import { ConfirmSubmit } from "../pending";
 import { ConsoleShell } from "../shell";
-import { Chip, type ChipTone, Code, countBy, EmptyState, fmtDateTime, fmtInt, SUPPRESSION_REASON_LABELS } from "../ui";
+import { Chip, type ChipTone, Code, countBy, EmptyState, fmtInt, Quando, SUPPRESSION_REASON_LABELS } from "../ui";
 
 /** Sempre dinâmico: lê o store local (`.outbound/` ou demo) a cada request. */
 export const dynamic = "force-dynamic";
@@ -136,7 +136,7 @@ export default async function OutboundSuppressionPage({ searchParams }: { search
       title="Supressão"
       subtitle="Lista permanente e global (LGPD) — um e-mail suprimido nunca mais recebe mensagem, em nenhuma campanha."
     >
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-8">
         <section aria-labelledby="motivos-title">
           <h2 id="motivos-title" className="font-display text-h4 font-bold">
             Por motivo
@@ -157,7 +157,9 @@ export default async function OutboundSuppressionPage({ searchParams }: { search
         <section aria-labelledby="registros-title">
           <h2 id="registros-title" className="font-display text-h4 font-bold">
             Registros{" "}
-            <span className="font-sans text-xs font-normal text-foreground-subtle">({fmtInt(filtradas.length)})</span>
+            <span className="font-sans text-base font-semibold text-foreground-subtle tabular-nums">
+              {fmtInt(filtradas.length)}
+            </span>
           </h2>
           <form method="get" action="/interno/outbound/supressao" className="mt-3 flex flex-wrap items-end gap-3">
             {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
@@ -275,7 +277,7 @@ export default async function OutboundSuppressionPage({ searchParams }: { search
                       </td>
                       <td className="px-3 py-2 text-foreground-muted">{s.origin?.trim() || "—"}</td>
                       <td className="px-3 py-2 whitespace-nowrap text-foreground-muted tabular-nums">
-                        {fmtDateTime(s.createdAt)}
+                        <Quando iso={s.createdAt} />
                       </td>
                     </tr>
                   ))}

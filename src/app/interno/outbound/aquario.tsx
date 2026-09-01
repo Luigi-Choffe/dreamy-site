@@ -1,6 +1,7 @@
 import { seatFalas, seatStatus, TEAM, teamGraph, type SeatStatus, type TeamSeat } from "@/lib/outbound/team";
 import { AquarioRede } from "./aquario-rede";
 import type { DashboardData } from "./data";
+import { plural } from "./ui";
 
 /**
  * AQUÁRIO v3 — a rede do time do MORK flutuando na página (lente 9:19).
@@ -241,7 +242,7 @@ export function Aquario({
               sinapsesAtivas > 0 ? "font-semibold text-brand-strong" : "text-foreground-subtle"
             }`}
           >
-            {sinapsesAtivas > 0 ? `${sinapsesAtivas} sinapse(s) ativa(s)` : "rede em repouso"}
+            {sinapsesAtivas > 0 ? plural(sinapsesAtivas, "sinapse ativa", "sinapses ativas") : "rede em repouso"}
           </p>
         </header>
 
@@ -318,8 +319,9 @@ export function Aquario({
             </ul>
           )}
           <p className="mt-2 border-t border-border pt-1.5 text-[0.62rem] text-foreground-subtle tabular-nums">
-            {tarefasAbertas} tarefa(s) aberta(s) · {demandasPendentes} demanda(s) na fila · pulso forte = trabalho real
-            em andamento
+            {plural(tarefasAbertas, "tarefa aberta", "tarefas abertas")} ·{" "}
+            {plural(demandasPendentes, "demanda na fila", "demandas na fila")} · pulso forte = trabalho real em
+            andamento
           </p>
         </footer>
       </div>

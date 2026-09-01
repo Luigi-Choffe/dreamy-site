@@ -9,7 +9,7 @@ import { AquarioChat } from "./aquario-chat";
 import { AtalhosDoConsole } from "./atalhos";
 import { MaterialRoot } from "./material-root";
 import { consoleHref, type DashboardData } from "./data";
-import { Code, fmtDateTime, fmtInt, fmtPct } from "./ui";
+import { Code, fmtDateTime, fmtInt, fmtPct, plural } from "./ui";
 
 /**
  * Casca do console: cabeçalho, FIO DE SAÚDE (assinatura visual — estado operacional
@@ -253,7 +253,7 @@ export function ConsoleShell({
               tone="crit"
               title="E-mails agendados no Resend para contato suprimido ou sequência parada — o cancelamento falhou ou OUTBOUND_RESEND_API_KEY estava ausente. Cancele no painel do Resend (busque pelo destinatário) ou defina a chave e repita a supressão."
             >
-              {fmtInt(orphans)} agendado(s) órfão(s)
+              {plural(orphans, "agendado órfão", "agendados órfãos")}
             </HealthPill>
           ) : null}
 
@@ -263,7 +263,7 @@ export function ConsoleShell({
               title="Demandas do time aguardando o MORK assumir. Ver as Demandas."
               href={consoleHref("/interno/outbound/demandas", data.isDemo)}
             >
-              {fmtInt(demandasPendentes)} demanda(s) pendente(s)
+              {plural(demandasPendentes, "demanda pendente", "demandas pendentes")}
             </HealthPill>
           ) : null}
         </div>

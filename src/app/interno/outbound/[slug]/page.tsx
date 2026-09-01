@@ -22,9 +22,10 @@ import {
   EmptyState,
   EVENT_TYPE_LABELS,
   EVENT_TYPE_TONES,
-  fmtDateTime,
   fmtInt,
+  fmtQuando,
   type FunnelStepData,
+  Quando,
   OpenRateNote,
   REPLY_CLASS_LABELS,
   REPLY_CLASS_TONES,
@@ -168,19 +169,19 @@ export default async function OutboundCampaignPage({
       subtitle={`${campaign.slug} · âncora: ${ANCHOR_LABELS[campaign.anchor]} · ${fmtInt(campaignEnrollments.length)} contatos inscritos`}
       headerExtra={headerExtra}
     >
-      <div className="flex flex-col gap-10">
+      <div className="flex flex-col gap-8">
         <section aria-label="Status da campanha" className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-2">
             <CampaignStatusChip status={status} />
             {runtime?.approvedAt ? (
               <Chip tone={approvalStale ? "warning" : "success"}>
-                aprovada em {fmtDateTime(runtime.approvedAt)}
+                aprovada em {fmtQuando(runtime.approvedAt)}
                 {runtime.approvedBy ? ` por ${runtime.approvedBy}` : ""}
               </Chip>
             ) : null}
             {runtime?.pausedAt ? (
               <Chip tone="warning">
-                pausada em {fmtDateTime(runtime.pausedAt)}
+                pausada em {fmtQuando(runtime.pausedAt)}
                 {runtime.pausedReason ? ` · ${runtime.pausedReason}` : ""}
               </Chip>
             ) : null}
@@ -380,7 +381,7 @@ export default async function OutboundCampaignPage({
                         <td className="px-4 py-2 text-foreground-muted uppercase">{send?.stepId ?? "—"}</td>
                         <td className="px-4 py-2">{contact ? <ContactCell contact={contact} /> : "—"}</td>
                         <td className="px-4 py-2 whitespace-nowrap text-foreground-muted tabular-nums">
-                          {fmtDateTime(event.occurredAt)}
+                          <Quando iso={event.occurredAt} />
                         </td>
                       </tr>
                     );
@@ -440,7 +441,7 @@ export default async function OutboundCampaignPage({
                           </Chip>
                         </td>
                         <td className="px-4 py-2 whitespace-nowrap text-foreground-muted tabular-nums">
-                          {fmtDateTime(reply.receivedAt)}
+                          <Quando iso={reply.receivedAt} />
                         </td>
                         <td className="px-4 py-2 text-foreground-muted">{reply.notes ?? "—"}</td>
                       </tr>

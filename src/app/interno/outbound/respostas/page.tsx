@@ -22,9 +22,9 @@ import {
   ContactCell,
   countBy,
   EmptyState,
-  fmtDateTime,
   fmtInt,
   fmtPct,
+  Quando,
   REPLY_CLASS_LABELS,
   REPLY_CLASS_TONES,
 } from "../ui";
@@ -245,7 +245,7 @@ export default async function OutboundRepliesPage({ searchParams }: { searchPara
                             </td>
                             <td className="px-3 py-2 text-foreground-muted uppercase tabular-nums">{step ?? "—"}</td>
                             <td className="px-3 py-2 whitespace-nowrap text-foreground-muted tabular-nums">
-                              {fmtDateTime(reply.receivedAt)}
+                              <Quando iso={reply.receivedAt} />
                             </td>
                             <td className="px-3 py-2">
                               <form action={classifyReplyAction} className="flex items-center gap-1.5">

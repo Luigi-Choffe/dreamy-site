@@ -43,13 +43,13 @@ aqui: **evitar "cheap visuals + fast animations"** — nada de efeito barato.
 
 ## Lotes transversais (fazem o console inteiro de uma vez)
 
-| #   | Lote               | O que entrega                                                                                                                                                        | Status  |
-| --- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| T1  | **Régua e grid**   | Tokens de espaçamento do console (densidade dashboard) aplicados na casca e nas seções; mesma cadência vertical em toda aba; título de seção com contagem esmaecida. | a fazer |
-| T2  | **Tabela da casa** | Componente/anatomia padrão de tabela (leis 1–2) e migração das tabelas de Contatos, Atividade, Supressão e Campanha para ele.                                        | a fazer |
-| T3  | **Linha de lista** | Anatomia padrão de linha (identidade · contexto · ações; ações secundárias no hover + sempre via teclado) para Hoje, Respostas, Demandas e Agenda.                   | a fazer |
-| T4  | **Chips e datas**  | Paleta única de chips de status; formatadores `dd/mm hh:mm` + `title`; plurais corretos; zeros mudos em todo o console.                                              | a fazer |
-| T5  | **Entrada viva**   | Stagger de entrada dos cartões por aba (Motion, mola, reduced-motion ok), consistente com o Aquário.                                                                 | a fazer |
+| #   | Lote               | O que entrega                                                                                                                                                        | Status             |
+| --- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| T1  | **Régua e grid**   | Tokens de espaçamento do console (densidade dashboard) aplicados na casca e nas seções; mesma cadência vertical em toda aba; título de seção com contagem esmaecida. | feito · 2026-09-01 |
+| T2  | **Tabela da casa** | Componente/anatomia padrão de tabela (leis 1–2) e migração das tabelas de Contatos, Atividade, Supressão e Campanha para ele.                                        | a fazer            |
+| T3  | **Linha de lista** | Anatomia padrão de linha (identidade · contexto · ações; ações secundárias no hover + sempre via teclado) para Hoje, Respostas, Demandas e Agenda.                   | a fazer            |
+| T4  | **Chips e datas**  | Paleta única de chips de status; formatadores `dd/mm hh:mm` + `title`; plurais corretos; zeros mudos em todo o console.                                              | feito · 2026-09-01 |
+| T5  | **Entrada viva**   | Stagger de entrada dos cartões por aba (Motion, mola, reduced-motion ok), consistente com o Aquário.                                                                 | a fazer            |
 
 ## Tela a tela (defeitos observados → desenho alvo)
 

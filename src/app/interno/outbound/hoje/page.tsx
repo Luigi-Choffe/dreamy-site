@@ -8,7 +8,7 @@ import { completeTaskAction, createTaskAction, rescheduleTaskAction } from "../c
 import { consoleHref, demoRequested, loadDashboardData, type SearchParams } from "../data";
 import { PendingPill } from "../pending";
 import { ConsoleShell } from "../shell";
-import { Chip, ContactCell, EmptyState, fmtInt } from "../ui";
+import { Chip, ContactCell, EmptyState, TituloSecao } from "../ui";
 
 /** Sempre dinâmico: lê o store (arquivos ou Postgres) a cada request. */
 export const dynamic = "force-dynamic";
@@ -24,7 +24,6 @@ const BTN_BASE =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-[0.98]";
 const BTN_PRIMARY = `${BTN_BASE} bg-brand-soft text-brand-strong hover:bg-brand-soft-strong`;
 const BTN_GHOST = `${BTN_BASE} text-foreground-muted hover:bg-background-secondary hover:text-foreground`;
-const SECTION_TITLE = "font-display text-h4 font-bold";
 
 function dueLabel(dateKey: string): string {
   return `${dateKey.slice(8, 10)}/${dateKey.slice(5, 7)}`;
@@ -120,9 +119,9 @@ export default async function OutboundTodayPage({ searchParams }: { searchParams
     >
       <div className="flex flex-col gap-8">
         <section aria-labelledby="hoje-vencidas-title">
-          <h2 id="hoje-vencidas-title" className={SECTION_TITLE}>
-            Para hoje ({fmtInt(dueNow.length)})
-          </h2>
+          <TituloSecao id="hoje-vencidas-title" contagem={dueNow.length}>
+            Para hoje
+          </TituloSecao>
           {dueNow.length === 0 ? (
             <div className="mt-3">
               <EmptyState>Nada para hoje. Tarefas novas nascem aqui, na conta do contato ou pelo MORK.</EmptyState>
@@ -144,9 +143,9 @@ export default async function OutboundTodayPage({ searchParams }: { searchParams
         </section>
 
         <section aria-labelledby="hoje-followup-title">
-          <h2 id="hoje-followup-title" className={SECTION_TITLE}>
-            Interessados sem follow-up ({fmtInt(followUps.length)})
-          </h2>
+          <TituloSecao id="hoje-followup-title" contagem={followUps.length}>
+            Interessados sem follow-up
+          </TituloSecao>
           <p className="mt-1 text-xs text-foreground-subtle">
             Responderam com interesse e ainda não têm tarefa aberta. Interessado sem resposta esfria rápido.
           </p>
@@ -189,9 +188,9 @@ export default async function OutboundTodayPage({ searchParams }: { searchParams
         </section>
 
         <section aria-labelledby="hoje-semana-title">
-          <h2 id="hoje-semana-title" className={SECTION_TITLE}>
-            Próximos 7 dias ({fmtInt(upcoming.length)})
-          </h2>
+          <TituloSecao id="hoje-semana-title" contagem={upcoming.length}>
+            Próximos 7 dias
+          </TituloSecao>
           {upcoming.length === 0 ? (
             <div className="mt-3">
               <EmptyState>Semana livre por enquanto.</EmptyState>

@@ -35,6 +35,7 @@ import {
   fmtPct,
   Metric,
   OpenRateNote,
+  plural,
   REPLY_CLASS_LABELS,
   Stat,
   SUPPRESSION_REASON_LABELS,
@@ -324,7 +325,7 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
             <Card padding="sm">
               <ValueFunnel stages={funil} />
               <p className="mt-3 border-t border-border pt-3 text-xs text-foreground-subtle tabular-nums">
-                Reuniões: {fmtInt(reunioes.geradas)} marcada(s) · {fmtInt(reunioes.realizadas)} realizada(s)
+                Reuniões: {plural(reunioes.geradas, "marcada")} · {plural(reunioes.realizadas, "realizada")}
                 {reunioes.taxaInteressadoReuniao !== null
                   ? ` · ${fmtPct(reunioes.taxaInteressadoReuniao)} dos interessados viram reunião`
                   : ""}
@@ -451,7 +452,7 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
                       ) : null}
                       {m.pending > 0 ? (
                         <p className="text-xs font-semibold text-error">
-                          {fmtInt(m.pending)} envio(s) pendente(s). Resolva antes do próximo disparo.
+                          {plural(m.pending, "envio pendente", "envios pendentes")}. Resolva antes do próximo disparo.
                         </p>
                       ) : null}
                     </Card>
@@ -623,8 +624,8 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
               </p>
               {pendings > 0 ? (
                 <p className="text-xs font-semibold text-error">
-                  {fmtInt(pendings)} envio(s) pendente(s). Resolva com <Code>pnpm outbound:send --resolve-pending</Code>{" "}
-                  antes de qualquer envio.
+                  {plural(pendings, "envio pendente", "envios pendentes")}. Resolva com{" "}
+                  <Code>pnpm outbound:send --resolve-pending</Code> antes de qualquer envio.
                 </p>
               ) : null}
             </Card>
