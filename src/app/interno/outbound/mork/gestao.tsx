@@ -4,18 +4,19 @@ import type { AgentActivity, Demand } from "@/lib/outbound/types";
 import { Chip, DEMAND_KIND_LABELS, EmptyState, fmtInt, fmtQuando, plural } from "../ui";
 
 /**
- * GESTÃO DO TIME (aba MORK como central de gerenciamento dos agentes):
- * cartão de gestão por cadeira + BI da operação. Regras do método de dataviz:
- * - Forma antes de cor: barras horizontais para carga por cadeira (magnitude
- *   por identidade), colunas por dia para o ritmo (mudança no tempo).
- * - Cor por função: rampa SEQUENCIAL de estado com luminosidade monotônica
- *   (fila clara → andamento média → entregue no verde da casa — a mesma
- *   linguagem dos funis), nunca categórica por cadeira; identidade fica no
- *   TEXTO (nome ao lado da barra), não na cor.
- * - Encoding secundário sempre: legenda, números diretos, vãos de 2px e
- *   tooltip (`title`) por segmento — cor nunca carrega sozinha.
- * - Um eixo só; zeros mudos; texto em tokens de texto, nunca na cor da série.
- * Crescimento das barras com a mola da casa (CSS, motion-safe).
+ * GESTÃO DO TIME (aba MORK como central de gerenciamento dos agentes).
+ *
+ * Linguagem visual: os cartões são CRACHÁS DE VIDRO do time — a mesma matéria
+ * do Aquário logo acima (`aqua-glass`, cargo em eyebrow verde como nas fichas,
+ * dot de status que pulsa quando há trabalho real). Números em régua de
+ * mini-stats com zeros mudos; gráficos com trilho de escala e a tipografia de
+ * eyebrow do console.
+ *
+ * Método de dataviz (skill): forma antes de cor; rampa SEQUENCIAL de estado
+ * com luminosidade monotônica (fila clara → andamento média → entregue verde,
+ * a linguagem dos funis da casa) — identidade fica no TEXTO, nunca na cor;
+ * encoding secundário sempre (legenda, números diretos, vãos, `title`); um
+ * eixo só. Barras crescem com a mola da casa (CSS, motion-safe).
  */
 
 const BI_CSS = `
@@ -29,10 +30,12 @@ const BI_CSS = `
 
 /** Rampa sequencial de estado (clara → escura → verde): fila, andamento, entregue. */
 const SERIES = [
-  { key: "concluidas", label: "entregues (14d)", cor: "bg-brand-strong" },
+  { key: "concluidas", label: "entregues", cor: "bg-brand-strong" },
   { key: "emAndamento", label: "em andamento", cor: "bg-foreground-subtle" },
   { key: "pendentes", label: "na fila", cor: "bg-border-strong/60" },
 ] as const;
+
+const EYEBROW = "font-display text-[0.62rem] font-bold tracking-[0.24em] text-foreground-muted uppercase";
 
 function fmtHoras(h: number): string {
   if (h < 1) return "menos de 1h";
@@ -40,12 +43,12 @@ function fmtHoras(h: number): string {
   return `${(h / 24).toFixed(1).replace(".", ",")} dias`;
 }
 
-function Avatar({ monogram, vago }: { monogram: string; vago?: boolean }) {
+function Avatar({ monogram, vago, live }: { monogram: string; vago?: boolean; live?: boolean }) {
   if (vago) {
     return (
       <span
         aria-hidden
-        className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-dashed border-border-strong bg-white/50 font-display text-[0.62rem] font-bold text-foreground-subtle"
+        className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-dashed border-border-strong bg-white/50 font-display text-[0.68rem] font-bold text-foreground-subtle"
       >
         {monogram}
       </span>
@@ -54,120 +57,143 @@ function Avatar({ monogram, vago }: { monogram: string; vago?: boolean }) {
   return (
     <span
       aria-hidden
-      className="inline-flex size-9 shrink-0 items-center justify-center rounded-full font-display text-[0.62rem] font-extrabold text-[#052012]"
+      className="relative inline-flex size-11 shrink-0 items-center justify-center rounded-full font-display text-[0.7rem] font-extrabold text-[#052012]"
       style={{
         background: "linear-gradient(135deg, #46eb7e 0%, #bff5d1 100%)",
-        boxShadow: "0 0 0 1px rgb(255 255 255 / 0.85), inset 0 1px 0 rgb(255 255 255 / 0.5)",
+        boxShadow:
+          "0 0 0 1px rgb(255 255 255 / 0.9), inset 0 1px 0 rgb(255 255 255 / 0.55), 0 10px 22px -10px rgb(15 124 71 / 0.45)",
       }}
     >
       {monogram}
+      {/* O mesmo dot de vida do Aquário: pulsa só com trabalho real. */}
+      <span
+        className={`absolute -top-0.5 -right-0.5 size-2 rounded-full border border-background ${
+          live ? "aqua-viva bg-[#46eb7e]" : "bg-border-strong"
+        }`}
+      />
     </span>
   );
 }
 
-/** Micro-barra de fluxo do cartão: segmentos com vão de 2px, só o que existe. */
-function BarraDeFluxo({ carga }: { carga: CargaCadeira }) {
-  const total = carga.concluidas + carga.emAndamento + carga.pendentes;
-  if (total === 0) return null;
+/** Régua de mini-stats do crachá: entregues · andamento · fila (zeros mudos). */
+function ReguaDeCarga({ carga }: { carga: CargaCadeira }) {
   return (
-    <div aria-hidden className="flex h-2 gap-0.5 overflow-hidden rounded-full">
-      {SERIES.map((serie) =>
-        carga[serie.key] > 0 ? (
-          <span
-            key={serie.key}
-            className={`${serie.cor} h-full rounded-full`}
-            style={{ width: `${(carga[serie.key] / total) * 100}%` }}
-          />
-        ) : null,
-      )}
-    </div>
+    <dl className="grid grid-cols-3 divide-x divide-border/70 rounded-xl border border-border/70 bg-white/45">
+      {SERIES.map((serie) => {
+        const valor = carga[serie.key];
+        const forte = serie.key === "concluidas" && valor > 0;
+        return (
+          <div key={serie.key} className="px-2 py-2 text-center">
+            <dd
+              className={`font-display text-lg leading-none font-bold tabular-nums ${
+                forte ? "text-brand-strong" : valor > 0 ? "text-foreground" : "text-foreground-subtle/50"
+              }`}
+            >
+              {fmtInt(valor)}
+            </dd>
+            <dt className="mt-1 text-[0.54rem] font-semibold tracking-wider text-foreground-subtle uppercase">
+              {serie.label}
+            </dt>
+          </div>
+        );
+      })}
+    </dl>
   );
 }
 
-/** Cartão de gestão de uma cadeira: quem é, o que faz agora, carga e entregas. */
-function CartaoDeCadeira({ carga, agora }: { carga: CargaCadeira; agora: string }) {
+/** Crachá de gestão de uma cadeira: quem é, o que faz agora, carga e entregas. */
+function CartaoDeCadeira({ carga, agora, live }: { carga: CargaCadeira; agora: string; live: boolean }) {
   const seat = TEAM.find((s) => s.slug === carga.slug);
   if (!seat) return null;
-  const contagens = [
-    carga.concluidas > 0 ? plural(carga.concluidas, "entregue") : null,
-    carga.emAndamento > 0 ? plural(carga.emAndamento, "em andamento", "em andamento") : null,
-    carga.pendentes > 0 ? plural(carga.pendentes, "na fila", "na fila") : null,
-  ].filter(Boolean);
 
   if (!seat.hired) {
     // Vaga: convite honesto, sem números inventados (lei 6 do redesign).
     return (
-      <article className="flex flex-col gap-2 rounded-xl border border-dashed border-border-strong bg-background-secondary/30 p-4">
-        <div className="flex items-center gap-2.5">
+      <article className="flex flex-col gap-2.5 rounded-2xl border border-dashed border-border-strong bg-white/30 p-4">
+        <div className="flex items-center gap-3">
           <Avatar monogram={seat.monogram} vago />
           <div className="min-w-0">
-            <h3 className="font-display text-small font-bold text-foreground">{seat.nome} · vaga reservada</h3>
-            <p className="truncate text-xs text-foreground-subtle" title={seat.cargo}>
-              {seat.cargo}
+            <h3 className="font-display text-base leading-tight font-bold text-foreground">{seat.nome}</h3>
+            <p className="mt-0.5 truncate text-[0.6rem] font-semibold tracking-[0.14em] text-foreground-subtle uppercase">
+              {seat.cargo} · vaga reservada
             </p>
           </div>
         </div>
-        <p className="text-xs leading-snug text-foreground-muted">{seat.motivo}</p>
+        <p className="text-xs leading-relaxed text-foreground-muted">{seat.motivo}</p>
       </article>
     );
   }
 
   return (
-    <article className="flex flex-col gap-2.5 rounded-xl border border-border bg-surface p-4 shadow-sm transition-shadow duration-(--duration-fast) hover:shadow-md">
-      <div className="flex items-center gap-2.5">
-        <Avatar monogram={seat.monogram} />
+    <article className="aqua-glass flex flex-col gap-3 rounded-2xl p-4">
+      <div className="flex items-center gap-3">
+        <Avatar monogram={seat.monogram} live={live} />
         <div className="min-w-0 flex-1">
-          <h3 className="truncate font-display text-small font-bold text-foreground" title={seat.nome}>
+          <h3 className="truncate font-display text-base leading-tight font-bold text-foreground" title={seat.nome}>
             {seat.nome}
           </h3>
-          <p className="truncate text-xs text-foreground-subtle" title={seat.cargo}>
+          {/* Cargo em eyebrow verde: a MESMA linguagem da ficha do Aquário. */}
+          <p
+            className="mt-0.5 truncate text-[0.6rem] font-semibold tracking-[0.14em] text-brand-strong uppercase"
+            title={seat.cargo}
+          >
             {seat.cargo}
           </p>
         </div>
       </div>
-      <p className="text-xs leading-snug text-foreground-muted">
-        <span className="font-semibold text-foreground">Agora: </span>
-        {agora}
+
+      {/* A fala do agente: presença, não metadado. */}
+      <p className="flex items-start gap-2 text-xs leading-snug text-foreground">
+        <span
+          aria-hidden
+          className={`mt-[3px] size-1.5 shrink-0 rounded-full ${live ? "aqua-viva bg-brand" : "bg-border-strong"}`}
+        />
+        <span className="min-w-0">{agora}</span>
       </p>
-      <BarraDeFluxo carga={carga} />
-      {contagens.length > 0 ? (
-        <p className="text-xs text-foreground-subtle tabular-nums">{contagens.join(" · ")}</p>
-      ) : (
-        <p className="text-xs text-foreground-subtle">Fila limpa; é só abrir uma demanda.</p>
-      )}
+
+      <ReguaDeCarga carga={carga} />
+
       {carga.entregas.length > 0 ? (
-        <ul className="flex flex-col gap-1 border-t border-border pt-2">
-          {carga.entregas.map((entrega) => (
-            <li key={entrega.doneAt + entrega.title} className="flex items-baseline gap-2 text-xs">
-              <span aria-hidden className="size-1 shrink-0 translate-y-[-1px] rounded-full bg-brand" />
-              <span className="min-w-0 truncate text-foreground" title={entrega.title}>
-                {entrega.title}
-              </span>
-              <span className="ml-auto shrink-0 text-foreground-subtle tabular-nums">
-                {fmtQuando(entrega.doneAt).slice(0, 5)}
-              </span>
-            </li>
-          ))}
-        </ul>
+        <div>
+          <p className="text-[0.56rem] font-bold tracking-[0.18em] text-foreground-subtle uppercase">
+            Entregas recentes
+          </p>
+          <ul className="mt-1.5 flex flex-col gap-1">
+            {carga.entregas.map((entrega) => (
+              <li key={entrega.doneAt + entrega.title} className="flex items-baseline gap-2 text-xs">
+                <span aria-hidden className="size-1 shrink-0 translate-y-[-1px] rounded-full bg-brand" />
+                <span className="min-w-0 truncate text-foreground" title={entrega.title}>
+                  {entrega.title}
+                </span>
+                <span className="ml-auto shrink-0 text-foreground-subtle tabular-nums">
+                  {fmtQuando(entrega.doneAt).slice(0, 5)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
       ) : null}
-      <p className="mt-auto flex flex-wrap items-center gap-1 border-t border-border pt-2 text-[0.62rem] text-foreground-subtle">
-        atende
+
+      <div className="mt-auto flex flex-wrap items-center gap-1.5 border-t border-border/70 pt-2.5">
         {carga.kinds.map((kind) => (
           <Chip key={kind} tone="outline">
             {DEMAND_KIND_LABELS[kind]}
           </Chip>
         ))}
         {carga.horasMediaConclusao !== undefined ? (
-          <span className="ml-auto tabular-nums" title="Média entre abrir e concluir, nas entregas dos últimos 14 dias">
-            entrega média: {fmtHoras(carga.horasMediaConclusao)}
+          <span
+            className="ml-auto text-[0.62rem] text-foreground-subtle tabular-nums"
+            title="Média entre abrir e concluir, nas entregas dos últimos 14 dias"
+          >
+            entrega média <span className="font-semibold text-foreground">{fmtHoras(carga.horasMediaConclusao)}</span>
           </span>
         ) : null}
-      </p>
+      </div>
     </article>
   );
 }
 
-/** Grade de cartões de gestão (contratados por carga; a vaga fecha a grade). */
+/** Grade de crachás (contratados por carga; a vaga fecha a grade). */
 export function GestaoDoTime({
   demands,
   activities,
@@ -184,28 +210,26 @@ export function GestaoDoTime({
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {ordenadas.map((carga) => {
         const seat = TEAM.find((s) => s.slug === carga.slug);
-        const agora = seat ? seatStatus(seat, statusInput).label : "";
-        return <CartaoDeCadeira key={carga.slug} carga={carga} agora={agora} />;
+        const status = seat ? seatStatus(seat, statusInput) : undefined;
+        return (
+          <CartaoDeCadeira key={carga.slug} carga={carga} agora={status?.label ?? ""} live={status?.live ?? false} />
+        );
       })}
     </div>
   );
 }
 
-/** Barras horizontais: fluxo de demandas por cadeira (14 dias). */
+/** Barras horizontais sobre trilho: fluxo de demandas por cadeira (14 dias). */
 function GraficoCarga({ cargas }: { cargas: CargaCadeira[] }) {
   const comDados = cargas.filter((c) => c.hired && c.pendentes + c.emAndamento + c.concluidas > 0);
   const max = Math.max(1, ...comDados.map((c) => c.pendentes + c.emAndamento + c.concluidas));
-  if (comDados.length === 0) {
-    return <EmptyState>Sem demandas nos últimos 14 dias — o BI nasce dos registros da fila.</EmptyState>;
-  }
   return (
-    <figure className="rounded-xl border border-border bg-surface p-4 shadow-sm">
+    <figure className="aqua-glass flex flex-col rounded-2xl p-4">
       <figcaption className="flex flex-wrap items-baseline justify-between gap-2">
-        <span className="font-display text-small font-bold text-foreground">Fluxo de demandas por cadeira</span>
-        <span className="text-xs text-foreground-subtle">últimos 14 dias</span>
+        <span className={EYEBROW}>Fluxo de demandas</span>
+        <span className="text-[0.64rem] text-foreground-subtle tabular-nums">últimos 14 dias</span>
       </figcaption>
-      {/* Legenda: a cor nunca carrega sozinha. */}
-      <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[0.66rem] text-foreground-muted">
+      <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[0.64rem] text-foreground-muted">
         {SERIES.map((serie) => (
           <li key={serie.key} className="flex items-center gap-1.5">
             <span aria-hidden className={`size-2 rounded-full ${serie.cor}`} />
@@ -213,63 +237,78 @@ function GraficoCarga({ cargas }: { cargas: CargaCadeira[] }) {
           </li>
         ))}
       </ul>
-      <ul className="mt-3 flex flex-col gap-2.5">
-        {comDados.map((carga, i) => {
-          const total = carga.pendentes + carga.emAndamento + carga.concluidas;
-          return (
-            <li key={carga.slug} className="flex items-center gap-3 text-xs">
-              <span className="w-16 shrink-0 font-display font-bold text-foreground">{carga.nome}</span>
-              <span className="flex h-3 min-w-0 flex-1 items-stretch gap-0.5">
-                <span
-                  className="bi-cresce-x flex gap-0.5 overflow-hidden rounded-full"
-                  style={{ width: `${(total / max) * 100}%`, animationDelay: `${i * 70}ms` }}
-                >
-                  {SERIES.map((serie) =>
-                    carga[serie.key] > 0 ? (
-                      <span
-                        key={serie.key}
-                        title={`${carga.nome}: ${fmtInt(carga[serie.key])} ${serie.label}`}
-                        className={`${serie.cor} h-full min-w-1 rounded-full`}
-                        style={{ width: `${(carga[serie.key] / total) * 100}%` }}
-                      />
-                    ) : null,
-                  )}
+      {comDados.length === 0 ? (
+        <div className="mt-3">
+          <EmptyState>Sem demandas nos últimos 14 dias — o BI nasce dos registros da fila.</EmptyState>
+        </div>
+      ) : (
+        <ul className="mt-4 flex flex-col gap-3">
+          {comDados.map((carga, i) => {
+            const total = carga.pendentes + carga.emAndamento + carga.concluidas;
+            return (
+              <li key={carga.slug} className="flex items-center gap-3 text-xs">
+                <span className="w-16 shrink-0 font-display text-[0.68rem] font-bold text-foreground">
+                  {carga.nome}
                 </span>
-              </span>
-              <span className="w-8 shrink-0 text-right font-semibold text-foreground tabular-nums">
-                {fmtInt(total)}
-              </span>
-            </li>
-          );
-        })}
-      </ul>
+                {/* Trilho de escala: a barra vive sobre ele, nunca solta no ar. */}
+                <span className="relative h-4 min-w-0 flex-1 overflow-hidden rounded-full bg-background-secondary/60">
+                  <span
+                    className="bi-cresce-x absolute inset-y-0 left-0 flex gap-0.5 overflow-hidden rounded-full"
+                    style={{ width: `${(total / max) * 100}%`, animationDelay: `${i * 70}ms` }}
+                  >
+                    {SERIES.map((serie) =>
+                      carga[serie.key] > 0 ? (
+                        <span
+                          key={serie.key}
+                          title={`${carga.nome}: ${fmtInt(carga[serie.key])} ${serie.label} (14 dias)`}
+                          className={`${serie.cor} h-full min-w-1.5 rounded-full`}
+                          style={{ width: `${(carga[serie.key] / total) * 100}%` }}
+                        />
+                      ) : null,
+                    )}
+                  </span>
+                </span>
+                <span className="w-8 shrink-0 text-right font-display text-sm font-bold text-foreground tabular-nums">
+                  {fmtInt(total)}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </figure>
   );
 }
 
-/** Colunas por dia: ritmo de atividades do time (14 dias); hoje no verde. */
+/** Colunas por dia sobre linha de base: ritmo de atividades do time (14 dias). */
 function GraficoRitmo({ ritmo }: { ritmo: DiaDeRitmo[] }) {
   const max = Math.max(1, ...ritmo.map((d) => d.total));
   const total = ritmo.reduce((sum, d) => sum + d.total, 0);
   const rotulo = (key: string) => `${key.slice(8, 10)}/${key.slice(5, 7)}`;
   return (
-    <figure className="rounded-xl border border-border bg-surface p-4 shadow-sm">
+    <figure className="aqua-glass flex flex-col rounded-2xl p-4">
       <figcaption className="flex flex-wrap items-baseline justify-between gap-2">
-        <span className="font-display text-small font-bold text-foreground">Ritmo do time</span>
-        <span className="text-xs text-foreground-subtle tabular-nums">
+        <span className={EYEBROW}>Ritmo do time</span>
+        <span className="text-[0.64rem] text-foreground-subtle tabular-nums">
           {plural(total, "ação registrada", "ações registradas")} · 14 dias
         </span>
       </figcaption>
-      <div aria-hidden className="mt-3 flex h-24 items-end gap-1">
+      <div
+        aria-hidden
+        className="mt-4 flex flex-1 items-end justify-center gap-1.5 border-b border-border pb-px"
+        style={{ minHeight: "6.5rem" }}
+      >
         {ritmo.map((dia, i) => {
           const hoje = i === ritmo.length - 1;
           return (
             <span
               key={dia.dateKey}
               title={`${rotulo(dia.dateKey)} · ${plural(dia.total, "ação", "ações")}`}
-              className={`bi-cresce-y min-w-0 flex-1 rounded-t ${hoje ? "bg-brand-strong" : "bg-foreground-subtle/70"}`}
+              className={`bi-cresce-y w-full max-w-5 min-w-0 flex-1 rounded-t-[3px] ${
+                hoje ? "bg-brand-strong" : dia.total > 0 ? "bg-foreground-subtle/70" : "bg-border/80"
+              }`}
               style={{
-                height: dia.total > 0 ? `${Math.max(6, (dia.total / max) * 100)}%` : "2px",
+                height: dia.total > 0 ? `${Math.max(8, (dia.total / max) * 100)}%` : "3px",
                 animationDelay: `${i * 30}ms`,
               }}
             />
@@ -299,7 +338,7 @@ export function BiDaOperacao({
   return (
     <>
       <style>{BI_CSS}</style>
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2">
         <GraficoCarga cargas={cargas} />
         <GraficoRitmo ritmo={ritmo} />
       </div>
