@@ -1,5 +1,6 @@
 import { seatFalas, seatStatus, TEAM, teamGraph, type SeatStatus, type TeamSeat } from "@/lib/outbound/team";
 import { AquarioRede } from "./aquario-rede";
+import { ICONE_DO_AGENTE } from "./team-icones";
 import type { DashboardData } from "./data";
 import { plural } from "./ui";
 
@@ -130,6 +131,7 @@ function NoDaRede({
   fase: number;
 }) {
   const isMork = seat.slug === "mork";
+  const Icone = ICONE_DO_AGENTE[seat.slug];
   return (
     <li
       tabIndex={0}
@@ -146,14 +148,15 @@ function NoDaRede({
         {seat.hired ? (
           <span
             aria-hidden
-            className={`aqua-respira relative inline-flex shrink-0 items-center justify-center rounded-full font-display font-extrabold text-[#052012] ${
-              isMork ? "size-12 text-[0.82rem]" : "size-10 text-[0.68rem]"
+            className={`aqua-respira relative inline-flex shrink-0 items-center justify-center rounded-full text-[#052012] ${
+              isMork ? "size-12" : "size-10"
             }`}
             style={{
               background: "linear-gradient(135deg, #46eb7e 0%, #bff5d1 100%)",
+              // Neon leve da identidade: o brilho verde vive no próprio avatar.
               boxShadow: isMork
-                ? "0 0 0 2px rgb(255 255 255 / 0.9), inset 0 1px 0 rgb(255 255 255 / 0.55), 0 14px 30px -10px rgb(15 124 71 / 0.5)"
-                : "0 0 0 1px rgb(255 255 255 / 0.85), inset 0 1px 0 rgb(255 255 255 / 0.5), 0 10px 22px -8px rgb(15 124 71 / 0.4)",
+                ? "0 0 0 2px rgb(255 255 255 / 0.9), inset 0 1px 0 rgb(255 255 255 / 0.55), 0 0 16px rgb(70 235 126 / 0.4), 0 14px 30px -10px rgb(15 124 71 / 0.5)"
+                : "0 0 0 1px rgb(255 255 255 / 0.85), inset 0 1px 0 rgb(255 255 255 / 0.5), 0 0 12px rgb(70 235 126 / 0.3), 0 10px 22px -8px rgb(15 124 71 / 0.4)",
               animationDelay: `${fase * -1.3}s`,
             }}
           >
@@ -164,7 +167,7 @@ function NoDaRede({
                 className="aqua-orbita absolute -inset-2 rounded-full border border-dashed border-[#46eb7e]/45"
               />
             ) : null}
-            {seat.monogram}
+            <Icone className={isMork ? "size-5" : "size-4"} strokeWidth={2.2} aria-hidden focusable="false" />
             <span
               aria-hidden
               className={`aqua-dot absolute -top-0.5 -right-0.5 size-2 rounded-full border border-background ${

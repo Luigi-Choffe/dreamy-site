@@ -5,8 +5,8 @@ import { TEAM, type SeatSlug } from "./team";
  * BI do time do MORK (aba MORK = central de gerenciamento dos agentes).
  * Derivações PURAS e testáveis sobre demandas e atividades — nada inventado:
  * a atribuição de uma demanda segue a ESPECIALIDADE da fila (o mesmo mapa de
- * kinds do Aquário): copy=VERBO, leads=GARIMPO, resposta=TRATO,
- * operacao/outra=FORJA, analise=MIRA (vaga; cai no MORK enquanto não há
+ * kinds do Aquário): copy=NIX, leads=KAI, resposta=TAY,
+ * operacao/outra=ZED, analise=MIRA (vaga; cai no MORK enquanto não há
  * contratação). Sem PII: só títulos de demanda e contagens.
  */
 

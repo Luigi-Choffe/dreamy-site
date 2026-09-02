@@ -1,6 +1,9 @@
 import { seatStatus, TEAM } from "@/lib/outbound/team";
+import { ICONE_DO_AGENTE } from "../team-icones";
 import { cargaPorCadeira, ritmoDoTime, type CargaCadeira, type DiaDeRitmo } from "@/lib/outbound/team-bi";
 import type { AgentActivity, Demand } from "@/lib/outbound/types";
+
+type SeatSlugDoTime = (typeof TEAM)[number]["slug"];
 import { Chip, DEMAND_KIND_LABELS, EmptyState, fmtInt, fmtQuando, plural } from "../ui";
 
 /**
@@ -43,28 +46,29 @@ function fmtHoras(h: number): string {
   return `${(h / 24).toFixed(1).replace(".", ",")} dias`;
 }
 
-function Avatar({ monogram, vago, live }: { monogram: string; vago?: boolean; live?: boolean }) {
+function Avatar({ slug, vago, live }: { slug: SeatSlugDoTime; vago?: boolean; live?: boolean }) {
+  const Icone = ICONE_DO_AGENTE[slug];
   if (vago) {
     return (
       <span
         aria-hidden
-        className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-dashed border-border-strong bg-white/50 font-display text-[0.68rem] font-bold text-foreground-subtle"
+        className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-dashed border-border-strong bg-white/50 text-foreground-subtle"
       >
-        {monogram}
+        <Icone className="size-[1.05rem]" strokeWidth={2} aria-hidden focusable="false" />
       </span>
     );
   }
   return (
     <span
       aria-hidden
-      className="relative inline-flex size-11 shrink-0 items-center justify-center rounded-full font-display text-[0.7rem] font-extrabold text-[#052012]"
+      className="relative inline-flex size-11 shrink-0 items-center justify-center rounded-full text-[#052012]"
       style={{
         background: "linear-gradient(135deg, #46eb7e 0%, #bff5d1 100%)",
         boxShadow:
-          "0 0 0 1px rgb(255 255 255 / 0.9), inset 0 1px 0 rgb(255 255 255 / 0.55), 0 10px 22px -10px rgb(15 124 71 / 0.45)",
+          "0 0 0 1px rgb(255 255 255 / 0.9), inset 0 1px 0 rgb(255 255 255 / 0.55), 0 0 14px rgb(70 235 126 / 0.32), 0 10px 22px -10px rgb(15 124 71 / 0.45)",
       }}
     >
-      {monogram}
+      <Icone className="size-[1.15rem]" strokeWidth={2.2} aria-hidden focusable="false" />
       {/* O mesmo dot de vida do Aquário: pulsa só com trabalho real. */}
       <span
         className={`absolute -top-0.5 -right-0.5 size-2 rounded-full border border-background ${
@@ -115,7 +119,7 @@ function CartaoDeCadeira({ carga, agora, live }: { carga: CargaCadeira; agora: s
     return (
       <article className="flex flex-col gap-2.5 rounded-2xl border border-dashed border-border bg-white/25 p-5">
         <div className="flex items-center gap-3">
-          <Avatar monogram={seat.monogram} vago />
+          <Avatar slug={carga.slug} vago />
           <div className="min-w-0">
             <h3 className="font-display text-base leading-tight font-bold text-foreground">{seat.nome}</h3>
             <p className="mt-0.5 truncate text-[0.6rem] font-semibold tracking-[0.14em] text-foreground-subtle uppercase">
@@ -131,7 +135,7 @@ function CartaoDeCadeira({ carga, agora, live }: { carga: CargaCadeira; agora: s
   return (
     <article className="aqua-glass flex flex-col gap-3.5 rounded-2xl p-5">
       <div className="flex items-center gap-3">
-        <Avatar monogram={seat.monogram} live={live} />
+        <Avatar slug={carga.slug} live={live} />
         <div className="min-w-0 flex-1">
           <h3 className="truncate font-display text-base leading-tight font-bold text-foreground" title={seat.nome}>
             {seat.nome}
@@ -309,7 +313,11 @@ function GraficoRitmo({ ritmo }: { ritmo: DiaDeRitmo[] }) {
               key={dia.dateKey}
               title={`${rotulo(dia.dateKey)} · ${plural(dia.total, "ação", "ações")}`}
               className={`bi-cresce-y w-full max-w-5 min-w-0 flex-1 rounded-t-[3px] ${
-                hoje ? "bg-brand-strong" : dia.total > 0 ? "bg-foreground-subtle/70" : "bg-border/80"
+                hoje
+                  ? "bg-brand-strong shadow-[0_0_10px_rgb(70_235_126/0.4)]"
+                  : dia.total > 0
+                    ? "bg-foreground-subtle/70"
+                    : "bg-border/80"
               }`}
               style={{
                 height: dia.total > 0 ? `${Math.max(8, (dia.total / max) * 100)}%` : "3px",
