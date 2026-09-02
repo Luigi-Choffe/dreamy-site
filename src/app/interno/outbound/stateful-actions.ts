@@ -46,6 +46,32 @@ export async function criarDemandaComEstado(_prev: EstadoForm | null, formData: 
   return executa(() => createDemandAction(formData), "Demanda criada. O MORK vê a fila na hora.");
 }
 
+/**
+ * Módulo de ajuste dos agentes (tela de gestão): o pedido do dono vira uma
+ * DEMANDA na fila da cadeira certa — gate humano intacto: o MORK executa pela
+ * CLI e presta contas; nada muda na configuração sem passar pela fila.
+ */
+export async function solicitarAjusteComEstado(_prev: EstadoForm | null, formData: FormData): Promise<EstadoForm> {
+  return executa(async () => {
+    const slug = formData.get("seat");
+    const pedido = formData.get("pedido");
+    if (typeof pedido !== "string" || pedido.trim() === "") throw new Error("Descreva o ajuste que você quer.");
+    const { TEAM } = await import("@/lib/outbound/team");
+    const seat = TEAM.find((s) => s.slug === slug && s.hired);
+    if (!seat) throw new Error("Agente não encontrado.");
+    const resumo = pedido.trim().replace(/\s+/g, " ");
+    const composto = new FormData();
+    composto.set(
+      "title",
+      `Ajuste no ${seat.nome}: ${resumo.length > 64 ? `${resumo.slice(0, 63).trimEnd()}…` : resumo}`,
+    );
+    composto.set("kind", seat.kinds[0] as string);
+    composto.set("details", `${resumo}\n\n(Solicitação de ajuste do agente, feita na tela de gestão do time.)`);
+    if (formData.get("demo") === "1") composto.set("demo", "1");
+    await createDemandAction(composto);
+  }, "Ajuste solicitado. Ele entrou na fila do agente e o MORK executa.");
+}
+
 export async function salvarConfiguracaoComEstado(_prev: EstadoForm | null, formData: FormData): Promise<EstadoForm> {
   return executa(() => saveSettingsAction(formData), "Configuração salva.");
 }

@@ -4,7 +4,10 @@ import { cargaPorCadeira, ritmoDoTime, type CargaCadeira, type DiaDeRitmo } from
 import type { AgentActivity, Demand } from "@/lib/outbound/types";
 
 type SeatSlugDoTime = (typeof TEAM)[number]["slug"];
-import { Chip, DEMAND_KIND_LABELS, EmptyState, fmtInt, fmtQuando, plural } from "../ui";
+import { FormComEstado } from "../form-com-estado";
+import { SubmitButton } from "../pending";
+import { solicitarAjusteComEstado } from "../stateful-actions";
+import { Chip, DEMAND_KIND_LABELS, EmptyState, fmtInt, fmtQuando, MenuLinha, plural } from "../ui";
 
 /**
  * GESTÃO DO TIME (aba MORK como central de gerenciamento dos agentes).
@@ -110,7 +113,17 @@ function ReguaDeCarga({ carga }: { carga: CargaCadeira }) {
 }
 
 /** Crachá de gestão de uma cadeira: quem é, o que faz agora, carga e entregas. */
-function CartaoDeCadeira({ carga, agora, live }: { carga: CargaCadeira; agora: string; live: boolean }) {
+function CartaoDeCadeira({
+  carga,
+  agora,
+  live,
+  isDemo,
+}: {
+  carga: CargaCadeira;
+  agora: string;
+  live: boolean;
+  isDemo: boolean;
+}) {
   const seat = TEAM.find((s) => s.slug === carga.slug);
   if (!seat) return null;
 
@@ -148,6 +161,33 @@ function CartaoDeCadeira({ carga, agora, live }: { carga: CargaCadeira; agora: s
             {seat.cargo}
           </p>
         </div>
+        {/* Módulo de ajuste do agente: o pedido do dono vira demanda na fila
+            desta cadeira (gate humano; o MORK executa e presta contas). */}
+        <MenuLinha rotulo={`Solicitar ajuste no ${seat.nome}`} gatilho="ajustar">
+          <FormComEstado action={solicitarAjusteComEstado} resetOnOk className="flex w-72 flex-col gap-2 p-2 text-xs">
+            <input type="hidden" name="seat" value={seat.slug} />
+            {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
+            <label htmlFor={`ajuste-${seat.slug}`} className="font-semibold text-foreground">
+              O que ajustar no {seat.nome}?
+            </label>
+            <textarea
+              id={`ajuste-${seat.slug}`}
+              name="pedido"
+              required
+              rows={3}
+              placeholder="ex.: assuntos mais curtos nos follow-ups"
+              className="w-full resize-y rounded-md border border-border bg-surface px-2.5 py-1.5 text-xs text-foreground placeholder:text-foreground-subtle/80 hover:border-border-strong focus:border-brand-strong focus:ring-3 focus:ring-brand-strong/20 focus:outline-none"
+            />
+            <div>
+              <SubmitButton size="sm" loadingLabel="Enviando">
+                Solicitar ajuste
+              </SubmitButton>
+            </div>
+            <p className="text-[0.62rem] leading-snug text-foreground-subtle">
+              Vira uma demanda na fila do {seat.nome}; o MORK executa e presta contas aqui.
+            </p>
+          </FormComEstado>
+        </MenuLinha>
       </div>
 
       {/* A fala do agente: presença, não metadado. */}
@@ -206,10 +246,12 @@ export function GestaoDoTime({
   demands,
   activities,
   now,
+  isDemo,
 }: {
   demands: Demand[];
   activities: AgentActivity[];
   now: Date;
+  isDemo: boolean;
 }) {
   const cargas = cargaPorCadeira(demands, now);
   const statusInput = { demands, activities, now };
@@ -220,7 +262,13 @@ export function GestaoDoTime({
         const seat = TEAM.find((s) => s.slug === carga.slug);
         const status = seat ? seatStatus(seat, statusInput) : undefined;
         return (
-          <CartaoDeCadeira key={carga.slug} carga={carga} agora={status?.label ?? ""} live={status?.live ?? false} />
+          <CartaoDeCadeira
+            key={carga.slug}
+            carga={carga}
+            agora={status?.label ?? ""}
+            live={status?.live ?? false}
+            isDemo={isDemo}
+          />
         );
       })}
     </div>

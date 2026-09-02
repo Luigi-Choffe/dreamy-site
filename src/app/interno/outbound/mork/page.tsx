@@ -96,7 +96,12 @@ export default async function MorkPage({ searchParams }: { searchParams: Promise
             equipe de agentes se gerencia.
           </p>
           <div className="mt-5 flex flex-col gap-4">
-            <GestaoDoTime demands={data.demands} activities={data.agentActivities} now={new Date(now)} />
+            <GestaoDoTime
+              demands={data.demands}
+              activities={data.agentActivities}
+              now={new Date(now)}
+              isDemo={isDemo}
+            />
             <BiDaOperacao demands={data.demands} activities={data.agentActivities} now={new Date(now)} />
           </div>
         </section>
