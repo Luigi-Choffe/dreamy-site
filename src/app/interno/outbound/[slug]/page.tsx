@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { Fragment } from "react";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -22,11 +24,13 @@ import {
   EmptyState,
   EVENT_TYPE_LABELS,
   EVENT_TYPE_TONES,
+  fmtDate,
   fmtInt,
   fmtQuando,
   type FunnelStepData,
-  Quando,
   OpenRateNote,
+  plural,
+  Quando,
   REPLY_CLASS_LABELS,
   REPLY_CLASS_TONES,
   StepFunnel,
@@ -85,10 +89,27 @@ export default async function OutboundCampaignPage({
     .filter((r) => r.campaignSlug === slug)
     .sort((a, b) => Date.parse(b.receivedAt) - Date.parse(a.receivedAt))
     .slice(0, ACTIVITY_LIMIT);
-  const recentEvents = data.events
+
+  // R10: atividades crescem pelo "Mostrar mais" (?limite=) e agrupam por dia.
+  const spStr = (v: string | string[] | undefined): string =>
+    typeof v === "string" ? v : Array.isArray(v) ? (v[0] ?? "") : "";
+  const limiteRaw = Number.parseInt(spStr(sp.limite), 10);
+  const limite = Number.isFinite(limiteRaw) ? Math.min(Math.max(limiteRaw, ACTIVITY_LIMIT), 500) : ACTIVITY_LIMIT;
+  const eventosTodos = data.events
     .filter((e) => e.campaignSlug === slug)
-    .sort((a, b) => Date.parse(b.occurredAt) - Date.parse(a.occurredAt))
-    .slice(0, ACTIVITY_LIMIT);
+    .sort((a, b) => Date.parse(b.occurredAt) - Date.parse(a.occurredAt));
+  const recentEvents = eventosTodos.slice(0, limite);
+  const gruposDeEventos: Array<{ date: string; rows: typeof recentEvents }> = [];
+  for (const event of recentEvents) {
+    const date = fmtDate(event.occurredAt);
+    const last = gruposDeEventos.at(-1);
+    if (last && last.date === date) last.rows.push(event);
+    else gruposDeEventos.push({ date, rows: [event] });
+  }
+  const maisEventosHref = `/interno/outbound/${slug}?${new URLSearchParams({
+    ...(isDemo ? { demo: "1" } : {}),
+    limite: String(Math.min(limite + ACTIVITY_LIMIT, 500)),
+  }).toString()}`;
 
   const contactsById = new Map(data.contacts.map((c) => [c.id, c]));
   const sendsById = new Map(campaignSends.map((s) => [s.id, s]));
@@ -165,7 +186,7 @@ export default async function OutboundCampaignPage({
       sessionEmail={session.email}
       active="campanha"
       data={data}
-      title={campaign.industria}
+      title={campaign.industria.charAt(0).toUpperCase() + campaign.industria.slice(1)}
       subtitle={`${campaign.slug} · âncora: ${ANCHOR_LABELS[campaign.anchor]} · ${fmtInt(campaignEnrollments.length)} contatos inscritos`}
       headerExtra={headerExtra}
     >
@@ -230,6 +251,10 @@ export default async function OutboundCampaignPage({
           ) : (
             <div className="mt-4">
               <StepFunnel steps={funnel} />
+              {/* A ressalva do asterisco mora AO LADO do funil, não no pé da página. */}
+              <div className="mt-2">
+                <OpenRateNote />
+              </div>
             </div>
           )}
         </section>
@@ -331,10 +356,7 @@ export default async function OutboundCampaignPage({
 
         <section aria-labelledby="atividades-title">
           <h2 id="atividades-title" className="font-display text-h4 font-bold">
-            Últimas atividades{" "}
-            <span className="font-sans text-xs font-normal text-foreground-subtle">
-              (máx. {fmtInt(ACTIVITY_LIMIT)})
-            </span>
+            Últimas atividades
           </h2>
           {recentEvents.length === 0 ? (
             <div className="mt-4">
@@ -368,26 +390,55 @@ export default async function OutboundCampaignPage({
                   </tr>
                 </thead>
                 <tbody>
-                  {recentEvents.map((event) => {
-                    const send = sendsById.get(event.sendId);
-                    const contact = send ? contactsById.get(send.contactId) : undefined;
-                    return (
-                      <tr key={event.id} className="border-b border-border last:border-b-0">
-                        <td className="px-4 py-2">
-                          <Chip tone={EVENT_TYPE_TONES[event.type] ?? "neutral"}>
-                            {EVENT_TYPE_LABELS[event.type] ?? event.type}
-                          </Chip>
-                        </td>
-                        <td className="px-4 py-2 text-foreground-muted uppercase">{send?.stepId ?? "—"}</td>
-                        <td className="px-4 py-2">{contact ? <ContactCell contact={contact} /> : "—"}</td>
-                        <td className="px-4 py-2 whitespace-nowrap text-foreground-muted tabular-nums">
-                          <Quando iso={event.occurredAt} />
+                  {/* R10: agrupado por dia (cabeçalho interno), como na aba Atividade. */}
+                  {gruposDeEventos.map((grupo) => (
+                    <Fragment key={grupo.date}>
+                      <tr className="border-b border-border bg-background-secondary/40">
+                        <td
+                          colSpan={4}
+                          className="px-4 py-1.5 text-xs font-semibold tracking-wider text-foreground-muted uppercase"
+                        >
+                          {grupo.date}
+                          <span className="ml-1.5 font-normal text-foreground-subtle tabular-nums">
+                            {plural(grupo.rows.length, "evento")}
+                          </span>
                         </td>
                       </tr>
-                    );
-                  })}
+                      {grupo.rows.map((event) => {
+                        const send = sendsById.get(event.sendId);
+                        const contact = send ? contactsById.get(send.contactId) : undefined;
+                        return (
+                          <tr key={event.id} className="border-b border-border last:border-b-0">
+                            <td className="px-4 py-2">
+                              <Chip tone={EVENT_TYPE_TONES[event.type] ?? "neutral"}>
+                                {EVENT_TYPE_LABELS[event.type] ?? event.type}
+                              </Chip>
+                            </td>
+                            <td className="px-4 py-2 text-foreground-muted uppercase">{send?.stepId ?? "—"}</td>
+                            <td className="px-4 py-2">{contact ? <ContactCell contact={contact} /> : "—"}</td>
+                            <td className="px-4 py-2 whitespace-nowrap text-foreground-muted tabular-nums">
+                              <Quando iso={event.occurredAt} />
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </Fragment>
+                  ))}
                 </tbody>
               </table>
+              {eventosTodos.length > recentEvents.length ? (
+                <div className="border-t border-border bg-background-secondary/30 px-3 py-2.5 text-center text-small">
+                  <Link
+                    href={maisEventosHref}
+                    className="font-semibold text-brand-strong underline-offset-2 hover:underline"
+                  >
+                    Mostrar mais {fmtInt(Math.min(ACTIVITY_LIMIT, eventosTodos.length - recentEvents.length))}
+                  </Link>{" "}
+                  <span className="text-foreground-subtle tabular-nums">
+                    · exibindo {fmtInt(recentEvents.length)} de {fmtInt(eventosTodos.length)}
+                  </span>
+                </div>
+              ) : null}
             </div>
           )}
         </section>
@@ -433,7 +484,10 @@ export default async function OutboundCampaignPage({
                   {campaignReplies.map((reply) => {
                     const contact = contactsById.get(reply.contactId);
                     return (
-                      <tr key={reply.id} className="border-b border-border last:border-b-0">
+                      <tr
+                        key={reply.id}
+                        className="border-b border-border last:border-b-0 even:bg-background-secondary/25"
+                      >
                         <td className="px-4 py-2">{contact ? <ContactCell contact={contact} /> : "—"}</td>
                         <td className="px-4 py-2">
                           <Chip tone={REPLY_CLASS_TONES[reply.classification] ?? "neutral"}>
@@ -452,8 +506,6 @@ export default async function OutboundCampaignPage({
             </div>
           )}
         </section>
-
-        <OpenRateNote />
       </div>
     </ConsoleShell>
   );

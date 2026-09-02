@@ -33,6 +33,32 @@ function LintBadge({ tone, title, children }: { tone: "error" | "warn"; title?: 
   );
 }
 
+/**
+ * Corpo da prévia com URLs encurtadas VISUALMENTE (R10, lei 1): o endereço vira
+ * um rótulo curto truncado com a URL completa no title, em vez de correr solto
+ * por quatro linhas. Só apresentação — o e-mail real segue texto puro.
+ */
+function CorpoComLinksCurtos({ texto }: { texto: string }) {
+  const partes = texto.split(/(https?:\/\/\S+)/g);
+  return (
+    <>
+      {partes.map((parte, i) =>
+        /^https?:\/\//.test(parte) ? (
+          <span
+            key={i}
+            title={parte}
+            className="inline-block max-w-[16rem] truncate align-bottom font-medium text-brand-strong underline decoration-brand-strong/40 underline-offset-2"
+          >
+            {(parte.replace(/^https?:\/\/(www\.)?/, "").split(/[?#]/)[0] ?? parte).replace(/\/$/, "")}
+          </span>
+        ) : (
+          <span key={i}>{parte}</span>
+        ),
+      )}
+    </>
+  );
+}
+
 export interface StepCopyPreviewProps {
   step: CampaignStep;
   /** e1 é "dia 0"; os demais mostram o offset relativo ao passo anterior. */
@@ -100,7 +126,7 @@ export function StepCopyPreview({ step, isFirst, industria, sampleCustom }: Step
           <span className="font-semibold text-foreground">{subject.value}</span>
         </p>
         <div className="mt-3 text-small leading-relaxed break-words whitespace-pre-wrap text-foreground">
-          {body.value}
+          <CorpoComLinksCurtos texto={body.value} />
         </div>
         {/* Assinatura anexada pelo motor em todo envio (src/lib/outbound/signature.ts) */}
         <div className="mt-4 border-t border-border pt-3 text-xs leading-relaxed break-words whitespace-pre-wrap text-foreground-muted">
