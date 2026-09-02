@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Fragment } from "react";
 import { Card } from "@/components/ui/Card";
 import { requireSession } from "@/lib/outbound/auth";
 import { DEMAND_KINDS } from "@/lib/outbound/demands-core";
@@ -8,16 +9,7 @@ import { FormComEstado } from "../form-com-estado";
 import { ConfirmSubmit, PendingPill, SubmitButton } from "../pending";
 import { ConsoleShell } from "../shell";
 import { criarDemandaComEstado } from "../stateful-actions";
-import {
-  Chip,
-  Code,
-  DEMAND_KIND_LABELS,
-  DEMAND_STATUS_LABELS,
-  DEMAND_STATUS_TONES,
-  EmptyState,
-  Quando,
-  TituloSecao,
-} from "../ui";
+import { Chip, Code, DEMAND_KIND_LABELS, DEMAND_STATUS_LABELS, EmptyState, MenuLinha, Quando } from "../ui";
 import { cancelDemandAction, updateDemandStatusAction } from "./actions";
 
 /** Sempre dinâmico: lê o store (arquivos ou Postgres) a cada request. */
@@ -39,30 +31,32 @@ const BTN_BASE =
   "rounded-full px-2.5 py-1 text-xs font-semibold transition-colors duration-(--duration-fast) ease-(--ease-out) " +
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-[0.98]";
 const BTN = `${BTN_BASE} bg-brand-soft text-brand-strong hover:bg-brand-soft-strong`;
-const BTN_GHOST = `${BTN_BASE} text-foreground-muted hover:bg-background-secondary hover:text-foreground`;
 
 function DemandRow({ demand, isDemo }: { demand: Demand; isDemo: boolean }) {
   return (
-    <li className="flex flex-col gap-2 border-t border-border px-4 py-3 transition-colors duration-(--duration-fast) first:border-t-0 hover:bg-surface-hover">
-      <div className="flex flex-wrap items-center gap-2">
-        <Chip tone={DEMAND_STATUS_TONES[demand.status]}>{DEMAND_STATUS_LABELS[demand.status]}</Chip>
-        <Chip tone="outline">{DEMAND_KIND_LABELS[demand.kind]}</Chip>
-        {demand.priority === "alta" ? <Chip tone="error">alta</Chip> : null}
-        <span className="min-w-0 flex-1 text-small font-semibold text-foreground">{demand.title}</span>
-      </div>
-      {demand.details ? <p className="text-xs text-foreground-muted">{demand.details}</p> : null}
-      <p className="text-xs text-foreground-subtle tabular-nums">
-        pedida por {demand.createdBy} em <Quando iso={demand.createdAt} />
-        {demand.claimedBy ? ` · assumida por ${demand.claimedBy}` : ""}
-        {demand.campaignSlug ? ` · campanha ${demand.campaignSlug}` : ""}
-      </p>
-      {demand.resolution ? (
-        <p className="text-xs text-foreground-muted">
-          <span className="font-semibold">resolução:</span> {demand.resolution}
+    // Linha da casa (T3/R7): título na frente, chips depois; o estado mora no
+    // cabeçalho do grupo; cancelar/encerrar saem do corpo para o menu da linha.
+    <li className="flex items-start justify-between gap-3 border-t border-border px-4 py-3 transition-colors duration-(--duration-fast) first:border-t-0 hover:bg-surface-hover">
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <p className="flex flex-wrap items-center gap-1.5">
+          <span className="min-w-0 text-small font-semibold text-foreground">{demand.title}</span>
+          <Chip tone="outline">{DEMAND_KIND_LABELS[demand.kind]}</Chip>
+          {demand.priority === "alta" ? <Chip tone="error">alta</Chip> : null}
         </p>
-      ) : null}
+        {demand.details ? <p className="text-xs text-foreground-muted">{demand.details}</p> : null}
+        <p className="text-xs text-foreground-subtle tabular-nums">
+          por {demand.createdBy} · <Quando iso={demand.createdAt} />
+          {demand.claimedBy ? ` · assumida por ${demand.claimedBy}` : ""}
+          {demand.campaignSlug ? ` · ${demand.campaignSlug}` : ""}
+        </p>
+        {demand.resolution ? (
+          <p className="text-xs text-foreground-muted">
+            <span className="font-semibold">resolução:</span> {demand.resolution}
+          </p>
+        ) : null}
+      </div>
       {demand.status === "pendente" ? (
-        <div className="flex flex-wrap gap-1.5">
+        <span className="flex shrink-0 items-center gap-1.5">
           <form action={updateDemandStatusAction} className="inline">
             <input type="hidden" name="demandId" value={demand.id} />
             <input type="hidden" name="to" value="em_andamento" />
@@ -71,26 +65,25 @@ function DemandRow({ demand, isDemo }: { demand: Demand; isDemo: boolean }) {
               Assumir
             </PendingPill>
           </form>
-          <form action={cancelDemandAction} className="inline">
-            <input type="hidden" name="demandId" value={demand.id} />
-            {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
-            <ConfirmSubmit
-              className={BTN_GHOST}
-              confirmLabel="Confirmar cancelamento"
-              pendingLabel="Cancelando…"
-              title="Cancelar (só antes de alguém assumir)"
-            >
-              Cancelar
-            </ConfirmSubmit>
-          </form>
-        </div>
+          <MenuLinha rotulo="Mais ações da demanda">
+            <form action={cancelDemandAction}>
+              <input type="hidden" name="demandId" value={demand.id} />
+              {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
+              <ConfirmSubmit
+                className="block w-full rounded-lg px-3 py-1.5 text-left text-xs font-semibold whitespace-nowrap text-error transition-colors duration-(--duration-fast) hover:bg-error-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                confirmLabel="Confirmar cancelamento"
+                pendingLabel="Cancelando…"
+                title="Cancelar (só antes de alguém assumir)"
+              >
+                Cancelar demanda
+              </ConfirmSubmit>
+            </form>
+          </MenuLinha>
+        </span>
       ) : null}
       {demand.status === "em_andamento" ? (
-        <details className="text-xs">
-          <summary className="cursor-pointer font-semibold text-foreground-muted transition-colors duration-(--duration-fast) hover:text-foreground">
-            Encerrar
-          </summary>
-          <form action={updateDemandStatusAction} className="mt-2 flex flex-col gap-2">
+        <MenuLinha rotulo="Encerrar a demanda" gatilho="encerrar">
+          <form action={updateDemandStatusAction} className="flex w-64 flex-col gap-2 p-2 text-xs">
             <input type="hidden" name="demandId" value={demand.id} />
             {isDemo ? <input type="hidden" name="demo" value="1" /> : null}
             <label className="flex flex-col gap-0.5">
@@ -110,7 +103,7 @@ function DemandRow({ demand, isDemo }: { demand: Demand; isDemo: boolean }) {
               </PendingPill>
             </div>
           </form>
-        </details>
+        </MenuLinha>
       ) : null}
     </li>
   );
@@ -137,7 +130,7 @@ export default async function OutboundDemandsPage({ searchParams }: { searchPara
       subtitle="Peça aqui; o MORK assume pela CLI e devolve com resolução. Tudo fica registrado."
     >
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
-        <section aria-labelledby="demandas-fila-title" className="flex flex-col gap-6">
+        <section aria-labelledby="demandas-fila-title">
           <h2 id="demandas-fila-title" className="sr-only">
             Fila de demandas
           </h2>
@@ -147,22 +140,25 @@ export default async function OutboundDemandsPage({ searchParams }: { searchPara
               <Code>pnpm outbound:demandas list</Code>.
             </EmptyState>
           ) : (
-            STATUS_ORDER.map((status) => {
-              const list = byStatus.get(status) ?? [];
-              if (list.length === 0) return null;
-              return (
-                <div key={status}>
-                  <TituloSecao as="h3" contagem={list.length}>
-                    {DEMAND_STATUS_LABELS[status]}
-                  </TituloSecao>
-                  <ol className="mt-2 rounded-lg border border-border bg-surface">
+            /* R7: FILA ÚNICA — um cartão só, grupos por estado como cabeçalhos
+               internos (abertas primeiro); fim da página picotada em 5 seções. */
+            <ol className="overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
+              {STATUS_ORDER.map((status) => {
+                const list = byStatus.get(status) ?? [];
+                if (list.length === 0) return null;
+                return (
+                  <Fragment key={status}>
+                    <li className="border-t border-border bg-background-secondary/40 px-4 py-1.5 text-xs font-semibold tracking-wider text-foreground-muted uppercase first:border-t-0">
+                      {DEMAND_STATUS_LABELS[status]}
+                      <span className="ml-1.5 font-normal text-foreground-subtle tabular-nums">{list.length}</span>
+                    </li>
                     {list.map((demand) => (
                       <DemandRow key={demand.id} demand={demand} isDemo={isDemo} />
                     ))}
-                  </ol>
-                </div>
-              );
-            })
+                  </Fragment>
+                );
+              })}
+            </ol>
           )}
         </section>
 
