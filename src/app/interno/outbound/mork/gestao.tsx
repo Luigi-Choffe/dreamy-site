@@ -75,23 +75,27 @@ function Avatar({ monogram, vago, live }: { monogram: string; vago?: boolean; li
   );
 }
 
-/** Régua de mini-stats do crachá: entregues · andamento · fila (zeros mudos). */
+/**
+ * Régua de mini-stats do crachá: entregues · andamento · fila (zeros mudos).
+ * Padrão Apple: superfície REBAIXADA em vez de borda — profundidade por luz,
+ * hairlines internas quase invisíveis.
+ */
 function ReguaDeCarga({ carga }: { carga: CargaCadeira }) {
   return (
-    <dl className="grid grid-cols-3 divide-x divide-border/70 rounded-xl border border-border/70 bg-white/45">
+    <dl className="grid grid-cols-3 divide-x divide-[rgb(11_11_12/0.05)] rounded-xl bg-[rgb(11_11_12/0.035)]">
       {SERIES.map((serie) => {
         const valor = carga[serie.key];
         const forte = serie.key === "concluidas" && valor > 0;
         return (
-          <div key={serie.key} className="px-2 py-2 text-center">
+          <div key={serie.key} className="px-2 py-2.5 text-center">
             <dd
-              className={`font-display text-lg leading-none font-bold tabular-nums ${
-                forte ? "text-brand-strong" : valor > 0 ? "text-foreground" : "text-foreground-subtle/50"
+              className={`font-display text-xl leading-none font-bold tabular-nums ${
+                forte ? "text-brand-strong" : valor > 0 ? "text-foreground" : "text-foreground-subtle/45"
               }`}
             >
               {fmtInt(valor)}
             </dd>
-            <dt className="mt-1 text-[0.54rem] font-semibold tracking-wider text-foreground-subtle uppercase">
+            <dt className="mt-1.5 text-[0.54rem] font-semibold tracking-[0.14em] text-foreground-subtle uppercase">
               {serie.label}
             </dt>
           </div>
@@ -109,7 +113,7 @@ function CartaoDeCadeira({ carga, agora, live }: { carga: CargaCadeira; agora: s
   if (!seat.hired) {
     // Vaga: convite honesto, sem números inventados (lei 6 do redesign).
     return (
-      <article className="flex flex-col gap-2.5 rounded-2xl border border-dashed border-border-strong bg-white/30 p-4">
+      <article className="flex flex-col gap-2.5 rounded-2xl border border-dashed border-border bg-white/25 p-5">
         <div className="flex items-center gap-3">
           <Avatar monogram={seat.monogram} vago />
           <div className="min-w-0">
@@ -125,7 +129,7 @@ function CartaoDeCadeira({ carga, agora, live }: { carga: CargaCadeira; agora: s
   }
 
   return (
-    <article className="aqua-glass flex flex-col gap-3 rounded-2xl p-4">
+    <article className="aqua-glass flex flex-col gap-3.5 rounded-2xl p-5">
       <div className="flex items-center gap-3">
         <Avatar monogram={seat.monogram} live={live} />
         <div className="min-w-0 flex-1">
@@ -174,9 +178,9 @@ function CartaoDeCadeira({ carga, agora, live }: { carga: CargaCadeira; agora: s
         </div>
       ) : null}
 
-      <div className="mt-auto flex flex-wrap items-center gap-1.5 border-t border-border/70 pt-2.5">
+      <div className="mt-auto flex flex-wrap items-center gap-1.5 border-t border-[rgb(11_11_12/0.06)] pt-3">
         {carga.kinds.map((kind) => (
-          <Chip key={kind} tone="outline">
+          <Chip key={kind} tone="neutral">
             {DEMAND_KIND_LABELS[kind]}
           </Chip>
         ))}
@@ -207,7 +211,7 @@ export function GestaoDoTime({
   const statusInput = { demands, activities, now };
   const ordenadas = [...cargas.filter((c) => c.hired), ...cargas.filter((c) => !c.hired)];
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
       {ordenadas.map((carga) => {
         const seat = TEAM.find((s) => s.slug === carga.slug);
         const status = seat ? seatStatus(seat, statusInput) : undefined;
@@ -224,7 +228,7 @@ function GraficoCarga({ cargas }: { cargas: CargaCadeira[] }) {
   const comDados = cargas.filter((c) => c.hired && c.pendentes + c.emAndamento + c.concluidas > 0);
   const max = Math.max(1, ...comDados.map((c) => c.pendentes + c.emAndamento + c.concluidas));
   return (
-    <figure className="aqua-glass flex flex-col rounded-2xl p-4">
+    <figure className="aqua-glass flex flex-col rounded-2xl p-5">
       <figcaption className="flex flex-wrap items-baseline justify-between gap-2">
         <span className={EYEBROW}>Fluxo de demandas</span>
         <span className="text-[0.64rem] text-foreground-subtle tabular-nums">últimos 14 dias</span>
@@ -251,7 +255,7 @@ function GraficoCarga({ cargas }: { cargas: CargaCadeira[] }) {
                   {carga.nome}
                 </span>
                 {/* Trilho de escala: a barra vive sobre ele, nunca solta no ar. */}
-                <span className="relative h-4 min-w-0 flex-1 overflow-hidden rounded-full bg-background-secondary/60">
+                <span className="relative h-4 min-w-0 flex-1 overflow-hidden rounded-full bg-[rgb(11_11_12/0.04)]">
                   <span
                     className="bi-cresce-x absolute inset-y-0 left-0 flex gap-0.5 overflow-hidden rounded-full"
                     style={{ width: `${(total / max) * 100}%`, animationDelay: `${i * 70}ms` }}
@@ -286,7 +290,7 @@ function GraficoRitmo({ ritmo }: { ritmo: DiaDeRitmo[] }) {
   const total = ritmo.reduce((sum, d) => sum + d.total, 0);
   const rotulo = (key: string) => `${key.slice(8, 10)}/${key.slice(5, 7)}`;
   return (
-    <figure className="aqua-glass flex flex-col rounded-2xl p-4">
+    <figure className="aqua-glass flex flex-col rounded-2xl p-5">
       <figcaption className="flex flex-wrap items-baseline justify-between gap-2">
         <span className={EYEBROW}>Ritmo do time</span>
         <span className="text-[0.64rem] text-foreground-subtle tabular-nums">
@@ -295,7 +299,7 @@ function GraficoRitmo({ ritmo }: { ritmo: DiaDeRitmo[] }) {
       </figcaption>
       <div
         aria-hidden
-        className="mt-4 flex flex-1 items-end justify-center gap-1.5 border-b border-border pb-px"
+        className="mt-4 flex flex-1 items-end justify-center gap-1.5 border-b border-[rgb(11_11_12/0.08)] pb-px"
         style={{ minHeight: "6.5rem" }}
       >
         {ritmo.map((dia, i) => {

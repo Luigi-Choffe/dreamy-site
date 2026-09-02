@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Card } from "@/components/ui/Card";
 import { requireSession } from "@/lib/outbound/auth";
 import type { AgentActivity } from "@/lib/outbound/types";
 import { Aquario } from "../aquario";
@@ -8,7 +7,7 @@ import { consoleHref, demoRequested, loadDashboardData, type SearchParams } from
 import { FluxoDoAgente } from "./fluxo";
 import { BiDaOperacao, GestaoDoTime } from "./gestao";
 import { ConsoleShell } from "../shell";
-import { AGENT_ACTIVITY_LABELS, Code, EmptyState, fmtDate, fmtDateTime, fmtInt, Stat } from "../ui";
+import { AGENT_ACTIVITY_LABELS, Code, EmptyState, fmtDate, fmtDateTime, fmtInt } from "../ui";
 
 /** Sempre dinâmico: lê o store (arquivos ou Postgres) a cada request. */
 export const dynamic = "force-dynamic";
@@ -19,7 +18,6 @@ export const metadata: Metadata = {
 };
 
 const TIMELINE_LIMIT = 150;
-const WEEK_MS = 7 * 86_400_000;
 
 function refLinks(activity: AgentActivity, isDemo: boolean): Array<{ href: string; label: string }> {
   const refs = activity.refs;
@@ -46,13 +44,6 @@ export default async function MorkPage({ searchParams }: { searchParams: Promise
   const reunioes = data.deals.filter((d) => d.stage === "reuniao_marcada").length;
   const tarefasConcluidas = data.tasks.filter((t) => t.status === "concluida").length;
 
-  const pendentes = data.demands.filter((d) => d.status === "pendente").length;
-  const emAndamento = data.demands.filter((d) => d.status === "em_andamento").length;
-  const concluidasSemana = data.demands.filter(
-    (d) => d.status === "concluida" && d.doneAt && now - Date.parse(d.doneAt) <= WEEK_MS,
-  ).length;
-  const atividadesSemana = data.agentActivities.filter((a) => now - Date.parse(a.at) <= WEEK_MS).length;
-
   const ordered = [...data.agentActivities].sort((a, b) => b.at.localeCompare(a.at)).slice(0, TIMELINE_LIMIT);
   const groups: Array<{ date: string; rows: AgentActivity[] }> = [];
   for (const activity of ordered) {
@@ -71,21 +62,8 @@ export default async function MorkPage({ searchParams }: { searchParams: Promise
       subtitle="O agente de vendas da Dreamy presta contas aqui: demandas, pipeline, briefings e sugestões."
     >
       <div className="flex flex-col gap-8">
-        <section aria-label="Resumo do MORK">
-          <Card padding="sm">
-            <dl className="grid grid-cols-2 gap-x-8 gap-y-5 sm:grid-cols-4">
-              <Stat label="Pendentes" value={fmtInt(pendentes)} hint="demandas aguardando o MORK" />
-              <Stat label="Em andamento" value={fmtInt(emAndamento)} />
-              <Stat
-                label="Concluídas (7d)"
-                value={fmtInt(concluidasSemana)}
-                tone={concluidasSemana > 0 ? "success" : "default"}
-              />
-              <Stat label="Ações (7d)" value={fmtInt(atividadesSemana)} hint="tudo que ficou registrado" />
-            </dl>
-          </Card>
-        </section>
-
+        {/* O antigo cartão "Resumo" morreu por redundância (padrão Apple: nada
+            repete): pendentes/andamento vivem nos crachás; 7d vive no BI. */}
         {/* O palco (docs/AQUARIO-VIVO.md): Entrada de dados → Raciocínio → Ações,
             com a lente completa do Aquário no centro e números reais nas pontas. */}
         <section aria-labelledby="mork-fluxo-title">
