@@ -226,7 +226,7 @@ export function PipelineBoard({ deals, isDemo }: { deals: BoardDeal[]; isDemo: b
                           : "border-border-strong/60 text-foreground-subtle"
                       }`}
                     >
-                      {dragging && !invalida ? "solte aqui" : "vazio"}
+                      {dragging && !invalida ? "solte aqui" : "nenhum negócio neste estágio"}
                     </p>
                   ) : null}
                 </div>
@@ -338,7 +338,8 @@ function DealCard({
         </p>
       </div>
       <p className="text-xs text-foreground-subtle tabular-nums">
-        {deal.campaignSlug ?? "manual"} · {fmtInt(deal.diasNoEstagio)}d no estágio
+        {deal.campaignSlug ?? "manual"} ·{" "}
+        {deal.diasNoEstagio === 0 ? "chegou hoje" : `${fmtInt(deal.diasNoEstagio)}d no estágio`}
         {deal.valorEstimado ? ` · ${fmtBRL(deal.valorEstimado)}` : ""}
       </p>
       {deal.stage === "reuniao_marcada" && deal.reuniaoEm ? (

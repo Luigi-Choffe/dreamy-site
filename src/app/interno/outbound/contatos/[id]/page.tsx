@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Fragment } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Card } from "@/components/ui/Card";
@@ -12,7 +13,17 @@ import { addNoteAction, createTaskAction } from "../../crm-actions";
 import { consoleHref, demoRequested, loadDashboardData, type SearchParams } from "../../data";
 import { ConfirmSubmit, SubmitButton } from "../../pending";
 import { ConsoleShell } from "../../shell";
-import { Chip, DEAL_STAGE_LABELS, DEAL_STAGE_TONES, EmptyState, plural, Quando, REPLY_CLASS_LABELS } from "../../ui";
+import {
+  Chip,
+  DEAL_STAGE_LABELS,
+  DEAL_STAGE_TONES,
+  EmptyState,
+  fmtDate,
+  fmtDateTime,
+  fmtQuando,
+  plural,
+  REPLY_CLASS_LABELS,
+} from "../../ui";
 
 /** Sempre dinâmico: lê o store (arquivos ou Postgres) a cada request. */
 export const dynamic = "force-dynamic";
@@ -73,6 +84,15 @@ export default async function ContactAccountPage({
   });
   const env = getOutboundEnv();
   const proximoDiaUtil = nextBusinessDay(new Date(), env.utcOffset);
+
+  // R5: a timeline agrupa por dia (cabeçalho interno); a linha mostra só a hora.
+  const gruposTimeline: Array<{ date: string; rows: typeof timeline }> = [];
+  for (const item of timeline) {
+    const date = fmtDate(item.at);
+    const last = gruposTimeline.at(-1);
+    if (last && last.date === date) last.rows.push(item);
+    else gruposTimeline.push({ date, rows: [item] });
+  }
   const nome = [contact.nome, contact.sobrenome].filter(Boolean).join(" ") || "(sem nome)";
 
   return (
@@ -130,22 +150,35 @@ export default async function ContactAccountPage({
               <EmptyState>Nada registrado ainda para esta conta.</EmptyState>
             </div>
           ) : (
-            <ol className="mt-4 flex flex-col gap-0 rounded-lg border border-border bg-surface">
-              {timeline.map((item, i) => (
-                <li
-                  key={`${item.at}-${item.kind}-${i}`}
-                  className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-t border-border px-4 py-2.5 transition-colors duration-(--duration-fast) first:border-t-0 hover:bg-surface-hover"
-                >
-                  <span className="w-32 shrink-0 text-xs whitespace-nowrap text-foreground-subtle tabular-nums">
-                    <Quando iso={item.at} />
-                  </span>
-                  <span className="flex w-20 shrink-0 items-center gap-1.5 text-xs font-semibold text-foreground-muted">
-                    <span aria-hidden className={`size-1.5 rounded-full ${TIMELINE_STYLE[item.kind].dot}`} />
-                    {TIMELINE_STYLE[item.kind].label}
-                  </span>
-                  <span className="min-w-0 text-small text-foreground">{item.label}</span>
-                  {item.detail ? <span className="min-w-0 text-xs text-foreground-subtle">{item.detail}</span> : null}
-                </li>
+            <ol className="mt-4 overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
+              {gruposTimeline.map((grupo) => (
+                <Fragment key={grupo.date}>
+                  <li className="border-t border-border bg-background-secondary/40 px-4 py-1.5 text-xs font-semibold tracking-wider text-foreground-muted uppercase first:border-t-0">
+                    {grupo.date}
+                  </li>
+                  {grupo.rows.map((item, i) => (
+                    <li
+                      key={`${item.at}-${item.kind}-${i}`}
+                      className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-t border-border px-4 py-2.5 transition-colors duration-(--duration-fast) hover:bg-surface-hover"
+                    >
+                      <time
+                        dateTime={item.at}
+                        title={fmtDateTime(item.at)}
+                        className="w-12 shrink-0 text-xs whitespace-nowrap text-foreground-subtle tabular-nums"
+                      >
+                        {fmtQuando(item.at).slice(-5)}
+                      </time>
+                      <span className="flex w-20 shrink-0 items-center gap-1.5 text-xs font-semibold text-foreground-muted">
+                        <span aria-hidden className={`size-1.5 rounded-full ${TIMELINE_STYLE[item.kind].dot}`} />
+                        {TIMELINE_STYLE[item.kind].label}
+                      </span>
+                      <span className="min-w-0 text-small text-foreground">{item.label}</span>
+                      {item.detail ? (
+                        <span className="min-w-0 text-xs text-foreground-subtle">{item.detail}</span>
+                      ) : null}
+                    </li>
+                  ))}
+                </Fragment>
               ))}
             </ol>
           )}

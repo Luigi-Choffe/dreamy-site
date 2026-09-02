@@ -284,10 +284,11 @@ export default async function OutboundActivityPage({ searchParams }: { searchPar
                               <Chip tone={EVENT_TYPE_TONES[event.type]}>{EVENT_TYPE_LABELS[event.type]}</Chip>
                             </td>
                             <td className="px-3 py-2">
+                              {/* Chip-link da casa (mesma âncora de Contatos/Respostas). */}
                               <Link
                                 href={consoleHref(`/interno/outbound/${event.campaignSlug}`, isDemo)}
-                                className="text-foreground underline decoration-border underline-offset-2 hover:decoration-foreground"
                                 title={event.campaignSlug}
+                                className="inline-block max-w-[11rem] truncate rounded-full bg-background-secondary px-2 py-0.5 text-xs whitespace-nowrap text-foreground-muted transition-colors duration-(--duration-fast) hover:bg-brand-soft hover:text-brand-strong"
                               >
                                 {def?.industria ?? event.campaignSlug}
                               </Link>

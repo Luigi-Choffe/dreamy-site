@@ -1,4 +1,4 @@
-# Redesign do console — o contrato de perfumaria
+| feito · 2026-09-01 || feito · 2026-09-01 || feito · 2026-09-01 |# Redesign do console — o contrato de perfumaria
 
 > Pedido do Luigi (2026-09-01): "achei feito com pouco esmero; valorizo muito o
 > trabalho de perfumaria e detalhe. Tem coisa cortando, tabela mal formatada,
@@ -43,13 +43,13 @@ aqui: **evitar "cheap visuals + fast animations"** — nada de efeito barato.
 
 ## Lotes transversais (fazem o console inteiro de uma vez)
 
-| #   | Lote               | O que entrega                                                                                                                                                        | Status                                                                    |
-| --- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| T1  | **Régua e grid**   | Tokens de espaçamento do console (densidade dashboard) aplicados na casca e nas seções; mesma cadência vertical em toda aba; título de seção com contagem esmaecida. | feito · 2026-09-01                                                        |
-| T2  | **Tabela da casa** | Componente/anatomia padrão de tabela (leis 1–2) e migração das tabelas de Contatos, Atividade, Supressão e Campanha para ele.                                        | estreou · 2026-09-01 (Contatos+Supressão+Campanha; Atividade migra em R8) |
-| T3  | **Linha de lista** | Anatomia padrão de linha (identidade · contexto · ações; ações secundárias no hover + sempre via teclado) para Hoje, Respostas, Demandas e Agenda.                   | estreou · 2026-09-01 (Respostas; Hoje/Demandas/Agenda em R1/R7/R2)        |
-| T4  | **Chips e datas**  | Paleta única de chips de status; formatadores `dd/mm hh:mm` + `title`; plurais corretos; zeros mudos em todo o console.                                              | feito · 2026-09-01                                                        |
-| T5  | **Entrada viva**   | Stagger de entrada dos cartões por aba (Motion, mola, reduced-motion ok), consistente com o Aquário.                                                                 | a fazer                                                                   |
+| #   | Lote               | O que entrega                                                                                                                                                        | Status                                                             |
+| --- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| T1  | **Régua e grid**   | Tokens de espaçamento do console (densidade dashboard) aplicados na casca e nas seções; mesma cadência vertical em toda aba; título de seção com contagem esmaecida. | feito · 2026-09-01                                                 |
+| T2  | **Tabela da casa** | Componente/anatomia padrão de tabela (leis 1–2) e migração das tabelas de Contatos, Atividade, Supressão e Campanha para ele.                                        | feito · 2026-09-01 (todas as tabelas migradas)                     |
+| T3  | **Linha de lista** | Anatomia padrão de linha (identidade · contexto · ações; ações secundárias no hover + sempre via teclado) para Hoje, Respostas, Demandas e Agenda.                   | estreou · 2026-09-01 (Respostas; Hoje/Demandas/Agenda em R1/R7/R2) |
+| T4  | **Chips e datas**  | Paleta única de chips de status; formatadores `dd/mm hh:mm` + `title`; plurais corretos; zeros mudos em todo o console.                                              | feito · 2026-09-01                                                 |
+| T5  | **Entrada viva**   | Stagger de entrada dos cartões por aba (Motion, mola, reduced-motion ok), consistente com o Aquário.                                                                 | a fazer                                                            |
 
 ## Tela a tela (defeitos observados → desenho alvo)
 
