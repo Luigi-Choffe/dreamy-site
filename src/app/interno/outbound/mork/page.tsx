@@ -6,6 +6,7 @@ import type { AgentActivity } from "@/lib/outbound/types";
 import { Aquario } from "../aquario";
 import { consoleHref, demoRequested, loadDashboardData, type SearchParams } from "../data";
 import { FluxoDoAgente } from "./fluxo";
+import { BiDaOperacao, GestaoDoTime } from "./gestao";
 import { ConsoleShell } from "../shell";
 import { AGENT_ACTIVITY_LABELS, Code, EmptyState, fmtDate, fmtDateTime, fmtInt, Stat } from "../ui";
 
@@ -102,6 +103,23 @@ export default async function MorkPage({ searchParams }: { searchParams: Promise
             >
               <Aquario data={data} />
             </FluxoDoAgente>
+          </div>
+        </section>
+
+        {/* Central de gerenciamento do time (pedido do Luigi, 2026-09-02): quem
+            está com o quê, entregas por cadeira e o BI da operação — tudo
+            derivado dos registros reais (team-bi.ts, puro e testado). */}
+        <section aria-labelledby="mork-gestao-title">
+          <h2 id="mork-gestao-title" className="font-display text-h4 font-bold">
+            Gestão do time
+          </h2>
+          <p className="mt-1 max-w-2xl text-small text-foreground-muted">
+            A carga, as entregas e a estratégia de cada cadeira, direto da fila de demandas e do diário. É assim que uma
+            equipe de agentes se gerencia.
+          </p>
+          <div className="mt-5 flex flex-col gap-4">
+            <GestaoDoTime demands={data.demands} activities={data.agentActivities} now={new Date(now)} />
+            <BiDaOperacao demands={data.demands} activities={data.agentActivities} now={new Date(now)} />
           </div>
         </section>
 
