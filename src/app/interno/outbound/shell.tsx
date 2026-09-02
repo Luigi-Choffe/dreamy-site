@@ -290,7 +290,9 @@ export function ConsoleShell({
           ))}
         </nav>
 
-        <div>{children}</div>
+        {/* T5 do redesign: entrada viva — os blocos de toda aba sobem com mola
+            e stagger sutil (CSS no bloco do console em globals; reduced-motion = nada). */}
+        <div className="entra-viva">{children}</div>
       </div>
 
       {/* A SALA DO MORK (pedido do Luigi): área lateral DEDICADA, separada do CRM

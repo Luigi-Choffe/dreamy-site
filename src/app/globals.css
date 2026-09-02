@@ -504,6 +504,40 @@
     background: var(--border-strong);
     border-radius: 3px;
   }
+  /* Entrada viva (REDESIGN T5): os blocos de cada aba sobem com a mola da casa
+     (mesma curva da ficha do Aquário) num stagger curto. Anima os NETOS do
+     wrapper .entra-viva — as seções de qualquer página — e termina em
+     transform none (não cria containing block para os menus fixed). */
+  @media (prefers-reduced-motion: no-preference) {
+    [data-app="console"] .entra-viva > * > * {
+      animation: console-entra 0.42s cubic-bezier(0.22, 1.2, 0.36, 1) both;
+    }
+    [data-app="console"] .entra-viva > * > *:nth-child(2) {
+      animation-delay: 55ms;
+    }
+    [data-app="console"] .entra-viva > * > *:nth-child(3) {
+      animation-delay: 110ms;
+    }
+    [data-app="console"] .entra-viva > * > *:nth-child(4) {
+      animation-delay: 165ms;
+    }
+    [data-app="console"] .entra-viva > * > *:nth-child(5) {
+      animation-delay: 220ms;
+    }
+    [data-app="console"] .entra-viva > * > *:nth-child(n + 6) {
+      animation-delay: 260ms;
+    }
+    @keyframes console-entra {
+      from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.996);
+      }
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+  }
   /* Menu de ações da linha (REDESIGN T2): sem marcador nativo; aberto ganha um
      backdrop invisível no próprio summary — clicar fora fecha sem JS. */
   [data-app="console"] details.menu-linha > summary {

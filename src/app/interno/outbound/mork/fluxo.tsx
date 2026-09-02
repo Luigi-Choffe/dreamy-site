@@ -61,6 +61,31 @@ function Duto() {
   );
 }
 
+/** R13: no empilhado (abaixo de lg) o fluxo continua legível — seta vertical discreta. */
+function DutoVertical() {
+  return (
+    <svg viewBox="0 0 24 40" className="mx-auto h-10 w-6 lg:hidden" aria-hidden focusable="false">
+      <path
+        d="M12 2 v26"
+        fill="none"
+        stroke="rgb(70 235 126 / 0.5)"
+        strokeWidth="1.6"
+        strokeDasharray="4 8"
+        strokeLinecap="round"
+        className="fluxo-duto"
+      />
+      <path
+        d="M7 30 l5 6 5 -6"
+        fill="none"
+        stroke="rgb(70 235 126 / 0.7)"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function Etapa({ children }: { children: ReactNode }) {
   return (
     <p className="text-center font-display text-[0.62rem] font-bold tracking-[0.26em] text-foreground-subtle uppercase">
@@ -144,11 +169,13 @@ export function FluxoDoAgente({
           />
         </div>
         <Duto />
+        <DutoVertical />
         <div className="flex flex-col items-center gap-2.5">
           <Etapa>Raciocínio</Etapa>
           {children}
         </div>
         <Duto />
+        <DutoVertical />
         <div className="flex flex-col gap-2.5">
           <Etapa>Ações automatizadas</Etapa>
           <CartaoFluxo
