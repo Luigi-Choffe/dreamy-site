@@ -5,6 +5,7 @@ import { exemploAgentes } from "./exemplo-agentes";
 import { exemploNovaReceita } from "./exemplo-nova-receita";
 import { exemploSistemas } from "./exemplo-sistemas";
 import { obrasSistemasSobMedida } from "./obras-sistemas-sob-medida";
+import { validacaoIndicacao } from "./validacao-indicacao";
 
 /**
  * Registro das campanhas de outbound (copy versionada — PRD outbound §20).
@@ -14,6 +15,7 @@ export const campaigns: CampaignDefinition[] = [
   construcaoNovaReceita,
   obrasSistemasSobMedida,
   engenhariaAgentesIa,
+  validacaoIndicacao,
   exemploNovaReceita,
   exemploSistemas,
   exemploAgentes,

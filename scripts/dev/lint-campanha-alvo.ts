@@ -1,7 +1,8 @@
 /**
  * One-off: valida uma campanha DRAFT contra os contatos reais do segmento-alvo
  * ANTES de inscrever (render + lint por passo, com a assinatura fora do corpo).
- * Uso: pnpm tsx scripts/dev/lint-campanha-alvo.ts <slug>
+ * Uso: pnpm tsx scripts/dev/lint-campanha-alvo.ts <slug> [industria]
+ * (o 2º argumento cobre campanhas inscritas com override de indústria no enroll)
  */
 try {
   process.loadEnvFile(".env.local");
@@ -21,7 +22,8 @@ async function main() {
   }
   const store = openStore();
   const contacts = await store.contacts();
-  const alvo = contacts.filter((c) => c.status === "active" && c.industria === campaign.industria);
+  const industria = process.argv[3] ?? campaign.industria;
+  const alvo = contacts.filter((c) => c.status === "active" && c.industria === industria);
   let ok = 0;
   const problems: string[] = [];
   for (const c of alvo) {

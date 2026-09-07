@@ -32,6 +32,16 @@ const SOLUTION_PAGE: Record<SolutionAnchor, string> = {
 
 const URL_RE = /https?:\/\//i;
 
+/**
+ * CAMPANHAS DE CONVERSA — exceção EXPLÍCITA ao PRD §7 (decisão do Luigi via MORK,
+ * 2026-09-07). Objetivo é validação + indicação, não venda: a estrutura muda para
+ * 3 a 4 passos, cadência somada de 8 a 21 dias e NENHUM passo com withLink
+ * (conversa não leva tráfego). As checagens de copy por passo (lint zero erros,
+ * tamanho do corpo, assunto) continuam valendo integralmente. Toda campanha fora
+ * deste conjunto segue a regra cheia do PRD §7 — não adicione slug aqui sem ordem.
+ */
+const CONVERSATION_CAMPAIGNS = new Set<string>(["validacao-indicacao"]);
+
 function render(campaign: CampaignDefinition, step: CampaignStep) {
   // Variáveis de enriquecimento ({{abertura}} etc.) usam a amostra da própria
   // definição (sampleCustom) — no envio real precisam existir no contato.
@@ -57,6 +67,13 @@ describe("registry de campanhas (src/content/outbound)", () => {
     }
   });
 
+  it("todo slug em CONVERSATION_CAMPAIGNS corresponde a uma campanha registrada", () => {
+    const registrados = new Set(campaigns.map((c) => c.slug));
+    for (const slug of CONVERSATION_CAMPAIGNS) {
+      expect(registrados.has(slug), `slug '${slug}' na lista de conversa não existe no registry`).toBe(true);
+    }
+  });
+
   it("campanhas-modelo (exemplo-*) permanecem draft com industria 'exemplo'", () => {
     const modelos = campaigns.filter((c) => c.slug.startsWith("exemplo-"));
     expect(modelos.length).toBeGreaterThanOrEqual(3);
@@ -68,22 +85,43 @@ describe("registry de campanhas (src/content/outbound)", () => {
 });
 
 for (const campaign of campaigns) {
-  describe(`campanha ${campaign.slug}`, () => {
-    it("segue a sequência do PRD §7: 4 passos e1–e4, offsets crescentes, cadência de 14–21 dias", () => {
-      expect(campaign.steps).toHaveLength(4);
-      expect(campaign.steps.map((s) => s.id)).toEqual(["e1", "e2", "e3", "e4"]);
-      expect(campaign.steps[0]!.offsetDays).toBe(0);
-      for (const step of campaign.steps.slice(1)) {
-        expect(step.offsetDays, `${step.id} precisa vir dias depois do passo anterior`).toBeGreaterThan(0);
-      }
-      const totalDias = campaign.steps.reduce((acc, s) => acc + s.offsetDays, 0);
-      expect(totalDias).toBeGreaterThanOrEqual(14);
-      expect(totalDias).toBeLessThanOrEqual(21);
-    });
+  const isConversation = CONVERSATION_CAMPAIGNS.has(campaign.slug);
 
-    it("só o e3 tem withLink (primeiros toques sem link — PRD §7)", () => {
-      expect(campaign.steps.filter((s) => s.withLink).map((s) => s.id)).toEqual(["e3"]);
-    });
+  describe(`campanha ${campaign.slug}`, () => {
+    if (isConversation) {
+      it("campanha de conversa: 3 a 4 passos e1–eN, offsets crescentes, cadência de 8–21 dias", () => {
+        expect(campaign.steps.length).toBeGreaterThanOrEqual(3);
+        expect(campaign.steps.length).toBeLessThanOrEqual(4);
+        expect(campaign.steps.map((s) => s.id)).toEqual(campaign.steps.map((_, i) => `e${i + 1}`));
+        expect(campaign.steps[0]!.offsetDays).toBe(0);
+        for (const step of campaign.steps.slice(1)) {
+          expect(step.offsetDays, `${step.id} precisa vir dias depois do passo anterior`).toBeGreaterThan(0);
+        }
+        const totalDias = campaign.steps.reduce((acc, s) => acc + s.offsetDays, 0);
+        expect(totalDias).toBeGreaterThanOrEqual(8);
+        expect(totalDias).toBeLessThanOrEqual(21);
+      });
+
+      it("campanha de conversa: NENHUM passo com withLink (conversa não leva tráfego)", () => {
+        expect(campaign.steps.filter((s) => s.withLink).map((s) => s.id)).toEqual([]);
+      });
+    } else {
+      it("segue a sequência do PRD §7: 4 passos e1–e4, offsets crescentes, cadência de 14–21 dias", () => {
+        expect(campaign.steps).toHaveLength(4);
+        expect(campaign.steps.map((s) => s.id)).toEqual(["e1", "e2", "e3", "e4"]);
+        expect(campaign.steps[0]!.offsetDays).toBe(0);
+        for (const step of campaign.steps.slice(1)) {
+          expect(step.offsetDays, `${step.id} precisa vir dias depois do passo anterior`).toBeGreaterThan(0);
+        }
+        const totalDias = campaign.steps.reduce((acc, s) => acc + s.offsetDays, 0);
+        expect(totalDias).toBeGreaterThanOrEqual(14);
+        expect(totalDias).toBeLessThanOrEqual(21);
+      });
+
+      it("só o e3 tem withLink (primeiros toques sem link — PRD §7)", () => {
+        expect(campaign.steps.filter((s) => s.withLink).map((s) => s.id)).toEqual(["e3"]);
+      });
+    }
 
     for (const step of campaign.steps) {
       describe(`passo ${step.id}`, () => {
