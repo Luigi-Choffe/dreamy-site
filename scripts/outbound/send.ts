@@ -13,8 +13,9 @@ import { createHash } from "node:crypto";
 import { parseArgs } from "node:util";
 import { campaigns } from "../../src/content/outbound";
 import { logger } from "../../src/lib/observability/logger";
+import { contatoParaEnvio } from "../../src/lib/outbound/colegas";
 import { assertSendReady, getOutboundEnv, replyToField, sendDateKey } from "../../src/lib/outbound/config";
-import { buildEmail } from "../../src/lib/outbound/render";
+import { buildEmail, lintEmail, lintErrors } from "../../src/lib/outbound/render";
 import { createResendClient, ResendApiError, type ResendEmailPayload } from "../../src/lib/outbound/resend";
 import { newId, openStore, runExclusive } from "../../src/lib/outbound/store";
 import type { CampaignDefinition, Enrollment, PlanItem, SendRecord } from "../../src/lib/outbound/types";
@@ -170,7 +171,22 @@ async function main() {
       throw new Error(`Plano inconsistente para enrollment ${item.enrollmentId} — replaneje.`);
     }
     const sendId = newId();
-    const built = buildEmail(contact, def, step, { replyTo: env.replyTo });
+    // {{frase_colegas}} é recalculada NA HORA a partir do plano do dia (colegas da
+    // mesma empresa que saem junto neste passo); o valor em custom é só preview.
+    // Para passos sem a variável o contato volta intacto.
+    const built = buildEmail(contatoParaEnvio(contact, step, item, plan.items, contactsById), def, step, {
+      replyTo: env.replyTo,
+    });
+    // O plano lint-ou o preview; o texto FINAL passa pelo mesmo lint antes de
+    // qualquer chamada ao Resend (nada foi gravado ainda: abortar aqui é seguro).
+    const errors = lintErrors(lintEmail(built.subject, built.text, { subjectTemplate: step.subject }));
+    if (errors.length > 0) {
+      throw new Error(
+        `Lint do texto final falhou para o contato ${contact.id} em ${def.slug}/${step.id}: ${errors
+          .map((e) => `${e.rule} (${e.detail})`)
+          .join("; ")}. Nada foi enviado; ajuste a copy ou as variáveis e rode outbound:send de novo.`,
+      );
+    }
     prepared.push({
       item,
       sendId,

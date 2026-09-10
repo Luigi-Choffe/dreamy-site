@@ -9,6 +9,7 @@
  *   sem --apply: só valida e imprime o relatório (nada gravado)
  */
 import { readFileSync } from "node:fs";
+import { fraseColegas } from "../../src/lib/outbound/colegas";
 
 interface Peca {
   contactId: string;
@@ -94,11 +95,9 @@ async function main(): Promise<void> {
         // O E1 usa {{frase_colegas}} (gravada por apply-colegas.ts, que depende das
         // inscrições). Antes disso existir, sondamos com a variante mais LONGA
         // (3 colegas + nome da empresa) para a contagem de palavras ser conservadora.
-        const fraseColegas =
-          c.custom.frase_colegas ??
-          `Estou escrevendo também para Fulano, Beltrano e Sicrano aí na ${c.empresa ?? "empresa"}, para a conversa chegar em quem vive isso e em quem decide.`;
+        const fraseSonda = c.custom.frase_colegas ?? fraseColegas(["Fulano", "Beltrano", "Sicrano"], c.empresa);
         if (!c.custom.frase_colegas) semFraseColegas++;
-        const sonda = { ...c, custom: { ...c.custom, abertura, gancho, frase_colegas: fraseColegas } };
+        const sonda = { ...c, custom: { ...c.custom, abertura, gancho, frase_colegas: fraseSonda } };
         try {
           const b = buildEmail(sonda, campaign, campaign.steps[0], { replyTo: "contact@bedreamy.com.br" });
           const errs = lintErrors(lintEmail(b.subject, b.text, { subjectTemplate: campaign.steps[0].subject }));

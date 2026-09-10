@@ -62,6 +62,7 @@ Atualizado em 2026-08-30 (pivô para plataforma de vendas — ver bullet **PIVÔ
 | QA e resultados                                      | `docs/QA.md`, `docs/qa/final/`, `docs/qa/lighthouse/` |
 | Migração SEO/domínio                                 | `docs/SEO-MIGRATION.md`, `docs/redirect-map.csv`      |
 | Deploy da plataforma (Vercel + Neon + login do time) | `docs/DEPLOY-PLATAFORMA.md`                           |
+| Falhas da operação e salvaguardas (registro vivo)    | `docs/FALHAS-E-SALVAGUARDAS.md`                       |
 | Deploy do site (referência; site hoje é do sócio)    | `docs/DEPLOY.md`                                      |
 | Apresentação institucional (PDF + fonte HTML)        | `docs/apresentacao/`                                  |
 | Campanhas de e-mail outbound (PRD)                   | `docs/PRD-EMAIL-OUTBOUND.md`                          |

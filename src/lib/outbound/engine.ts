@@ -1,4 +1,13 @@
-import { isBusinessDay, isoAtLocalMinute, localParts, rampCap, sendDateKey, type OutboundEnv } from "./config";
+import {
+  cadenceDue,
+  isBusinessDay,
+  isoAtLocalMinute,
+  localParts,
+  rampCap,
+  sendDateKey,
+  type OutboundEnv,
+} from "./config";
+import { feriadoNacional } from "./feriados";
 import { evaluateGuardRails } from "./guardrails";
 import { normalizeEmpresa } from "./ops-core";
 import { buildEmail, campaignContentHash, lintEmail, lintErrors } from "./render";
@@ -45,12 +54,58 @@ export interface PlanSkip {
   reason: string;
 }
 
+/**
+ * Campanha "ready" com inscritos ativos que o motor recusa por aprovação ausente
+ * ou invalidada (copy editada depois do approve). Sem alerta, isso ficava
+ * escondido entre os pulados: a campanha parecia rodando e nada saía.
+ */
+export interface PlanApprovalBlock {
+  campaignSlug: string;
+  /** Inscritos ativos que ficam presos até `outbound:campaign approve`. */
+  inscritos: number;
+  motivo: "ausente" | "invalidada";
+}
+
 export interface PlanResult {
   items: PlanItem[];
   skipped: PlanSkip[];
   capInfo: { cap: number; usedToday: number; available: number };
-  /** Preenchido quando NADA pode ser planejado hoje (breaker, fim de semana, janela). */
+  /** Preenchido quando NADA pode ser planejado hoje (breaker, fim de semana, feriado, janela). */
   blockedReason?: string;
+  /** Alerta agregado por campanha (preenchido mesmo em dia bloqueado, para o relatório avisar). */
+  aprovacaoBloqueada: PlanApprovalBlock[];
+}
+
+/**
+ * Agregado puro das campanhas travadas por aprovação: mesma regra que o loop do
+ * plano aplica por inscrito (status "ready" + enrollment ativo + approvedAt
+ * ausente ou approvedHash diferente do conteúdo atual). Usado pelo plano, pelo
+ * `outbound:auto` e pelo fio de saúde do console (que não roda o plano inteiro).
+ */
+export function bloqueiosDeAprovacao(
+  campaignDefs: CampaignDefinition[],
+  runtimes: CampaignRuntime[],
+  enrollments: Enrollment[],
+  campaignFilter?: string,
+): PlanApprovalBlock[] {
+  const defsBySlug = new Map(campaignDefs.map((d) => [d.slug, d]));
+  const runtimesBySlug = new Map(runtimes.map((r) => [r.slug, r]));
+  const porCampanha = new Map<string, PlanApprovalBlock>();
+  for (const enrollment of enrollments) {
+    if (enrollment.status !== "active") continue;
+    if (campaignFilter && enrollment.campaignSlug !== campaignFilter) continue;
+    const def = defsBySlug.get(enrollment.campaignSlug);
+    if (!def || def.status !== "ready") continue;
+    const runtime = runtimesBySlug.get(def.slug);
+    let motivo: PlanApprovalBlock["motivo"];
+    if (!runtime?.approvedAt) motivo = "ausente";
+    else if (runtime.approvedHash !== campaignContentHash(def)) motivo = "invalidada";
+    else continue;
+    const block = porCampanha.get(def.slug) ?? { campaignSlug: def.slug, inscritos: 0, motivo };
+    block.inscritos += 1;
+    porCampanha.set(def.slug, block);
+  }
+  return [...porCampanha.values()].sort((a, b) => a.campaignSlug.localeCompare(b.campaignSlug));
 }
 
 /** Envios que contam para o cap do dia (agendados/enviados hoje; canceled/failed não). */
@@ -99,11 +154,18 @@ export function computePlan(input: PlanInput): PlanResult {
   const cap = dailyCap(state, env, now);
   const usedToday = usedTodayCount(input.sends, now, env.utcOffset);
   const capInfo = { cap, usedToday, available: Math.max(0, cap - usedToday) };
+  const aprovacaoBloqueada = bloqueiosDeAprovacao(
+    input.campaignDefs,
+    input.runtimes,
+    input.enrollments,
+    input.campaignFilter,
+  );
   const blocked = (reason: string): PlanResult => ({
     items: [],
     skipped: [],
     capInfo,
     blockedReason: reason,
+    aprovacaoBloqueada,
   });
 
   if (state.breakerTrippedAt) {
@@ -118,6 +180,9 @@ export function computePlan(input: PlanInput): PlanResult {
     );
   }
   if (!isBusinessDay(now, env.utcOffset)) return blocked("fora de dia útil (envios só de segunda a sexta)");
+  // Feriado nacional = fim de semana (07/09/2026 saiu ciclo na Independência; nunca mais).
+  const feriado = feriadoNacional(sendDateKey(now, env.utcOffset));
+  if (feriado) return blocked(`feriado nacional: ${feriado} (envios só em dia útil)`);
 
   const { minutesOfDay, date: today } = localParts(now, env.utcOffset);
   const windowStart = Math.max(minutesOfDay + LEAD_TIME_MIN, env.window.startMin);
@@ -214,8 +279,9 @@ export function computePlan(input: PlanInput): PlanResult {
         skip(enrollment.id, "sem lastSendAt registrado para calcular cadência");
         continue;
       }
-      const dueAt = new Date(enrollment.lastSendAt).getTime() + step.offsetDays * 86_400_000;
-      if (dueAt > now.getTime()) {
+      // Cadência por DATA-CALENDÁRIO (config.cadenceDue): contar horas atrasava
+      // todo follow-up um dia, porque o goteo envia à tarde e o ciclo roda 09:05.
+      if (!cadenceDue(enrollment.lastSendAt, step.offsetDays, now, env.utcOffset)) {
         skip(enrollment.id, `aguardando cadência do passo ${step.id} (+${step.offsetDays}d)`);
         continue;
       }
@@ -316,5 +382,5 @@ export function computePlan(input: PlanInput): PlanResult {
     }
   }
 
-  return { items, skipped, capInfo };
+  return { items, skipped, capInfo, aprovacaoBloqueada };
 }

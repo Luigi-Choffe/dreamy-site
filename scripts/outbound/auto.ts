@@ -9,6 +9,7 @@ import { spawnSync } from "node:child_process";
 import { parseArgs } from "node:util";
 import { logger } from "../../src/lib/observability/logger";
 import { openStore } from "../../src/lib/outbound/store";
+import { buildPlan, linhasAlertaAprovacao } from "./plan";
 
 function run(label: string, script: string, args: string[] = []): number {
   console.log(`\n── outbound:auto · ${label} ──`);
@@ -66,7 +67,15 @@ async function main() {
     console.error("✖ auto: report falhou (envio do dia não foi afetado).");
     process.exit(1);
   }
-  logger.info("outbound.auto.done", { dryRun, armed: state.armed });
+
+  // Alerta destacado no FIM do ciclo (só leitura): campanha "ready" com inscritos
+  // presos por aprovação ausente/invalidada não pode passar batida no log do dia.
+  const alertas = linhasAlertaAprovacao(await buildPlan());
+  if (alertas.length > 0) {
+    console.log("\n── outbound:auto · ALERTAS ──");
+    for (const linha of alertas) console.log(linha);
+  }
+  logger.info("outbound.auto.done", { dryRun, armed: state.armed, alertasAprovacao: alertas.length });
 }
 
 main().catch((err) => {

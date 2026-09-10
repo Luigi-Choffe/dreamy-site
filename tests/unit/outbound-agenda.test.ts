@@ -72,7 +72,7 @@ const BASE = {
 };
 
 describe("forecastCadence", () => {
-  it("projeta a cadência dia a dia respeitando hora do envio, sem tocar a entrada", () => {
+  it("projeta a cadência dia a dia por data-calendário (a hora do envio não conta), sem tocar a entrada", () => {
     const before = JSON.stringify(BASE.enrollments);
     const forecast = forecastCadence(BASE, 5);
     // seg a sex = 5 dias úteis no horizonte
@@ -86,9 +86,10 @@ describe("forecastCadence", () => {
     const byKey = new Map(forecast.days.map((d) => [d.dateKey, d.items]));
     expect(byKey.get("2026-08-31")?.map((i) => i.stepId)).toEqual(["e1", "e1"]);
     expect(byKey.get("2026-09-01")).toHaveLength(0);
-    // Cadência conta HORA: c1 (enviado 09:00 de seg) vence qui; c2 (13:15) só vence na sexta.
-    expect(byKey.get("2026-09-03")?.map((i) => i.contactId)).toEqual(["c1"]);
-    expect(byKey.get("2026-09-04")?.map((i) => i.contactId)).toEqual(["c2"]);
+    // Cadência por DATA (falha #5 do registro): c1 (enviado 09:00 de seg) e c2 (13:15 de seg)
+    // vencem os dois na quinta; contar a hora empurrava c2 para a sexta (o motor roda 09:05).
+    expect(byKey.get("2026-09-03")?.map((i) => i.contactId)).toEqual(["c1", "c2"]);
+    expect(byKey.get("2026-09-04")).toHaveLength(0);
     expect(forecast.blockedReason).toBeUndefined();
     expect(JSON.stringify(BASE.enrollments)).toBe(before);
   });

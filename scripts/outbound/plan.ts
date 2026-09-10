@@ -21,6 +21,30 @@ function hora(iso: string): string {
   }).format(new Date(iso));
 }
 
+/**
+ * Linhas de ALERTA (uma por campanha) para inscritos presos por aprovação ausente
+ * ou invalidada. Vazio quando não há o que alertar. Usado pelo plano e pelo
+ * `outbound:auto`, que repete o alerta no fim do ciclo para não passar batido.
+ */
+export function linhasAlertaAprovacao(plan: Pick<PlanResult, "aprovacaoBloqueada">): string[] {
+  return plan.aprovacaoBloqueada.map((b) => {
+    const motivo =
+      b.motivo === "ausente" ? "aprovação ausente" : "aprovação invalidada (copy editada depois do approve)";
+    return `⚠ campanha ${b.campaignSlug}: ${b.inscritos} inscrito(s) bloqueado(s): ${motivo}, rode pnpm outbound:campaign approve --slug ${b.campaignSlug} --confirm`;
+  });
+}
+
+/** Loga um evento por campanha travada (contagens, sem PII); nada se a lista estiver vazia. */
+export function logarBloqueiosDeAprovacao(plan: Pick<PlanResult, "aprovacaoBloqueada">): void {
+  for (const b of plan.aprovacaoBloqueada) {
+    logger.warn("outbound.plan.bloqueio_aprovacao", {
+      campaign: b.campaignSlug,
+      inscritos: b.inscritos,
+      motivo: b.motivo,
+    });
+  }
+}
+
 export async function buildPlan(campaignFilter?: string): Promise<PlanResult> {
   const store = openStore();
   const [contacts, enrollments, sends, suppressions, runtimes, state] = await Promise.all([
@@ -104,12 +128,16 @@ async function main() {
       console.log(`    ${String(count).padStart(4)}×  ${reason}`);
     }
   }
+  // Campanha "ready" travada por aprovação não pode ficar escondida entre os pulados.
+  for (const linha of linhasAlertaAprovacao(plan)) console.log(`  ${linha}`);
   console.log(`  Snapshot: ${snapshotFile}`);
   logger.info("outbound.plan", {
     items: plan.items.length,
     skipped: plan.skipped.length,
     blocked: plan.blockedReason ?? null,
+    bloqueiosAprovacao: plan.aprovacaoBloqueada.length,
   });
+  logarBloqueiosDeAprovacao(plan);
 }
 
 const isDirectRun = process.argv[1]?.replace(/\\/g, "/").endsWith("outbound/plan.ts");

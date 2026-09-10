@@ -4,17 +4,13 @@
 // Quem está sozinho na empresa recebe a variante solo (igualmente verdadeira) —
 // variável vazia bloqueia o envio no motor, então nunca fica em branco.
 // Idempotente: reflete o estado atual das inscrições a cada execução.
+//
+// O valor gravado é PREVIEW (o plano lint-a com ele). O envio real recalcula a
+// frase na hora a partir do plano do dia (src/lib/outbound/colegas.ts), então o
+// e-mail nunca cita colega que saiu da sequência ou ficou para outro dia.
 // Uso: pnpm tsx scripts/dev/apply-colegas.ts --campanha <slug> [--apply]
 
-const FRASE_COM_COLEGAS = (lista: string, empresa: string): string =>
-  `Estou escrevendo também para ${lista} aí na ${empresa}, para a conversa chegar em quem vive isso e em quem decide.`;
-const FRASE_SOLO = "Escrevo para você primeiro porque é quem sente isso na ponta.";
-
-function listaNomes(nomes: string[]): string {
-  if (nomes.length === 1) return nomes[0] as string;
-  if (nomes.length === 2) return `${nomes[0]} e ${nomes[1]}`;
-  return `${nomes.slice(0, -1).join(", ")} e ${nomes[nomes.length - 1]}`;
-}
+import { fraseColegas } from "../../src/lib/outbound/colegas";
 
 async function main(): Promise<void> {
   try {
@@ -44,13 +40,9 @@ async function main(): Promise<void> {
     for (const c of contacts) {
       if (!inscritos.has(c.id)) continue;
       const colegas = colegasNaCampanha(c, contacts, enrollments, slug);
-      if (colegas.length > 0) {
-        c.custom.frase_colegas = FRASE_COM_COLEGAS(listaNomes(colegas), c.empresa ?? "empresa");
-        comColegas++;
-      } else {
-        c.custom.frase_colegas = FRASE_SOLO;
-        solo++;
-      }
+      c.custom.frase_colegas = fraseColegas(colegas, c.empresa);
+      if (colegas.length > 0) comColegas++;
+      else solo++;
     }
     console.log(`inscritos: ${inscritos.size} · com colegas: ${comColegas} · solo: ${solo}`);
     if (!apply) {

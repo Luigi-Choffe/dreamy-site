@@ -1,5 +1,6 @@
 import { isBusinessDay, isoAtLocalMinute, sendDateKey, type OutboundEnv } from "./config";
 import { computePlan } from "./engine";
+import { feriadoNacional } from "./feriados";
 import type {
   CampaignDefinition,
   CampaignRuntime,
@@ -27,6 +28,11 @@ import type {
 const DAY_MS = 86_400_000;
 /** Horário da tarefa automática (dias úteis, 09:05 no fuso de envio). */
 const AUTO_MINUTE = 9 * 60 + 5;
+
+/** Dia em que o motor envia: segunda a sexta E não feriado nacional (mesma regra do computePlan). */
+function diaDeEnvio(dayDate: Date, utcOffset: string): boolean {
+  return isBusinessDay(dayDate, utcOffset) && feriadoNacional(sendDateKey(dayDate, utcOffset)) === null;
+}
 
 export interface ForecastDay {
   /** YYYY-MM-DD no fuso de envio. */
@@ -63,7 +69,7 @@ export function forecastCadence(input: ForecastInput, horizonDays: number): Fore
 
   for (let d = 0; d < horizonDays; d += 1) {
     const dayDate = new Date(now.getTime() + d * DAY_MS);
-    if (!isBusinessDay(dayDate, env.utcOffset)) continue;
+    if (!diaDeEnvio(dayDate, env.utcOffset)) continue;
     const dateKey = sendDateKey(dayDate, env.utcOffset);
     // Dia 0 usa o agora real (janela pode já ter passado); dias seguintes, 09:05.
     const at = d === 0 ? now : new Date(Date.parse(isoAtLocalMinute(dateKey, AUTO_MINUTE, env.utcOffset)));
@@ -149,10 +155,10 @@ export function buildAgenda(input: AgendaInput, horizonDays = 10): Agenda {
     return fresh;
   };
 
-  // Dias úteis do horizonte sempre aparecem (o ritmo da agenda); fim de semana só com conteúdo.
+  // Dias de envio do horizonte sempre aparecem (o ritmo da agenda); fim de semana e feriado só com conteúdo.
   for (let d = 0; d < horizonDays; d += 1) {
     const dayDate = new Date(now.getTime() + d * DAY_MS);
-    if (isBusinessDay(dayDate, env.utcOffset)) day(sendDateKey(dayDate, env.utcOffset));
+    if (diaDeEnvio(dayDate, env.utcOffset)) day(sendDateKey(dayDate, env.utcOffset));
   }
   for (const f of forecast.days) day(f.dateKey).previstos = f.items;
   for (const send of input.sends) {

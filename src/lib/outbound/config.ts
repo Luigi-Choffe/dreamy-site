@@ -122,10 +122,32 @@ export function sendDateKey(now: Date, utcOffset: string): string {
   return localParts(now, utcOffset).date;
 }
 
-/** Dia útil no fuso de envio (sem feriados na V1 — cadência tolera). */
+/**
+ * Segunda a sexta no fuso de envio. Feriado nacional NÃO entra aqui de propósito:
+ * o motor e a Agenda o tratam à parte (`feriadoNacional`, src/lib/outbound/feriados.ts)
+ * para o bloqueio carregar o nome do feriado; tarefas do CRM seguem por dia da semana.
+ */
 export function isBusinessDay(now: Date, utcOffset: string): boolean {
   const dow = localParts(now, utcOffset).dayOfWeek;
   return dow >= 1 && dow <= 5;
+}
+
+/** Data-calendário (YYYY-MM-DD) `days` dias corridos depois de `dateKey`. */
+export function addDaysToDateKey(dateKey: string, days: number): string {
+  return new Date(Date.parse(`${dateKey}T00:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10);
+}
+
+/**
+ * Cadência por DATA-CALENDÁRIO no fuso de envio: o passo seguinte vence quando
+ * a data local de `now` é igual ou posterior à data local do último envio mais
+ * `offsetDays` dias corridos. A hora do último envio NÃO conta: o goteo espalha
+ * os envios pela tarde e o ciclo roda às 09:05, então contar horas empurrava
+ * todo follow-up para o dia útil seguinte (E2 da construção saiu 04/09 em vez
+ * de 03/09). Dias corridos, não úteis: +3 de quinta vence domingo e sai segunda.
+ */
+export function cadenceDue(lastSendAt: string, offsetDays: number, now: Date, utcOffset: string): boolean {
+  const dueKey = addDaysToDateKey(sendDateKey(new Date(lastSendAt), utcOffset), offsetDays);
+  return sendDateKey(now, utcOffset) >= dueKey;
 }
 
 export interface LocalParts {

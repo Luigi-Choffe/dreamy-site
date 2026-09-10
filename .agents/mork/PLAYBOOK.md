@@ -22,6 +22,14 @@ Sinais vermelhos no fio de saúde: `pending` (run interrompido → `outbound:sen
 --resolve-pending`, conferindo o painel do Resend antes) e `agendados órfãos`
 (cancelar no painel do Resend ou repetir a ação com a chave presente).
 
+**Falhas e salvaguardas (regra do Luigi, 2026-09-10):** toda falha entra em
+`docs/FALHAS-E-SALVAGUARDAS.md` com causa, correção e a salvaguarda que impede
+a volta (teste, config ou checklist). Lá vivem o **pré-voo de segunda** (tarefa
+agendada com 3 gatilhos e resultado 0, arm status, plan sem alerta de aprovação,
+lock sem órfão) e o **checklist de importação** (grafias unificadas, domínio
+divergente = reserva, validador de peças tudo-ou-nada, `apply-colegas --dry-run`
+batendo com as empresas de contato único). Ler antes de qualquer lista nova.
+
 ## 1. Base nova do Clay (novo ICP ou reforço)
 
 O Clay exporta EMPRESAS e PESSOAS (abas ou arquivos separados). Planilhas vão
