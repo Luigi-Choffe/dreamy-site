@@ -1,9 +1,10 @@
 // @vitest-environment node
+import { hostname } from "node:os";
 import { PGlite } from "@electric-sql/pglite";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { createPgliteSqlClient, ensureSchema, type SqlClient } from "../../src/lib/outbound/sql";
 import { acquireDbLock, createPgStore, releaseDbLock } from "../../src/lib/outbound/store-pg";
-import type { OutboundStore } from "../../src/lib/outbound/store";
+import { releaseDbLockReliably, stealDeadLocalDbLock, type OutboundStore } from "../../src/lib/outbound/store";
 import type { Contact, Deal, Demand, WorkspaceSettings } from "../../src/lib/outbound/types";
 
 let db: PGlite;
@@ -134,5 +135,75 @@ describe("store Postgres — lock distribuído", () => {
     expect(await acquireDbLock(client, "l1", "b", 60_000)).toBe(true);
     expect(await acquireDbLock(client, "l2", "a", -1)).toBe(true);
     expect(await acquireDbLock(client, "l2", "c", 60_000)).toBe(true);
+  });
+});
+
+describe("store Postgres — release confiável e lock órfão", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
+  });
+
+  function flakyClient(failures: number, counter: { deletes: number }): SqlClient {
+    return {
+      async query<T>(text: string, params?: unknown[]): Promise<T[]> {
+        if (text.startsWith("DELETE FROM outbound_locks")) {
+          counter.deletes++;
+          if (counter.deletes <= failures) throw new Error("fetch failed (Neon fora do ar)");
+        }
+        return client.query<T>(text, params);
+      },
+      transaction: (statements) => client.transaction(statements),
+    };
+  }
+
+  it("release com falha transitória tenta de novo e libera o lock", async () => {
+    expect(await acquireDbLock(client, "r1", "dono", 60_000)).toBe(true);
+    const counter = { deletes: 0 };
+    await releaseDbLockReliably(flakyClient(1, counter), "r1", "dono", [5, 5, 5]);
+    expect(counter.deletes).toBe(2); // falhou 1x, liberou na 2ª
+    expect(await acquireDbLock(client, "r1", "proximo", 60_000)).toBe(true);
+  });
+
+  it("release que falha em todas as tentativas não lança e registra aviso", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const counter = { deletes: 0 };
+    await expect(releaseDbLockReliably(flakyClient(99, counter), "r2", "dono", [1, 1, 1])).resolves.toBeUndefined();
+    expect(counter.deletes).toBe(4); // 1 tentativa + 3 retries
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(String(warn.mock.calls[0]?.[0])).toContain("outbound.lock.release_falhou");
+  });
+
+  it("lock órfão de pid morto do MESMO host é removido; vivo ou de outro host, não", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {}); // remoção de órfão loga aviso
+    const me = hostname();
+
+    // pid morto no mesmo host: remove e o próximo acquire pega na hora
+    expect(await acquireDbLock(client, "o1", `${me}:999999:abcd1234`, 60_000)).toBe(true);
+    expect(await stealDeadLocalDbLock(client, "o1", { isAlive: () => false })).toBe(true);
+    expect(await acquireDbLock(client, "o1", "novo", 60_000)).toBe(true);
+
+    // pid vivo no mesmo host (o nosso próprio, sem override — exercita process.kill de verdade)
+    expect(await acquireDbLock(client, "o2", `${me}:${process.pid}:abcd1234`, 60_000)).toBe(true);
+    expect(await stealDeadLocalDbLock(client, "o2")).toBe(false);
+
+    // outro host: nunca mexe, mesmo com pid "morto"
+    expect(await acquireDbLock(client, "o3", "outra-maquina:123:abcd1234", 60_000)).toBe(true);
+    expect(await stealDeadLocalDbLock(client, "o3", { isAlive: () => false })).toBe(false);
+
+    // lock inexistente e holder sem formato host:pid não quebram
+    expect(await stealDeadLocalDbLock(client, "o-nao-existe", { isAlive: () => false })).toBe(false);
+    expect(await acquireDbLock(client, "o4", "holder-sem-pid", 60_000)).toBe(true);
+    expect(await stealDeadLocalDbLock(client, "o4", { isAlive: () => false })).toBe(false);
+
+    expect(warn).toHaveBeenCalledTimes(1); // só a remoção do órfão em o1
+    expect(String(warn.mock.calls[0]?.[0])).toContain("outbound.lock.orfao_removido");
+  });
+
+  it("defesa de pid morto fica desligada em serverless (VERCEL)", async () => {
+    vi.stubEnv("VERCEL", "1");
+    const me = hostname();
+    expect(await acquireDbLock(client, "o5", `${me}:999999:abcd1234`, 60_000)).toBe(true);
+    expect(await stealDeadLocalDbLock(client, "o5", { isAlive: () => false })).toBe(false);
   });
 });

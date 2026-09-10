@@ -3,6 +3,7 @@ import { unlinkSync } from "node:fs";
 import { hostname } from "node:os";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import { logger } from "../observability/logger";
 import { createNeonSqlClient, type SqlClient } from "./sql";
 import { DEFAULT_STATE, LOCK_STALE_MS, LOCK_WAIT_MS, normalizeEmail } from "./store-common";
 import { acquireDbLock, createPgStore, releaseDbLock } from "./store-pg";
@@ -285,6 +286,81 @@ export async function runExclusive<T>(label: string, fn: () => Promise<T>, dirOv
   return runExclusiveFile(label, fn, dirOverride ?? outboundDir());
 }
 
+/** Backoff do retry de release: o Neon via HTTP tem falha transitória com alguma frequência. */
+const LOCK_RELEASE_RETRY_DELAYS_MS: readonly number[] = [250, 500, 1000];
+
+/**
+ * Release confiável do lock distribuído. Uma falha transitória de rede aqui era
+ * engolida em silêncio e deixava o lock órfão por LOCK_STALE_MS (10 min),
+ * bloqueando todo comando seguinte. Tenta de novo com backoff curto; se ainda
+ * falhar, registra aviso e NUNCA lança: o resultado da operação protegida não
+ * pode ser perdido por falha de release (estamos num finally).
+ */
+export async function releaseDbLockReliably(
+  client: SqlClient,
+  name: string,
+  holder: string,
+  delaysMs: readonly number[] = LOCK_RELEASE_RETRY_DELAYS_MS,
+): Promise<void> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      await releaseDbLock(client, name, holder);
+      return;
+    } catch (err) {
+      const delay = delaysMs[attempt];
+      if (delay === undefined) {
+        logger.warn("outbound.lock.release_falhou", {
+          lock: name,
+          holder,
+          tentativas: attempt + 1,
+          error: err instanceof Error ? `${err.name}: ${err.message}` : String(err),
+        });
+        return;
+      }
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+}
+
+function isPidAlive(pid: number): boolean {
+  try {
+    process.kill(pid, 0); // sinal 0 = só checa existência (funciona em Windows e POSIX)
+    return true;
+  } catch (err) {
+    // EPERM: o processo existe mas não temos permissão — tratamos como vivo.
+    // Qualquer outro erro (ESRCH): não há processo com esse pid.
+    return (err as NodeJS.ErrnoException).code === "EPERM";
+  }
+}
+
+/**
+ * Segunda linha de defesa contra lock órfão: se o holder atual é
+ * "<host>:<pid>:<sufixo>" desta MESMA máquina e o pid não existe mais (o caso
+ * clássico é CLI que morreu ou saiu por process.exit(), que pula o finally),
+ * remove a linha. O DELETE é condicionado ao holder lido — se outro processo
+ * pegou o lock nesse meio-tempo, vira no-op. Reuso de pid só causa falso
+ * "vivo" (seguro: espera o TTL, como hoje); falso "morto" exigiria outra
+ * máquina com o mesmo hostname, por isso a defesa fica DESLIGADA em serverless
+ * (VERCEL), onde hostname/pid não identificam um processo observável.
+ */
+export async function stealDeadLocalDbLock(
+  client: SqlClient,
+  name: string,
+  opts: { isAlive?: (pid: number) => boolean } = {},
+): Promise<boolean> {
+  if (process.env.VERCEL) return false;
+  const rows = await client.query<{ holder: string }>("SELECT holder FROM outbound_locks WHERE name = $1", [name]);
+  const current = rows[0]?.holder;
+  if (!current) return false;
+  const [host, pidRaw] = current.split(":");
+  const pid = Number(pidRaw);
+  if (host !== hostname() || !Number.isInteger(pid) || pid <= 0) return false;
+  if ((opts.isAlive ?? isPidAlive)(pid)) return false;
+  await client.query("DELETE FROM outbound_locks WHERE name = $1 AND holder = $2", [name, current]);
+  logger.warn("outbound.lock.orfao_removido", { lock: name, holder: current });
+  return true;
+}
+
 async function runExclusiveDb<T>(label: string, fn: () => Promise<T>): Promise<T> {
   const client = getSqlClient();
   const holder = `${hostname()}:${process.pid}:${randomUUID().slice(0, 8)}`;
@@ -295,12 +371,14 @@ async function runExclusiveDb<T>(label: string, fn: () => Promise<T>): Promise<T
         `outro comando outbound está rodando (${label}: lock "outbound" ocupado no banco) — aguarde terminar`,
       );
     }
+    // Lock órfão de processo morto desta máquina? Remove e tenta de novo já.
+    if (await stealDeadLocalDbLock(client, "outbound").catch(() => false)) continue;
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
   try {
     return await fn();
   } finally {
-    await releaseDbLock(client, "outbound", holder).catch(() => {});
+    await releaseDbLockReliably(client, "outbound", holder);
   }
 }
 

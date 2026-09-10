@@ -21,7 +21,8 @@ import type { CampaignDefinition } from "../../lib/outbound/types";
  * {{abertura}} vem do enriquecimento (uma linha após "{{nome}}, ", minúscula,
  * termina em ponto). Motor bloqueia envio se faltar.
  *
- * Status "draft" até o Luigi aprovar (outbound:campaign approve — ADR-020).
+ * Aprovada pelo Luigi em 2026-09-09 ("ta aprovado segue"); approve registrado
+ * via CLI em 2026-09-10 (outbound:campaign approve — ADR-020).
  */
 
 export const validacaoIndicacao: CampaignDefinition = {
@@ -31,7 +32,8 @@ export const validacaoIndicacao: CampaignDefinition = {
   industria: "construção obras para terceiros",
   // Âncora mais neutra do enum (sistemas/operação); nenhum passo vende ou linka.
   anchor: "sistema",
-  status: "draft",
+  // "ready" + aprovação do Luigi registrada em 2026-09-09/10 ("ta aprovado segue").
+  status: "ready",
   notes:
     "Lote Clay construção SP 2026-08 — 37 contatos hoje excluded (cargo-fora-icp): camada de gerência/coordenação/supervisão. " +
     "Objetivo 100% validação + indicação, zero pitch: e1 valida a dor operacional universal (planilha, retrabalho campo/escritório, " +

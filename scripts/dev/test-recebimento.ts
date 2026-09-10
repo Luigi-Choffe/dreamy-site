@@ -1,7 +1,8 @@
-// Teste de recebimento pós-migração de e-mail (MX → Google): envia um e-mail
-// simples via Resend para a NOSSA caixa (OUTBOUND_REPLY_TO) e acompanha o
-// status até delivered/bounced. Não toca no motor nem no store.
-// Uso: pnpm tsx scripts/dev/test-recebimento.ts
+// Teste de recebimento pós-migração de e-mail: envia um e-mail simples via
+// Resend para uma caixa NOSSA do domínio e acompanha o status até
+// delivered/bounced. Não toca no motor nem no store.
+// Uso: pnpm tsx scripts/dev/test-recebimento.ts [destino@bedreamy.com.br]
+// (sem argumento, usa OUTBOUND_REPLY_TO; só aceita destino do próprio domínio)
 
 async function main(): Promise<void> {
   try {
@@ -11,7 +12,8 @@ async function main(): Promise<void> {
   }
   const apiKey = process.env.OUTBOUND_RESEND_API_KEY;
   const from = process.env.OUTBOUND_FROM;
-  const to = process.env.OUTBOUND_REPLY_TO;
+  const to = process.argv[2] ?? process.env.OUTBOUND_REPLY_TO;
+  if (to && !to.endsWith("@bedreamy.com.br")) throw new Error("teste só para caixas do próprio domínio");
   if (!apiKey || !from || !to) throw new Error("faltam OUTBOUND_RESEND_API_KEY / OUTBOUND_FROM / OUTBOUND_REPLY_TO");
 
   const res = await fetch("https://api.resend.com/emails", {
