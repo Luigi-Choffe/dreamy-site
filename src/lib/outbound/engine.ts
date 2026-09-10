@@ -1,5 +1,6 @@
 import { isBusinessDay, isoAtLocalMinute, localParts, rampCap, sendDateKey, type OutboundEnv } from "./config";
 import { evaluateGuardRails } from "./guardrails";
+import { normalizeEmpresa } from "./ops-core";
 import { buildEmail, campaignContentHash, lintEmail, lintErrors } from "./render";
 import { normalizeEmail } from "./store";
 import type {
@@ -74,6 +75,23 @@ interface Candidate {
   contact: Contact;
   def: CampaignDefinition;
   stepIndex: number;
+}
+
+/**
+ * Agrupa candidatos já ordenados por (passo, empresa normalizada), mantendo a
+ * ordem: o grupo fica na posição do seu primeiro membro. Contato sem empresa
+ * vira grupo de um (chave única pelo enrollment).
+ */
+function groupByEmpresa(sorted: Candidate[]): Candidate[][] {
+  const groups = new Map<string, Candidate[]>();
+  for (const candidate of sorted) {
+    const empresa = normalizeEmpresa(candidate.contact.empresa);
+    const key = empresa === "" ? `solo:${candidate.enrollment.id}` : `${candidate.stepIndex}|${empresa}`;
+    const group = groups.get(key);
+    if (group) group.push(candidate);
+    else groups.set(key, [candidate]);
+  }
+  return [...groups.values()];
 }
 
 export function computePlan(input: PlanInput): PlanResult {
@@ -232,21 +250,46 @@ export function computePlan(input: PlanInput): PlanResult {
   for (const list of byCampaign.values()) {
     list.sort((a, b) => b.stepIndex - a.stepIndex || a.enrollment.createdAt.localeCompare(b.enrollment.createdAt));
   }
-  const queues = [...byCampaign.keys()].sort().map((slug) => byCampaign.get(slug) as Candidate[]);
+  // Agrupamento por empresa: campanhas que inscrevem várias pessoas da mesma
+  // empresa citam os colegas no texto ("escrevo também para Fulano"), então os
+  // contatos da MESMA empresa + campanha + passo precisam sair no MESMO dia. A
+  // ordem de prioridade acima é preservada: o grupo entra na posição do seu
+  // primeiro membro e os demais vêm logo em seguida. Empresa comparada por
+  // normalizeEmpresa (sem fuzzy); contato sem empresa é grupo de um.
+  const queues = [...byCampaign.keys()].sort().map((slug) => groupByEmpresa(byCampaign.get(slug) as Candidate[]));
   const windowSpan = env.window.endMin - windowStart;
   const windowCapacity = Math.floor(windowSpan / MIN_GAP_MIN) + 1;
   const target = Math.min(capInfo.available, windowCapacity);
 
+  // Regra do cap: um grupo NUNCA é quebrado. Se o próximo grupo da fila não cabe
+  // no cap restante, ele inteiro fica para o próximo dia útil e o cap que sobra
+  // vai para o primeiro grupo seguinte (da mesma fila) que caiba. Grupos de um
+  // (campanhas atuais) reproduzem exatamente o round-robin anterior. Determinístico:
+  // filas ordenadas, grupos em ordem de primeiro membro, sem aleatoriedade.
   const chosen: Candidate[] = [];
   let qi = 0;
-  while (chosen.length < target && queues.some((q) => q.length > 0)) {
+  let filasSemGrupoQueCaiba = 0;
+  while (chosen.length < target && filasSemGrupoQueCaiba < queues.length) {
     const queue = queues[qi % queues.length];
     qi += 1;
-    const candidate = queue.shift();
-    if (candidate) chosen.push(candidate);
+    const restante = target - chosen.length;
+    const gi = queue.findIndex((group) => group.length <= restante);
+    if (gi === -1) {
+      filasSemGrupoQueCaiba += 1;
+      continue;
+    }
+    filasSemGrupoQueCaiba = 0;
+    const [group] = queue.splice(gi, 1);
+    chosen.push(...group);
   }
   for (const queue of queues) {
-    for (const left of queue) skip(left.enrollment.id, "fora do cap/janela de hoje (fica para o próximo dia útil)");
+    for (const group of queue) {
+      const reason =
+        group.length > 1 && chosen.length < target
+          ? `fora do cap de hoje: grupo de ${group.length} contatos da mesma empresa não cabe inteiro no cap restante (a empresa sai junta no próximo dia útil)`
+          : "fora do cap/janela de hoje (fica para o próximo dia útil)";
+      for (const left of group) skip(left.enrollment.id, reason);
+    }
   }
 
   // Goteo com jitter: intervalo base uniforme na janela restante, ±40%, mínimo 3 min.

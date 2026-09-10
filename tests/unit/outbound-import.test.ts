@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   cleanDomain,
+  describeRoleFilter,
   isPersonalEmail,
   mapRows,
   matchesTargetRole,
   normalizeHeader,
+  parseRoleFilter,
   prepareImport,
   type HeaderMapping,
 } from "@/lib/outbound/import-core";
@@ -95,6 +97,21 @@ describe("filtros de ICP", () => {
   it("aceita lista de cargos-alvo customizada", () => {
     expect(matchesTargetRole("Coordenador de TI", ["coordenador"])).toBe(true);
     expect(matchesTargetRole("CEO", ["coordenador"])).toBe(false);
+  });
+
+  it("parseRoleFilter: ausente = default, all = sem filtro, lista por vírgula = custom", () => {
+    expect(parseRoleFilter(undefined)).toBeUndefined();
+    expect(parseRoleFilter("all")).toBe("all");
+    expect(parseRoleFilter(" ALL ")).toBe("all");
+    expect(parseRoleFilter("gerente, coordenador ,supervisor,")).toEqual(["gerente", "coordenador", "supervisor"]);
+    expect(() => parseRoleFilter("")).toThrow(/--roles vazio/);
+    expect(() => parseRoleFilter(" , ")).toThrow(/--roles vazio/);
+  });
+
+  it("describeRoleFilter: rótulo do relatório", () => {
+    expect(describeRoleFilter(undefined)).toBe("padrão");
+    expect(describeRoleFilter("all")).toBe("todos");
+    expect(describeRoleFilter(["gerente", "coordenador"])).toBe("custom (2)");
   });
 });
 
@@ -197,5 +214,72 @@ describe("prepareImport", () => {
         { label: "Diretora Comercial", count: 1 },
       ]),
     );
+  });
+});
+
+describe("prepareImport: filtro de cargo (--roles)", () => {
+  const headers = ["Email", "First Name", "Job Title"];
+  const rows = [
+    ["ana@empresa.com.br", "Ana", "CEO"],
+    ["gil@log.com.br", "Gil", "Gerente de Logística"],
+    ["cid@log.com.br", "Cid", "Coordenador de Expedição"],
+    ["sue@log.com.br", "Sue", "Supervisora de Armazém"],
+    ["dan@firma.com.br", "Dan", ""],
+    ["bob@gmail.com", "Bob", "Gerente de Logística"],
+  ];
+
+  function statusMap(targetRoles?: Parameters<typeof prepareImport>[0]["targetRoles"]) {
+    const result = prepareImport({ headers, rows, mapping: MAPPING, batchId: "b", targetRoles });
+    return {
+      result,
+      status: Object.fromEntries(
+        result.contacts.map((c) => [c.email, `${c.status}${c.excludedReason ? `:${c.excludedReason}` : ""}`]),
+      ),
+    };
+  }
+
+  it("default (flag ausente): gerente/coordenador/supervisor seguem fora do ICP", () => {
+    const { result, status } = statusMap(undefined);
+    expect(status).toEqual({
+      "ana@empresa.com.br": "active",
+      "gil@log.com.br": "excluded:cargo-fora-icp",
+      "cid@log.com.br": "excluded:cargo-fora-icp",
+      "sue@log.com.br": "excluded:cargo-fora-icp",
+      "dan@firma.com.br": "active",
+      "bob@gmail.com": "excluded:email-pessoal",
+    });
+    expect(result.stats.excluded).toEqual({ "email-pessoal": 1, "cargo-fora-icp": 3 });
+  });
+
+  it('"all": nenhum cargo é excluído; sem cargo segue como aviso; e-mail pessoal continua excluído', () => {
+    const { result, status } = statusMap("all");
+    expect(status).toEqual({
+      "ana@empresa.com.br": "active",
+      "gil@log.com.br": "active",
+      "cid@log.com.br": "active",
+      "sue@log.com.br": "active",
+      "dan@firma.com.br": "active",
+      "bob@gmail.com": "excluded:email-pessoal",
+    });
+    expect(result.stats.imported).toBe(5);
+    expect(result.stats.excluded).toEqual({ "email-pessoal": 1, "cargo-fora-icp": 0 });
+    expect(result.warnings.map((w) => w.email)).toEqual(["dan@firma.com.br"]);
+  });
+
+  it("lista custom substitui as palavras-chave padrão (CEO passa a ficar fora)", () => {
+    const { result, status } = statusMap(["gerente", "coordenador", "supervisor"]);
+    expect(status).toEqual({
+      "ana@empresa.com.br": "excluded:cargo-fora-icp",
+      "gil@log.com.br": "active",
+      "cid@log.com.br": "active",
+      "sue@log.com.br": "active", // flexão feminina: supervisor → supervisora
+      "dan@firma.com.br": "active",
+      "bob@gmail.com": "excluded:email-pessoal",
+    });
+    expect(result.stats.excluded).toEqual({ "email-pessoal": 1, "cargo-fora-icp": 1 });
+  });
+
+  it("lista vazia é erro explícito (não exclui todo mundo em silêncio)", () => {
+    expect(() => statusMap([])).toThrow(/targetRoles vazio/);
   });
 });

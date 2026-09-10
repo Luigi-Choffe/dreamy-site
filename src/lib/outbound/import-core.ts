@@ -203,6 +203,40 @@ export function matchesTargetRole(cargo: string, keywords: readonly string[] = D
   });
 }
 
+/**
+ * Filtro de cargo da importação: lista de palavras-chave (default
+ * DEFAULT_TARGET_ROLES) ou a sentinela `"all"`, que desliga a exclusão por
+ * cargo (todo cargo é alvo; contato sem cargo continua virando warning).
+ */
+export type RoleFilter = readonly string[] | "all";
+
+/**
+ * Interpreta o valor da flag `--roles` do CLI: ausente = default, `all` = sem
+ * filtro, senão lista separada por vírgula. Erro acionável em entrada vazia.
+ */
+export function parseRoleFilter(raw: string | undefined): RoleFilter | undefined {
+  if (raw === undefined) return undefined;
+  const trimmed = raw.trim();
+  if (normalizeText(trimmed) === "all") return "all";
+  const keywords = trimmed
+    .split(",")
+    .map((k) => k.trim())
+    .filter(Boolean);
+  if (keywords.length === 0) {
+    throw new Error(
+      '--roles vazio: use "all" para desligar o filtro de cargo ou informe palavras-chave separadas por vírgula.',
+    );
+  }
+  return keywords;
+}
+
+/** Rótulo do filtro de cargo para o relatório do CLI. */
+export function describeRoleFilter(filter: RoleFilter | undefined): string {
+  if (filter === undefined) return "padrão";
+  if (filter === "all") return "todos";
+  return `custom (${filter.length})`;
+}
+
 // ─── Importação (pura) ───────────────────────────────────────────────────────
 
 export type ExclusionReason = "email-pessoal" | "cargo-fora-icp";
@@ -239,8 +273,12 @@ export interface PrepareImportInput {
   existingEmails?: ReadonlySet<string>;
   /** E-mails (normalizados) na lista de supressão — nunca reentram como `active` (PRD §11.7). */
   suppressedEmails?: ReadonlySet<string>;
-  /** Palavras-chave de cargo-alvo (default: DEFAULT_TARGET_ROLES). */
-  targetRoles?: readonly string[];
+  /**
+   * Palavras-chave de cargo-alvo (default: DEFAULT_TARGET_ROLES) ou `"all"` para
+   * não excluir ninguém por cargo. Lista vazia é erro (evitaria excluir todo mundo
+   * em silêncio).
+   */
+  targetRoles?: RoleFilter;
   now?: Date;
   /** Injetável em teste; default randomUUID. */
   makeId?: () => string;
@@ -280,6 +318,13 @@ export function prepareImport(input: PrepareImportInput): PrepareImportResult {
     now = new Date(),
     makeId = randomUUID,
   } = input;
+
+  if (targetRoles !== "all" && targetRoles.length === 0) {
+    throw new Error(
+      'targetRoles vazio: use "all" para desligar o filtro de cargo ou informe ao menos uma palavra-chave.',
+    );
+  }
+  const roleIsTarget = (cargo: string): boolean => targetRoles === "all" || matchesTargetRole(cargo, targetRoles);
 
   const result: PrepareImportResult = {
     contacts: [],
@@ -334,7 +379,7 @@ export function prepareImport(input: PrepareImportInput): PrepareImportResult {
     } else if (isPersonalEmail(email)) {
       status = "excluded";
       excludedReason = "email-pessoal";
-    } else if (cargo && !matchesTargetRole(cargo, targetRoles)) {
+    } else if (cargo && !roleIsTarget(cargo)) {
       status = "excluded";
       excludedReason = "cargo-fora-icp";
     } else if (!cargo) {

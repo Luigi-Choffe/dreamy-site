@@ -19,6 +19,8 @@ const ENV: OutboundEnv = {
   from: null,
   anthropicKey: null,
   replyTo: "vendas@dreamy.app.br",
+  replyToAll: ["vendas@dreamy.app.br"],
+  replyToError: null,
   utcOffset: "-03:00",
   window: { startMin: 9 * 60, endMin: 17 * 60 + 30 },
   dailyCapEnv: null,
@@ -310,8 +312,9 @@ describe("computePlan — elegibilidade", () => {
 
 describe("computePlan — cap e agendamento", () => {
   function many(n: number) {
+    // Uma pessoa por empresa (o caso das campanhas atuais); o agrupamento por empresa não interfere.
     const contacts = Array.from({ length: n }, (_, i) =>
-      contact({ id: `c${i}`, email: `pessoa${i}@empresa${i}.com.br` }),
+      contact({ id: `c${i}`, email: `pessoa${i}@empresa${i}.com.br`, empresa: `Empresa ${i}` }),
     );
     const enrollments = contacts.map((c, i) => enrollment({ id: `en${i}`, contactId: c.id }));
     return { contacts, enrollments };
@@ -371,6 +374,13 @@ describe("computePlan — cap e agendamento", () => {
     ).toEqual(["dist-teste", "outra-campanha"]);
   });
 
+  it("é determinístico: mesma entrada, mesmo plano", () => {
+    const { contacts, enrollments } = many(20);
+    const a = plan({ contacts, enrollments });
+    const b = plan({ contacts, enrollments });
+    expect(JSON.stringify(a)).toBe(JSON.stringify(b));
+  });
+
   it("campaignFilter restringe o plano", () => {
     const defB = campaign({ slug: "outra-campanha" });
     const { contacts, enrollments } = many(2);
@@ -384,5 +394,112 @@ describe("computePlan — cap e agendamento", () => {
     });
     expect(r.items).toHaveLength(1);
     expect(r.items[0].campaignSlug).toBe("outra-campanha");
+  });
+});
+
+describe("computePlan — agrupamento por empresa (colegas saem no mesmo dia)", () => {
+  /** Contato + enrollment; `ordem` vira o createdAt do enrollment (prioridade dentro do passo). */
+  function pessoa(id: string, empresa: string, ordem: number) {
+    return {
+      contact: contact({ id, email: `${id}@exemplo.com.br`, nome: `Nome ${id}`, empresa }),
+      enrollment: enrollment({
+        id: `en-${id}`,
+        contactId: id,
+        createdAt: `2026-08-25T12:${String(ordem).padStart(2, "0")}:00Z`,
+      }),
+    };
+  }
+  function base(pessoas: ReturnType<typeof pessoa>[]) {
+    return { contacts: pessoas.map((p) => p.contact), enrollments: pessoas.map((p) => p.enrollment) };
+  }
+  const ids = (r: ReturnType<typeof plan>) => r.items.map((i) => i.contactId);
+
+  it("grupo que cabe sai junto, na posição do primeiro membro", () => {
+    const r = plan(
+      base([
+        pessoa("a", "Alfa", 1),
+        pessoa("p1", "Pierserv", 2),
+        pessoa("b", "Beta", 3),
+        pessoa("c", "Gama", 4),
+        pessoa("p2", "PIERSERV LTDA.", 5),
+        pessoa("p3", "Pierserv S.A.", 6),
+        pessoa("d", "Delta", 7),
+      ]),
+    );
+    expect(ids(r)).toEqual(["a", "p1", "p2", "p3", "b", "c", "d"]);
+  });
+
+  it("grupo que não cabe fica inteiro para o próximo dia; o cap restante vai para um grupo menor", () => {
+    // cap 5: G1 (3) entra; G2 (3) não cabe nos 2 restantes; G3 (2) cabe; X (1) já não cabe.
+    const r = plan({
+      ...base([
+        pessoa("g1a", "Empresa Um", 1),
+        pessoa("g1b", "Empresa Um", 2),
+        pessoa("g1c", "Empresa Um", 3),
+        pessoa("g2a", "Empresa Dois", 4),
+        pessoa("g2b", "Empresa Dois", 5),
+        pessoa("g2c", "Empresa Dois", 6),
+        pessoa("g3a", "Empresa Três", 7),
+        pessoa("g3b", "Empresa Três", 8),
+        pessoa("x", "Solo", 9),
+      ]),
+      state: { armed: true, dailyCapOverride: 5 },
+    });
+    expect(ids(r)).toEqual(["g1a", "g1b", "g1c", "g3a", "g3b"]);
+    const skippedIds = r.skipped.map((s) => s.enrollmentId).sort();
+    expect(skippedIds).toEqual(["en-g2a", "en-g2b", "en-g2c", "en-x"]);
+    for (const s of r.skipped) expect(s.reason).toMatch(/fora do cap/);
+  });
+
+  it("explica quando o grupo não coube mesmo sobrando cap", () => {
+    // cap 2 e um único grupo de 3: nada sai hoje, motivo cita o grupo.
+    const r = plan({
+      ...base([pessoa("p1", "Pierserv", 1), pessoa("p2", "Pierserv", 2), pessoa("p3", "Pierserv", 3)]),
+      state: { armed: true, dailyCapOverride: 2 },
+    });
+    expect(r.items).toHaveLength(0);
+    expect(r.skipped).toHaveLength(3);
+    for (const s of r.skipped) expect(s.reason).toMatch(/grupo de 3 contatos da mesma empresa/);
+  });
+
+  it("grafia diferente NÃO casa (normalização simples, sem fuzzy); sufixo societário casa", () => {
+    const semFuzzy = plan({
+      ...base([
+        pessoa("p1", "Pierserv", 1),
+        pessoa("o", "Outra", 2),
+        pessoa("p2", "PierServ Logística Promocional", 3),
+      ]),
+      state: { armed: true, dailyCapOverride: 2 },
+    });
+    expect(ids(semFuzzy)).toEqual(["p1", "o"]);
+
+    const comSufixo = plan({
+      ...base([pessoa("p1", "Pierserv", 1), pessoa("o", "Outra", 2), pessoa("p2", "Pierserv Ltda.", 3)]),
+      state: { armed: true, dailyCapOverride: 2 },
+    });
+    expect(ids(comSufixo)).toEqual(["p1", "p2"]);
+  });
+
+  it("mesma empresa em passos diferentes não agrupa (o passo mais avançado continua primeiro)", () => {
+    const e2 = pessoa("p2", "Pierserv", 1);
+    e2.enrollment = { ...e2.enrollment, nextStep: 1, lastSendAt: "2026-08-28T10:00:00-03:00" };
+    const r = plan(base([pessoa("o", "Outra", 2), pessoa("p1", "Pierserv", 3), e2]));
+    expect(r.items.map((i) => `${i.contactId}:${i.stepId}`)).toEqual(["p2:e2", "o:e1", "p1:e1"]);
+  });
+
+  it("contato sem empresa é grupo de um (não agrupa entre si)", () => {
+    // Copy sem {{empresa}}: contato sem empresa precisa passar no render.
+    const semEmpresa = campaign();
+    semEmpresa.steps = semEmpresa.steps.map((s) => ({
+      ...s,
+      subject: s.subject.replace(" na {{empresa}}", ""),
+      body: s.body.replace(" na {{empresa}}", ""),
+    }));
+    const r = plan({
+      ...base([pessoa("s1", "", 1), pessoa("o", "Outra", 2), pessoa("s2", "", 3)]),
+      campaignDefs: [semEmpresa],
+      state: { armed: true, dailyCapOverride: 2 },
+    });
+    expect(ids(r)).toEqual(["s1", "o"]);
   });
 });

@@ -13,7 +13,7 @@ import { createHash } from "node:crypto";
 import { parseArgs } from "node:util";
 import { campaigns } from "../../src/content/outbound";
 import { logger } from "../../src/lib/observability/logger";
-import { assertSendReady, getOutboundEnv, sendDateKey } from "../../src/lib/outbound/config";
+import { assertSendReady, getOutboundEnv, replyToField, sendDateKey } from "../../src/lib/outbound/config";
 import { buildEmail } from "../../src/lib/outbound/render";
 import { createResendClient, ResendApiError, type ResendEmailPayload } from "../../src/lib/outbound/resend";
 import { newId, openStore, runExclusive } from "../../src/lib/outbound/store";
@@ -180,7 +180,7 @@ async function main() {
         subject: built.subject,
         text: built.text,
         html: built.html,
-        reply_to: env.replyTo,
+        reply_to: replyToField(env),
         headers: { ...built.headers, "X-Entity-Ref-ID": sendId },
         tags: [
           { name: "campaign", value: item.campaignSlug },

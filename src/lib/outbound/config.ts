@@ -12,7 +12,12 @@ export interface SendWindow {
 export interface OutboundEnv {
   apiKey: string | null;
   from: string | null;
+  /** PRIMEIRO endereço de resposta (usos "single": List-Unsubscribe, UI). Null se ausente ou inválido. */
   replyTo: string | null;
+  /** Todos os endereços de `OUTBOUND_REPLY_TO` (separados por vírgula), na ordem. Vazio se ausente ou inválido. */
+  replyToAll: string[];
+  /** Mensagem acionável quando `OUTBOUND_REPLY_TO` tem endereço inválido (envio real recusa). */
+  replyToError: string | null;
   /** Copiloto de IA do console (briefing/triagem). Sem a chave, os recursos degradam com aviso. */
   anthropicKey: string | null;
   /** offset fixo do fuso de envio (São Paulo, sem DST desde 2019) */
@@ -32,12 +37,50 @@ function parseWindow(raw: string | undefined): SendWindow {
   return { startMin, endMin };
 }
 
+/** Formato básico de e-mail (local@dominio.tld), sem nome de exibição. */
+const EMAIL_RE = /^[^\s@<>,]+@[^\s@<>,]+\.[^\s@<>,]+$/;
+
+/**
+ * `OUTBOUND_REPLY_TO` aceita um ou mais endereços separados por vírgula
+ * (ex.: "contact@bedreamy.com.br, luigi.choffe@bedreamy.com.br"). Trim, ignora
+ * vazios, valida formato básico. Lança com mensagem acionável se algum for inválido.
+ */
+export function parseReplyTo(raw: string | undefined): string[] {
+  const parts = (raw ?? "")
+    .split(",")
+    .map((p) => p.trim())
+    .filter((p) => p.length > 0);
+  const invalid = parts.filter((p) => !EMAIL_RE.test(p));
+  if (invalid.length > 0) {
+    throw new Error(
+      `OUTBOUND_REPLY_TO tem endereço inválido: ${invalid.map((p) => `"${p}"`).join(", ")}. ` +
+        "Use e-mails simples separados por vírgula (ex.: contact@bedreamy.com.br, luigi.choffe@bedreamy.com.br).",
+    );
+  }
+  return parts;
+}
+
+/** Valor de `reply_to` para o Resend: string quando há um endereço, array quando há mais de um. */
+export function replyToField(env: OutboundEnv): string | string[] | undefined {
+  if (env.replyToAll.length > 1) return env.replyToAll;
+  return env.replyToAll[0];
+}
+
 export function getOutboundEnv(): OutboundEnv {
   const cap = process.env.OUTBOUND_DAILY_CAP ? Number(process.env.OUTBOUND_DAILY_CAP) : NaN;
+  let replyToAll: string[] = [];
+  let replyToError: string | null = null;
+  try {
+    replyToAll = parseReplyTo(process.env.OUTBOUND_REPLY_TO);
+  } catch (err) {
+    replyToError = err instanceof Error ? err.message : String(err);
+  }
   return {
     apiKey: process.env.OUTBOUND_RESEND_API_KEY?.trim() || null,
     from: process.env.OUTBOUND_FROM?.trim() || null,
-    replyTo: process.env.OUTBOUND_REPLY_TO?.trim() || null,
+    replyTo: replyToAll[0] ?? null,
+    replyToAll,
+    replyToError,
     anthropicKey: process.env.OUTBOUND_ANTHROPIC_API_KEY?.trim() || null,
     utcOffset: process.env.OUTBOUND_UTC_OFFSET?.trim() || "-03:00",
     window: parseWindow(process.env.OUTBOUND_SEND_WINDOW),
@@ -51,6 +94,7 @@ export function assertSendReady(env: OutboundEnv): asserts env is OutboundEnv & 
   from: string;
   replyTo: string;
 } {
+  if (env.replyToError) throw new Error(`Envio real recusado: ${env.replyToError}`);
   const missing: string[] = [];
   if (!env.apiKey) missing.push("OUTBOUND_RESEND_API_KEY");
   if (!env.from) missing.push("OUTBOUND_FROM");

@@ -67,7 +67,16 @@ async function main() {
     );
     console.log(`  janela de envio: ${fmtWindow(env)} (${env.utcOffset})`);
     console.log("  env (presença, sem valores):");
-    for (const nome of ENV_NAMES) console.log(`    ${nome}: ${presenca(nome)}`);
+    for (const nome of ENV_NAMES) {
+      if (nome === "OUTBOUND_REPLY_TO" && env.replyToError) {
+        console.log(`    ${nome}: INVÁLIDA (${env.replyToError})`);
+      } else if (nome === "OUTBOUND_REPLY_TO" && env.replyToAll.length > 0) {
+        const n = env.replyToAll.length;
+        console.log(`    ${nome}: presente (${n} ${n === 1 ? "endereço" : "endereços"} de resposta)`);
+      } else {
+        console.log(`    ${nome}: ${presenca(nome)}`);
+      }
+    }
     return;
   }
 

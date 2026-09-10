@@ -13,7 +13,8 @@ export interface ResendEmailPayload {
   subject: string;
   text: string;
   html?: string;
-  reply_to?: string;
+  /** Um endereço (string) ou vários (array) — a API do Resend aceita os dois. */
+  reply_to?: string | string[];
   headers?: Record<string, string>;
   tags?: Array<{ name: string; value: string }>;
   scheduled_at?: string;

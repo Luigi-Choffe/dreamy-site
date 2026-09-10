@@ -8,6 +8,8 @@ const ENV: OutboundEnv = {
   apiKey: null,
   from: null,
   replyTo: "contato@teste.com.br",
+  replyToAll: ["contato@teste.com.br"],
+  replyToError: null,
   anthropicKey: null,
   utcOffset: "-03:00",
   window: { startMin: 9 * 60, endMin: 17 * 60 + 30 },
@@ -89,6 +91,43 @@ describe("forecastCadence", () => {
     expect(byKey.get("2026-09-04")?.map((i) => i.contactId)).toEqual(["c2"]);
     expect(forecast.blockedReason).toBeUndefined();
     expect(JSON.stringify(BASE.enrollments)).toBe(before);
+  });
+
+  it("grupo de empresa que não cabe hoje aparece inteiro no próximo dia útil, de forma determinística", () => {
+    const empresa = (id: string, nome: string): Contact => ({ ...contact(id), empresa: nome });
+    const inscrito = (id: string, ordem: number): Enrollment => ({
+      ...enrollment(id),
+      createdAt: `2026-08-28T12:${String(ordem).padStart(2, "0")}:00Z`,
+    });
+    const input = {
+      ...BASE,
+      contacts: [
+        empresa("u1", "Empresa Um"),
+        empresa("u2", "Empresa Um"),
+        empresa("u3", "Empresa Um"),
+        empresa("d1", "Empresa Dois"),
+        empresa("d2", "Empresa Dois"),
+        empresa("d3", "Empresa Dois"),
+        empresa("t1", "Empresa Três"),
+        empresa("t2", "Empresa Três"),
+      ],
+      enrollments: [
+        inscrito("u1", 1),
+        inscrito("u2", 2),
+        inscrito("u3", 3),
+        inscrito("d1", 4),
+        inscrito("d2", 5),
+        inscrito("d3", 6),
+        inscrito("t1", 7),
+        inscrito("t2", 8),
+      ],
+      state: { armed: true, dailyCapOverride: 5 },
+    };
+    const forecast = forecastCadence(input, 3);
+    const byKey = new Map(forecast.days.map((d) => [d.dateKey, d.items.map((i) => i.contactId)]));
+    expect(byKey.get("2026-08-31")).toEqual(["u1", "u2", "u3", "t1", "t2"]);
+    expect(byKey.get("2026-09-01")).toEqual(["d1", "d2", "d3"]);
+    expect(JSON.stringify(forecastCadence(input, 3))).toBe(JSON.stringify(forecast));
   });
 
   it("breaker disparado bloqueia a previsão em vez de fingir futuro", () => {

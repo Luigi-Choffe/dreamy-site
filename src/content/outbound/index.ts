@@ -4,6 +4,7 @@ import { engenhariaAgentesIa } from "./engenharia-agentes-ia";
 import { exemploAgentes } from "./exemplo-agentes";
 import { exemploNovaReceita } from "./exemplo-nova-receita";
 import { exemploSistemas } from "./exemplo-sistemas";
+import { logisticaEstoqueReceita } from "./logistica-estoque-receita";
 import { obrasSistemasSobMedida } from "./obras-sistemas-sob-medida";
 import { validacaoIndicacao } from "./validacao-indicacao";
 
@@ -16,6 +17,7 @@ export const campaigns: CampaignDefinition[] = [
   obrasSistemasSobMedida,
   engenhariaAgentesIa,
   validacaoIndicacao,
+  logisticaEstoqueReceita,
   exemploNovaReceita,
   exemploSistemas,
   exemploAgentes,

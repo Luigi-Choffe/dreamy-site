@@ -14,7 +14,9 @@ import { parseArgs } from "node:util";
 import { logger } from "../../src/lib/observability/logger";
 import {
   companiesByDomain,
+  describeRoleFilter,
   enrichContactFromCompany,
+  parseRoleFilter,
   prepareImport,
   type RowIssue,
 } from "../../src/lib/outbound/import-core";
@@ -23,11 +25,14 @@ import { newId, normalizeEmail, openStore, runExclusive } from "../../src/lib/ou
 import type { ImportBatch } from "../../src/lib/outbound/types";
 import { CLAY_HEADER_MAP } from "./import-map";
 
-const USAGE = `Uso: pnpm outbound:import --file <lista.xlsx|lista.csv> --origin "<origem do run do Clay>" [--sheet <nome|índice>] [--dry-run]
+const USAGE = `Uso: pnpm outbound:import --file <lista.xlsx|lista.csv> --origin "<origem do run do Clay>" [--sheet <nome|índice>] [--roles <all|lista,por,vírgula>] [--dry-run]
 
   --file     caminho do export do Clay (.xlsx ou .csv)
   --origin   procedência declarada do lote (LGPD §18 — ex.: "Clay run 2026-08, fontes: Apollo+site")
   --sheet    aba do .xlsx (nome ou índice 0-based); default: primeira
+  --roles    filtro de cargo do ICP: "all" importa todo cargo como ativo (contato sem cargo segue como aviso);
+             lista separada por vírgula (ex.: "gerente,coordenador,supervisor") substitui as palavras-chave padrão;
+             ausente = palavras-chave padrão (fundador, CEO, diretor, head, VP…)
   --dry-run  só imprime o relatório; não grava nada no store`;
 
 function printIssues(title: string, issues: RowIssue[], limit = 20): void {
@@ -57,6 +62,7 @@ async function main(): Promise<void> {
       file: { type: "string" },
       origin: { type: "string" },
       sheet: { type: "string" },
+      roles: { type: "string" },
       "dry-run": { type: "boolean", default: false },
     },
   });
@@ -69,6 +75,8 @@ async function main(): Promise<void> {
     process.exitCode = 1;
     return;
   }
+  // --roles: ausente = filtro padrão; "all" = sem exclusão por cargo; lista = palavras-chave custom
+  const roleFilter = parseRoleFilter(values.roles);
 
   const ext = path.extname(file).toLowerCase();
   const buffer = await fs.readFile(file);
@@ -94,6 +102,7 @@ async function main(): Promise<void> {
     existingEmails: new Set(existing.map((c) => normalizeEmail(c.email))),
     // mesmo critério de store.isSuppressed, carregado uma vez para o lote inteiro
     suppressedEmails: new Set(suppressions.map((s) => normalizeEmail(s.email))),
+    targetRoles: roleFilter,
   });
   const { stats } = result;
   const excludedTotal = stats.excluded["email-pessoal"] + stats.excluded["cargo-fora-icp"];
@@ -101,6 +110,7 @@ async function main(): Promise<void> {
   console.log(`\nImportação — ${path.basename(file)}`);
   console.log(`Origem do lote: ${origin}`);
   console.log(`Modo: ${dryRun ? "DRY-RUN (nada será gravado)" : "gravação no store"}`);
+  console.log(`Filtro de cargo: ${describeRoleFilter(roleFilter)}`);
   console.log("\nResumo:");
   console.log(`  Linhas de dados ............. ${stats.totalRows}`);
   console.log(`  Importados (ativos) ......... ${stats.imported}`);

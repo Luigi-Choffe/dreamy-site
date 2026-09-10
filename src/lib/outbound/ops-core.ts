@@ -21,6 +21,69 @@ export function normalizeIndustria(value: string): string {
   );
 }
 
+/**
+ * Sufixos societários no FIM do nome (precedidos de espaço, hífen ou vírgula):
+ * "Acme Ltda.", "Acme S.A.", "Acme S/A", "Acme Comércio Ltda ME". O separador é
+ * obrigatório para não comer o fim de palavras ("Melissa" não vira "Melis").
+ */
+const SUFIXO_SOCIETARIO = /(?:(?:\s+|\s*[-,]\s*)(?:ltda|limitada|s\.?a\.?|s\/a|eireli|epp|me)\.?)+$/;
+
+/**
+ * Chave de comparação de empresa: minúsculas, sem acento, sem sufixo societário,
+ * espaços colapsados. Normalização SIMPLES, sem fuzzy: "Pierserv" e "PierServ
+ * Logística Promocional" continuam sendo empresas diferentes. Vazio quando o
+ * contato não tem empresa.
+ */
+export function normalizeEmpresa(value: string | undefined): string {
+  if (!value) return "";
+  return value
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(SUFIXO_SOCIETARIO, "")
+    .trim();
+}
+
+/** Primeiro nome do contato ("Maria Silva" → "Maria"); vazio se não houver nome. */
+function primeiroNome(contact: Contact): string {
+  return contact.nome.trim().split(/\s+/)[0] ?? "";
+}
+
+/**
+ * Colegas do contato na campanha: primeiros nomes dos OUTROS contatos da mesma
+ * empresa (`normalizeEmpresa`) com enrollment ATIVO na mesma campanha, que ainda
+ * podem receber e-mail (contato ativo e verificado). Ordem estável: createdAt do
+ * enrollment, depois id do contato. É o que o MORK usa para preencher
+ * `{{colegas}}` por contato antes do envio: só cita quem de fato vai receber.
+ */
+export function colegasNaCampanha(
+  contact: Contact,
+  contacts: Contact[],
+  enrollments: Enrollment[],
+  campaignSlug: string,
+): string[] {
+  const empresa = normalizeEmpresa(contact.empresa);
+  if (empresa === "") return [];
+  const contactsById = new Map(contacts.map((c) => [c.id, c]));
+  return enrollments
+    .filter((e) => e.status === "active" && e.campaignSlug === campaignSlug && e.contactId !== contact.id)
+    .map((e) => ({ enrollment: e, colega: contactsById.get(e.contactId) }))
+    .filter(
+      (x): x is { enrollment: Enrollment; colega: Contact } =>
+        x.colega !== undefined &&
+        x.colega.status === "active" &&
+        x.colega.verification === "ok" &&
+        normalizeEmpresa(x.colega.empresa) === empresa,
+    )
+    .sort(
+      (a, b) => a.enrollment.createdAt.localeCompare(b.enrollment.createdAt) || a.colega.id.localeCompare(b.colega.id),
+    )
+    .map((x) => primeiroNome(x.colega))
+    .filter((nome) => nome !== "");
+}
+
 export interface EnrollmentSelectionInput {
   contacts: Contact[];
   enrollments: Enrollment[];
