@@ -22,6 +22,13 @@ Sinais vermelhos no fio de saúde: `pending` (run interrompido → `outbound:sen
 --resolve-pending`, conferindo o painel do Resend antes) e `agendados órfãos`
 (cancelar no painel do Resend ou repetir a ação com a chave presente).
 
+**Toque prévio no LinkedIn (desde 2026-09-10):** o ciclo gera no Hoje a fila
+"Conectar antes do E1" (quem recebe E1 hoje/próximo dia de envio e tem perfil);
+o Luigi abre o perfil, manda o convite sem mensagem e marca "Convite enviado".
+`pnpm outbound:crm toques` gera/lista pela CLI. O resultado vai para
+`custom.toque_previo` do contato: comparar resposta com vs. sem toque no
+relatório semanal.
+
 **Falhas e salvaguardas (regra do Luigi, 2026-09-10):** toda falha entra em
 `docs/FALHAS-E-SALVAGUARDAS.md` com causa, correção e a salvaguarda que impede
 a volta (teste, config ou checklist). Lá vivem o **pré-voo de segunda** (tarefa

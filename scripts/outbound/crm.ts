@@ -8,7 +8,9 @@
  * Mover negócio NÃO pausa nem cancela e-mail (isso é outbound:reply/campaign/arm).
  */
 import { parseArgs } from "node:util";
+import { campaigns } from "../../src/content/outbound";
 import { logger } from "../../src/lib/observability/logger";
+import { gerarToquesPreviosNoStore, toquesAbertos } from "../../src/lib/outbound/toque-previo";
 import { getOutboundEnv, sendDateKey } from "../../src/lib/outbound/config";
 import { applyStageMove, DEAL_STAGES, nextBusinessDay, reconcileDeals } from "../../src/lib/outbound/crm-core";
 import { newId, openStore, runExclusive } from "../../src/lib/outbound/store";
@@ -23,6 +25,7 @@ function uso(): never {
       '  move <dealId|contactId> <estagio> [--valor N] [--motivo "..."] [--reuniao <ISO>]',
       '  task list [--today] | task add --titulo "..." [--contact <id>] [--due AAAA-MM-DD] | task done --id <id>',
       '  note add --contact <id> --texto "..."',
+      "  toques                         gera as tarefas de toque prévio no LinkedIn (E1 de hoje e do próximo dia) e lista as abertas",
     ].join("\n"),
   );
   process.exit(1);
@@ -48,6 +51,23 @@ async function main() {
   });
   const cmd = positionals[0];
   const store = openStore();
+
+  if (cmd === "toques") {
+    // main() já roda sob runExclusive (fim do arquivo): NÃO abrir um segundo lock aqui.
+    const r = await gerarToquesPreviosNoStore(store, campaigns);
+    const [tasks, contacts, enrollments] = await Promise.all([store.tasks(), store.contacts(), store.enrollments()]);
+    const fila = toquesAbertos(tasks, contacts, enrollments);
+    console.log(
+      `Toques prévios no LinkedIn: ${r.candidatos} candidato(s), ${r.criados} tarefa(s) nova(s), ${fila.length} aberta(s).`,
+    );
+    for (const t of fila) {
+      console.log(
+        `  ${t.contact.nome} ${t.contact.sobrenome ?? ""} · ${t.contact.empresa ?? ""}${t.url ? "" : "  (sem perfil)"}`,
+      );
+    }
+    logger.info("outbound.toques.gerados", { ...r, cli: true });
+    return;
+  }
 
   if (cmd === "reconcile") {
     const [contacts, enrollments, sends, replies, deals] = await Promise.all([

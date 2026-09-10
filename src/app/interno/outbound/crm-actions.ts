@@ -6,7 +6,16 @@ import { logger } from "@/lib/observability/logger";
 import { requireSession } from "@/lib/outbound/auth";
 import { applyStageMove, buildManualDeal, DEAL_STAGES, reconcileDeals } from "@/lib/outbound/crm-core";
 import { newId, openStore, runExclusive, type OutboundStore } from "@/lib/outbound/store";
+import {
+  gerarToquesPreviosNoStore,
+  registrarToque,
+  TOQUE_PREVIO_KIND,
+  TOQUE_RESULTADOS,
+  type ToqueResultado,
+} from "@/lib/outbound/toque-previo";
 import type { DealStage } from "@/lib/outbound/types";
+import { campaigns } from "@/content/outbound";
+import { getOutboundEnv, sendDateKey } from "@/lib/outbound/config";
 import { demoDir } from "./data";
 
 /**
@@ -164,6 +173,39 @@ export async function createTaskAction(formData: FormData): Promise<void> {
     });
     await store.saveTasks(tasks);
     logger.info("outbound.crm.task.create", { contactId: contactId ?? null, isDemo });
+  });
+}
+
+/** Botão "Atualizar lista" do toque prévio: gera as tarefas dos E1s de hoje e do próximo dia (idempotente). */
+export async function gerarToquesPreviosAction(formData: FormData): Promise<void> {
+  await withCrmContext(formData, "toques-gerar", async ({ store, isDemo }) => {
+    const r = await gerarToquesPreviosNoStore(store, campaigns);
+    logger.info("outbound.toques.gerados", { ...r, isDemo, console: true });
+  });
+}
+
+/**
+ * Um clique por pessoa no Hoje: "Convite enviado" (ou "sem perfil"/"pular").
+ * Conclui a tarefa e carimba o contato (`custom.toque_previo`) — é o que permite
+ * medir resposta com e sem toque depois.
+ */
+export async function registrarToqueAction(formData: FormData): Promise<void> {
+  const taskId = requiredString(formData, "taskId");
+  const resultado = requiredString(formData, "resultado");
+  if (!(TOQUE_RESULTADOS as readonly string[]).includes(resultado))
+    throw new Error(`Resultado inválido: ${resultado}.`);
+  await withCrmContext(formData, "toques-registrar", async ({ store, isDemo }) => {
+    const [tasks, contacts] = await Promise.all([store.tasks(), store.contacts()]);
+    const task = tasks.find((t) => t.id === taskId && t.kind === TOQUE_PREVIO_KIND);
+    if (!task) throw new Error("Tarefa de toque não encontrada.");
+    if (task.status !== "aberta") return;
+    const contact = contacts.find((c) => c.id === task.contactId);
+    if (!contact) throw new Error("Contato da tarefa não encontrado.");
+    const now = new Date();
+    registrarToque(contact, task, resultado as ToqueResultado, sendDateKey(now, getOutboundEnv().utcOffset), now);
+    await store.saveTasks(tasks);
+    await store.saveContacts(contacts);
+    logger.info("outbound.toques.registrado", { taskId, resultado, isDemo });
   });
 }
 

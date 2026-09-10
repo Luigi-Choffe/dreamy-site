@@ -282,6 +282,8 @@ export type CrmTaskStatus = "aberta" | "concluida" | "cancelada";
 
 export interface CrmTask {
   id: string;
+  /** Tarefas de regra com comportamento próprio no console (ex.: toque prévio no LinkedIn). */
+  kind?: "toque-previo";
   titulo: string;
   contactId?: string;
   dealId?: string;

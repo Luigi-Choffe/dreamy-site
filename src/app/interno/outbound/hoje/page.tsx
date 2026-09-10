@@ -3,7 +3,9 @@ import Link from "next/link";
 import { requireSession } from "@/lib/outbound/auth";
 import { getOutboundEnv, sendDateKey } from "@/lib/outbound/config";
 import { nextBusinessDay, pendingFollowUps } from "@/lib/outbound/crm-core";
+import { progressoToques, TOQUE_PREVIO_KIND, toquesAbertos } from "@/lib/outbound/toque-previo";
 import type { Contact, CrmTask } from "@/lib/outbound/types";
+import { ToquesPrevios } from "./toques-previos";
 import { completeTaskAction, createTaskAction, rescheduleTaskAction } from "../crm-actions";
 import { consoleHref, demoRequested, loadDashboardData, type SearchParams } from "../data";
 import { PendingPill } from "../pending";
@@ -103,7 +105,12 @@ export default async function OutboundTodayPage({ searchParams }: { searchParams
   const weekKey = sendDateKey(new Date(now.getTime() + 7 * 86_400_000), off);
 
   const contactById = new Map(data.contacts.map((c) => [c.id, c]));
-  const open = data.tasks.filter((t) => t.status === "aberta").sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+  // Toques prévios têm fila própria (seção acima); ficam fora da lista genérica.
+  const open = data.tasks
+    .filter((t) => t.status === "aberta" && t.kind !== TOQUE_PREVIO_KIND)
+    .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+  const filaToques = toquesAbertos(data.tasks, data.contacts, data.enrollments);
+  const progressoDoDia = progressoToques(data.tasks, todayKey);
   const dueNow = open.filter((t) => t.dueDate <= todayKey);
   const upcoming = open.filter((t) => t.dueDate > todayKey && t.dueDate <= weekKey);
 
@@ -129,6 +136,8 @@ export default async function OutboundTodayPage({ searchParams }: { searchParams
       subtitle="A mesa do dia: tarefas vencendo, interessados sem follow-up e o que vem na semana."
     >
       <div className="flex flex-col gap-8">
+        <ToquesPrevios fila={filaToques} feitosHoje={progressoDoDia.feitos} isDemo={isDemo} />
+
         <section aria-labelledby="hoje-vencidas-title">
           <TituloSecao id="hoje-vencidas-title" contagem={dueNow.length}>
             Para hoje

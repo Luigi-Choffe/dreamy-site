@@ -7,8 +7,10 @@
  */
 import { spawnSync } from "node:child_process";
 import { parseArgs } from "node:util";
+import { campaigns } from "../../src/content/outbound";
 import { logger } from "../../src/lib/observability/logger";
-import { openStore } from "../../src/lib/outbound/store";
+import { openStore, runExclusive } from "../../src/lib/outbound/store";
+import { gerarToquesPreviosNoStore } from "../../src/lib/outbound/toque-previo";
 import { buildPlan, linhasAlertaAprovacao } from "./plan";
 
 function run(label: string, script: string, args: string[] = []): number {
@@ -66,6 +68,18 @@ async function main() {
   if (reportStatus !== 0) {
     console.error("✖ auto: report falhou (envio do dia não foi afetado).");
     process.exit(1);
+  }
+
+  // Toque prévio no LinkedIn: tarefas para os E1s de hoje e do próximo dia de envio
+  // (idempotente; o Luigi clica no Hoje). Falha aqui não afeta o envio do dia.
+  try {
+    const toques = await runExclusive("toques-previos", () => gerarToquesPreviosNoStore(openStore(), campaigns));
+    console.log(
+      `\n── outbound:auto · toques prévios no LinkedIn ── ${toques.criados} nova(s), ${toques.abertos} aberta(s) no Hoje`,
+    );
+    logger.info("outbound.toques.gerados", toques);
+  } catch (err) {
+    console.error(`✖ auto: toques prévios falharam (envio do dia não foi afetado): ${String(err)}`);
   }
 
   // Alerta destacado no FIM do ciclo (só leitura): campanha "ready" com inscritos
