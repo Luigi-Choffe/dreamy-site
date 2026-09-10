@@ -82,7 +82,7 @@ cases, logos e depoimentos — nada disso está aprovado em `docs/CONTENT-SOURCE
   2. US$ 252 bi investidos em IA em 2024, +44% (Stanford AI Index 2025);
   3. retorno médio de 3,7× por US$ 1 investido em IA generativa (IDC/Microsoft, 2024).
 - **OU a simulação de receita, sempre rotulada** ("exemplo", "não é promessa"): mecânica
-  `clientes × ticket × 30% de adesão` + custo de inação ("cada mês sem o produto no ar…").
+  `clientes × ticket × 70% de adesão` (decisão do Luigi em 2026-09-10: 30% soava baixo demais) + custo de inação ("cada mês sem o produto no ar…").
   Só em campanhas com âncora Nova Receita Digital, com números redondos declarados como exemplo.
 - No máximo UM bloco de prova por sequência inteira (no E3). E1, E2 e E4 não carregam número nenhum.
 

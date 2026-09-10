@@ -64,7 +64,7 @@ Do seu lado, qual dessas dores aparece primeiro?`,
       subject: "uma conta de padaria sobre a sua base",
       body: `{{nome}}, faz essa conta comigo. Números redondos, é só um exemplo:
 
-500 clientes na base, R$ 149 por mês, 30% de adesão. Dá R$ 22.350 por mês de receita nova. Sem lançar um empreendimento a mais.
+500 clientes na base, R$ 149 por mês, 70% de adesão. Dá R$ 52.150 por mês de receita nova. Sem lançar um empreendimento a mais.
 
 O produto que sustenta essa conta muda de operação para operação. Portal do proprietário, pós-entrega por assinatura, clube de manutenção dos empreendimentos entregues. No diagnóstico, refazemos a conta com os seus números reais.
 

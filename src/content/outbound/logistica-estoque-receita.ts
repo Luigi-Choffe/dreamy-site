@@ -43,7 +43,8 @@ export const logisticaEstoqueReceita: CampaignDefinition = {
   slug: "logistica-estoque-receita",
   industria: "logística",
   anchor: "nova-receita",
-  status: "draft",
+  // "ready" + aprovação do Luigi registrada em 2026-09-10 ("gostei da copy… pode aprovar tudo").
+  status: "ready",
   notes:
     "Lote logística SP 2026-09 (~69 contatos em 28 operadores logísticos; decisores + operacionais de propósito, 14 empresas sem decisor). " +
     "E1 hiperpersonalizado por slots (abertura, gancho, frase_colegas) com espinha curta; E2 narra o case do galpão que virou receita (sem nome, sem link); " +
@@ -91,7 +92,7 @@ Quanto do tempo da operação de vocês hoje vai em responder cliente sobre esto
       subject: "uma conta simples sobre a operação de vocês",
       body: `{{nome}}, faz essa conta comigo. Números redondos, só um exemplo:
 
-50 clientes na operação, R$ 600 por mês para cada um gerir o próprio estoque e pedir retirada pelo app, 30% de adesão. Dá R$ 9.000 por mês de receita nova. Sem um metro quadrado a mais, sem um caminhão a mais.
+50 clientes na operação, R$ 600 por mês para cada um gerir o próprio estoque e pedir retirada pelo app, 70% de adesão. Dá R$ 21.000 por mês de receita nova. Sem um metro quadrado a mais, sem um caminhão a mais.
 
 O operador que dá ao cliente visibilidade e autonomia sobre o que está guardado deixa de vender só espaço e passa a vender serviço digital, com margem que a operação física não tem. No diagnóstico, refazemos a conta com os números de vocês.
 

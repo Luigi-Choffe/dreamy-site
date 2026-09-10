@@ -43,7 +43,7 @@ Se quiser testar a pergunta no caso da {{empresa}}, eu topo fazer o exercício c
       offsetDays: 7,
       withLink: true,
       subject: "a conta que costuma abrir essa conversa",
-      body: `{{nome}}, um exemplo com números redondos (é exemplo mesmo, não promessa): 500 clientes ativos, um produto digital de R$ 149 por mês e um cenário conservador, com 30% da base aderindo. Dá R$ 22.350 novos por mês. E cada mês sem o produto no ar é esse valor que fica na mesa.
+      body: `{{nome}}, um exemplo com números redondos (é exemplo mesmo, não promessa): 500 clientes ativos, um produto digital de R$ 149 por mês e um cenário com 70% da base aderindo. Dá R$ 52.150 novos por mês. E cada mês sem o produto no ar é esse valor que fica na mesa.
 
 No diagnóstico, essa simulação é refeita com os números reais da {{empresa}}.
 
