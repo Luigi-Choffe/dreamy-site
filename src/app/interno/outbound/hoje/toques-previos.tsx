@@ -51,10 +51,10 @@ export function ToquesPrevios({
       <div className="relative flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-[0.58rem] font-bold tracking-[0.26em] text-brand-strong uppercase">
-            Toque prévio · LinkedIn
+            Toque humano · LinkedIn
           </p>
           <h2 id="toques-title" className="mt-1.5 font-display text-h4 font-bold text-foreground">
-            Conectar antes do E1
+            Conectar no LinkedIn
             {total > 0 ? (
               <span className="ml-2 font-sans text-small font-medium text-foreground-subtle tabular-nums">
                 {feitosHoje} de {total}
@@ -62,8 +62,9 @@ export function ToquesPrevios({
             ) : null}
           </h2>
           <p className="mt-1 max-w-prose text-xs leading-relaxed text-foreground-muted">
-            Um pedido de conexão sem mensagem, um dia antes do e-mail. Quem já viu seu rosto responde mais. Abra o
-            perfil, conecte, marque feito. O resultado fica na conta da pessoa.
+            Um pedido de conexão sem mensagem: um dia antes do primeiro e-mail, ou agora para quem já está recebendo a
+            sequência. Quem já viu seu rosto responde mais. Abra o perfil, conecte, marque feito. O resultado fica na
+            conta da pessoa.
             {campanhas.size === 1 ? ` Hoje: ${[...campanhas][0]}.` : null}
           </p>
         </div>
