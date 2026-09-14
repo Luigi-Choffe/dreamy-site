@@ -45,14 +45,36 @@ $lines = @(
 )
 Set-Content -Path $runner -Value $lines -Encoding Default
 
-schtasks.exe /Create /F /SC WEEKLY /D MON,TUE,WED,THU,FRI /ST 09:05 /TN $taskName /TR $runner
-if ($LASTEXITCODE -ne 0) {
-  Write-Host "ERRO: schtasks retornou codigo $LASTEXITCODE - tarefa nao registrada."
-  exit 1
-}
+# Executor OCULTO (falha #14 de docs/FALHAS-E-SALVAGUARDAS.md): o .cmd abria uma
+# janela de console e fecha-la matava o ciclo no meio. O .vbs roda o .cmd com a
+# janela escondida, espera o fim e devolve o codigo de saida para a tarefa.
+$hidden = Join-Path $outboundDir "auto-task.vbs"
+$vbs = @(
+  "' Dreamy Outbound - runs the scheduled cycle WITHOUT a console window (failure #14).",
+  "Option Explicit",
+  "Dim sh",
+  "Set sh = CreateObject(""WScript.Shell"")",
+  "WScript.Quit sh.Run(""cmd.exe /c $runner"", 0, True)"
+)
+Set-Content -Path $hidden -Value $vbs -Encoding Ascii
+
+# Registro com todas as salvaguardas do registro de falhas:
+#   #1  roda na bateria e recupera disparo perdido (StartWhenAvailable)
+#   #6  tres gatilhos por dia util (09:05, 12:05, 15:05; o plano e idempotente)
+#   #14 acao oculta via wscript
+#   #15 acorda o PC da suspensao (WakeToRun; PC DESLIGADO continua sem ciclo)
+$dias = "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"
+$triggers = @(
+  (New-ScheduledTaskTrigger -Weekly -DaysOfWeek $dias -At 09:05),
+  (New-ScheduledTaskTrigger -Weekly -DaysOfWeek $dias -At 12:05),
+  (New-ScheduledTaskTrigger -Weekly -DaysOfWeek $dias -At 15:05)
+)
+$action = New-ScheduledTaskAction -Execute "wscript.exe" -Argument "//B //Nologo ""$hidden""" -WorkingDirectory $repo
+$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -WakeToRun -MultipleInstances IgnoreNew
+Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $triggers -Settings $settings -Force | Out-Null
 
 Write-Host ""
-Write-Host "Tarefa '$taskName' registrada: dias uteis, 09:05, executando pnpm outbound:auto em $repo"
+Write-Host "Tarefa '$taskName' registrada: dias uteis, 09:05/12:05/15:05, oculta, acorda o PC, executando pnpm outbound:auto em $repo"
 Write-Host "Log de execucao: $repo\.outbound\auto.log"
 Write-Host "Conferir:        schtasks.exe /Query /TN $taskName /V /FO LIST"
 Write-Host "Remover:         schtasks.exe /Delete /TN $taskName /F"

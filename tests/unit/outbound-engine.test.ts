@@ -253,12 +253,13 @@ describe("computePlan — elegibilidade", () => {
 
   it("bounce acima do guard-rail pausa a campanha no plano", () => {
     const ontem = "2026-08-31T10:00:00-03:00";
+    // 2 bounces em 15 (13%): um bounce isolado não pausa mais (falha #13).
     const sends = Array.from({ length: 15 }, (_, i) =>
       send({
         id: `g${i}`,
         idempotencyKey: `g${i}`,
         scheduledAt: ontem,
-        status: i === 0 ? "bounced" : "delivered",
+        status: i < 2 ? "bounced" : "delivered",
       }),
     );
     const r = plan({ sends });
