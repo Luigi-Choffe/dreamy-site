@@ -56,24 +56,27 @@ Qual tarefa repetitiva mais consome as horas técnicas de vocês hoje?`,
       id: "e3",
       offsetDays: 7,
       withLink: true,
-      subject: "a papelada em volta do projeto",
-      body: `{{nome}}, um dado de mercado, com a fonte junto: 88% das empresas já usam IA em pelo menos uma função, ante 78% um ano antes (McKinsey, State of AI 2025).
+      // Copy v3 (aprovada pelo Luigi em 2026-09-14), opção B: o dado de IA fica porque
+      // combina com a oferta de agentes; entra a cena concreta e a pergunta de sim ou não.
+      subject: "o relatório que ninguém quer montar",
+      body: `{{nome}}, um dado com a fonte junto: 88% das empresas já usam IA em pelo menos uma função (McKinsey, State of AI 2025).
 
-A pergunta que interessa não é "se", é "onde". Em engenharia, o onde costuma ser a papelada em volta do projeto: relatório de visita, compatibilização de documento, resposta a edital.
+Em escritório de engenharia, o uso que faz mais sentido é o menos vistoso: o agente lê as anotações da visita e a documentação, e entrega o rascunho do relatório para o engenheiro revisar e assinar.
 
-Escrevi como pensamos agentes de IA: https://www.dreamy.app.br/solucoes/agentes-de-ia?solucao=agente-ia&utm_source=outbound&utm_medium=email&utm_campaign=engenharia-agentes-ia&utm_content=e3
+Escrevi como pensamos isso: https://www.dreamy.app.br/solucoes/agentes-de-ia?solucao=agente-ia&utm_source=outbound&utm_medium=email&utm_campaign=engenharia-agentes-ia&utm_content=e3
 
-Se preferir, responde que eu te mostro na operação de vocês.`,
+Por aí, relatório de visita ainda sai montado à mão?`,
     },
     {
       id: "e4",
       offsetDays: 7,
       subject: "encerro por aqui",
-      body: `{{nome}}, este é o último, prometo.
+      // Copy v3: resposta de uma palavra no lugar da conta de horas.
+      body: `{{nome}}, último e-mail, prometo.
 
-Fica a pergunta que abre as melhores conversas com escritório de engenharia: quantas horas técnicas da {{empresa}} vão hoje para tarefa que uma boa ferramenta prepararia sozinha? Quando quiser fazer essa conta, é só responder aqui.
+Se relatório de visita e conferência de documento já estão resolvidos aí, ótimo, não insisto. Se ainda comem hora de engenheiro, responde só "relatório" que eu te mando por escrito como um agente prepararia isso na operação de vocês, sem reunião.
 
-Se o assunto não for para vocês, me diz que eu paro por aqui.`,
+Se o assunto não for para vocês, me diz que eu não escrevo de novo.`,
     },
   ],
 };

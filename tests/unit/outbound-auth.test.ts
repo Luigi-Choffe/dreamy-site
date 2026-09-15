@@ -263,7 +263,8 @@ describe("link de acesso — sendLoginLink", () => {
     const [email] = JSON.parse(String(init.body)) as Array<Record<string, unknown>>;
     expect(email.to).toEqual(["luigi@dreamy.app.br"]);
     expect(email.subject).toBe("Seu acesso ao console da Dreamy");
-    expect(email.reply_to).toBe("contact@bedreamy.com.br");
+    // Assinatura com o e-mail pessoal do Luigi desde 2026-09-14 (remetente de pessoa).
+    expect(email.reply_to).toBe("luigi.choffe@bedreamy.com.br");
     const link = String(email.text).match(/https?:\/\/\S+/)![0];
     const parsed = new URL(link);
     expect(parsed.origin).toBe("https://mork.bedreamy.com.br");

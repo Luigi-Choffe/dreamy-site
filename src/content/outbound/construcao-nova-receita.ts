@@ -76,11 +76,15 @@ Se preferir, responde que eu te mostro com a realidade de vocês.`,
       id: "e4",
       offsetDays: 7,
       subject: "encerro por aqui",
-      body: `{{nome}}, último e-mail, prometo. Sua caixa já tem ruído demais.
+      // Copy v3 (aprovada pelo Luigi em 2026-09-14): a sequência não tinha prova de
+      // cliente; o case do galpão é literalmente a tese (app que vira receita).
+      body: `{{nome}}, último e-mail, prometo.
 
-Deixo só a pergunta que abre toda boa conversa com incorporadora: o que MAIS os seus clientes comprariam de você depois das chaves? Quando fizer sentido pensar nisso, é só responder aqui.
+Um cliente meu, operador de galpão em São Paulo, fez com a gente um app para os clientes dele acompanharem o estoque. Ninguém planejou, mas eles passaram a pagar, e hoje o app gera mais receita que o próprio serviço de logística.
 
-E se o assunto não for para vocês, me diz que eu não escrevo de novo.`,
+Se quiser, responde só "base" que eu te mando por escrito o primeiro produto que eu testaria na sua base de compradores, sem reunião.
+
+Se o assunto não for para vocês, me diz que eu não escrevo de novo.`,
     },
   ],
 };

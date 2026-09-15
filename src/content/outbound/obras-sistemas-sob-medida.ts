@@ -26,7 +26,7 @@ export const obrasSistemasSobMedida: CampaignDefinition = {
   notes:
     "Lote Clay construção SP 2026-08, segmento obras para terceiros (17 contatos). " +
     "Dor traduzida: custo real da obra só no fechamento; medição/aditivo/suprimento em planilha; " +
-    "ERP fecha contabilidade mas não acompanha o canteiro. E3 usa dado de mercado com fonte (McKinsey), sem simulação.",
+    "ERP fecha contabilidade mas não acompanha o canteiro. Copy v3 (14/09): E3 com o case do galpão como prova cruzada, E4 com resposta de uma palavra.",
   sampleCustom: {
     abertura:
       "vi que vocês executam obras corporativas e industriais para grandes contratantes em São Paulo. Cada boletim de medição fecha um mês inteiro de canteiro.",
@@ -60,24 +60,27 @@ Qual relatório vocês ainda montam na mão toda semana?`,
       id: "e3",
       offsetDays: 7,
       withLink: true,
-      subject: "onde a margem da obra escapa",
-      body: `{{nome}}, um dado de mercado, com a fonte junto: 88% das empresas já usam IA em pelo menos uma função, ante 78% um ano antes (McKinsey, State of AI 2025).
+      // Copy v3 (aprovada pelo Luigi em 2026-09-14): sai a estatística de IA, fora do
+      // tema; entra o case real do galpão como prova cruzada, sem nome do cliente.
+      subject: "um caso meu fora da construção",
+      body: `{{nome}}, te conto um caso meu, sem citar o nome.
 
-A pergunta que interessa não é "se", é "onde". Em quem constrói para terceiros, o onde costuma estar entre a medição e o faturamento: conferência de boletim, aditivo, retrabalho de planilha.
+Um cliente meu opera galpão em São Paulo. Os clientes dele ligavam para saber do estoque e pediam retirada por WhatsApp. Construímos um sistema sob medida em cima dessa rotina e hoje eles fazem tudo por um app. Ninguém planejou, mas passaram a pagar por ele: mais de 50 empresas usam, e o app gera mais receita que o próprio serviço de logística.
 
-Escrevi como pensamos software sob medida: https://www.dreamy.app.br/solucoes/sistemas-sob-medida?solucao=sistema&utm_source=outbound&utm_medium=email&utm_campaign=obras-sistemas-sob-medida&utm_content=e3
+Escrevi como pensamos isso: https://www.dreamy.app.br/solucoes/sistemas-sob-medida?solucao=sistema&utm_source=outbound&utm_medium=email&utm_campaign=obras-sistemas-sob-medida&utm_content=e3
 
-Se preferir, responde que eu te mostro com a realidade de vocês.`,
+Por aí, o contratante ainda cobra andamento e medição por WhatsApp?`,
     },
     {
       id: "e4",
       offsetDays: 7,
       subject: "encerro por aqui",
-      body: `{{nome}}, este é o último, prometo. Sua caixa já tem ruído demais.
+      // Copy v3: resposta de uma palavra no lugar da pergunta aberta.
+      body: `{{nome}}, último e-mail, prometo.
 
-Deixo a pergunta que abre toda boa conversa com quem constrói para terceiros: qual processo da {{empresa}} valeria tirar da planilha ainda este ano? Quando fizer sentido, é só responder aqui.
+Se medição e custo de obra já fecham em dia aí, ótimo, não insisto. Se ainda dependem da planilha e do fechamento do mês, responde só "planilha" que eu te mando por escrito por onde eu começaria, sem reunião.
 
-E se o assunto não for para vocês, me diz que eu não escrevo de novo.`,
+Se o assunto não for para vocês, me diz que eu não escrevo de novo.`,
     },
   ],
 };

@@ -74,8 +74,15 @@ Páginas por âncora: `nova-receita` → `/solucoes/nova-receita-digital` · `si
 
 ## Regra de prova (PRD §3 e §6)
 
-Nenhum claim próprio da Dreamy está aprovado. São proibidos: métricas próprias, nomes de clientes,
-cases, logos e depoimentos — nada disso está aprovado em `docs/CONTENT-SOURCES.md` (regra do PRD §3). O que PODE entrar:
+Nenhum claim próprio da Dreamy está aprovado além do case abaixo. São proibidos: métricas próprias inventadas,
+nomes de clientes, logos e depoimentos — nada disso está aprovado em `docs/CONTENT-SOURCES.md` (regra do PRD §3). O que PODE entrar:
+
+- **O case do galpão, SEM nome do cliente** (aprovado pelo Luigi em 2026-09-10 na logística e em 2026-09-14 como
+  prova cruzada em qualquer campanha): um operador logístico de galpão em São Paulo; a Dreamy construiu um app em que
+  os clientes do galpão veem o estoque armazenado e pedem retirada e entrega; os clientes passaram a pagar pelo app e
+  hoje ele gera mais receita do que o próprio serviço de logística; mais de 50 empresas usam, mais de 12 mil ativos
+  gerenciados. Nunca citar o nome, nunca linkar o produto, nunca usar os valores em R$ da página dele. Pode ir no E2
+  (logística), no E3 (obras) ou no E4 (construção).
 
 - **Só estes 3 dados de mercado, sempre com a fonte no corpo do e-mail**:
   1. 88% das empresas já usam IA em ao menos uma função, ante 78% um ano antes (McKinsey, State of AI 2025);
@@ -84,7 +91,42 @@ cases, logos e depoimentos — nada disso está aprovado em `docs/CONTENT-SOURCE
 - **OU a simulação de receita, sempre rotulada** ("exemplo", "não é promessa"): mecânica
   `clientes × ticket × 70% de adesão` (decisão do Luigi em 2026-09-10: 30% soava baixo demais) + custo de inação ("cada mês sem o produto no ar…").
   Só em campanhas com âncora Nova Receita Digital, com números redondos declarados como exemplo.
-- No máximo UM bloco de prova por sequência inteira (no E3). E1, E2 e E4 não carregam número nenhum.
+- Um bloco de prova por passo, nunca no E1. O E1 não carrega número; os demais só carregam os números do case ou
+  de uma das fontes acima (construção tem conta de padaria no E3 e case no E4, aprovado em 2026-09-14).
+
+## Pergunta final (copy v3, aprovada pelo Luigi em 2026-09-14)
+
+As primeiras campanhas terminaram com zero respostas em 61 prospects, e três delas abriam pedindo reunião. Regra
+desde então: **nenhum e-mail pede reunião**. A pergunta final se responde com uma linha ou uma palavra.
+
+- **E1:** pergunta concreta sobre a operação ou convite para corrigir. Padrão da casa para listas novas:
+  "Isso acontece aí também, ou estou chutando longe?"
+- **E4:** resposta de uma palavra ("responde só 'planilha'") com a promessa de mandar por escrito, sem reunião. O
+  MORK redige essa resposta e o Luigi revisa antes de enviar.
+- **Proibido:** "vale vinte minutos de conversa", "podemos agendar", "tem disponibilidade".
+
+### Molde E1 v3 (listas novas)
+
+Assunto: `{{empresa}} e <cena curta do setor>`, minúsculo, sem artigo antes do nome.
+
+```
+{{nome}}, {{abertura}}
+
+{{gancho}}
+
+<linha da oferta pela âncora>
+
+Isso acontece aí também, ou estou chutando longe?
+```
+
+Linha da oferta por âncora:
+
+- Sistemas Sob Medida: "Eu construo software sob medida em cima da operação, para essa rotina sair do telefone e da planilha."
+- Nova Receita Digital: "Eu construo produto digital em cima da operação, e essa rotina costuma virar serviço que o cliente paga."
+- Agentes de IA: "Eu construo agentes de IA sob medida que preparam essa parte, e a decisão continua com a equipe."
+
+Slots `{{abertura}}` e `{{gancho}}` com até 22 palavras cada (contrato da logística): o corpo fica entre 71 e 76
+palavras. `{{frase_colegas}}` entra só quando a lista tiver várias pessoas por empresa.
 
 ## Regra de personalização
 

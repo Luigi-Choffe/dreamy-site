@@ -4,7 +4,10 @@
  * (LGPD/PRD §18): mudou o remetente/cargo/contato, muda aqui e vale para tudo.
  *
  * Dados definidos pelo usuário em 2026-08-27: Luigi Choffe, Sócio fundador,
- * contact@bedreamy.com.br, WhatsApp +55 11 94879-3233, logo do site publicado.
+ * WhatsApp +55 11 94879-3233, logo do site publicado. Em 2026-09-14 o Luigi
+ * trocou o e-mail pelo pessoal (remetente de pessoa, não de caixa genérica) e a
+ * linha legal para a marca: "coloca Dreamy mesmo". A assinatura NÃO entra no
+ * hash de aprovação das campanhas (campaignContentHash cobre só os passos).
  */
 
 export const SIGNATURE = {
@@ -13,10 +16,10 @@ export const SIGNATURE = {
   marca: "Dreamy",
   site: "dreamy.app.br",
   siteUrl: "https://www.dreamy.app.br",
-  email: "contact@bedreamy.com.br",
+  email: "luigi.choffe@bedreamy.com.br",
   whatsappDisplay: "+55 11 94879-3233",
   whatsappUrl: "https://wa.me/5511948793233",
-  legal: "Metrifique.se · CNPJ 58.522.033/0001-81",
+  legal: "Dreamy · CNPJ 58.522.033/0001-81",
   /** Hospedado no próprio domínio do site (cache imutável) — versão para fundo claro. */
   logoUrl: "https://www.dreamy.app.br/brand/dreamy-logo-sm.png",
 } as const;
