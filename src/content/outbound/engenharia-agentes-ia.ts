@@ -15,6 +15,7 @@ export const engenhariaAgentesIa: CampaignDefinition = {
   slug: "engenharia-agentes-ia",
   // Segmento curado (apply-segmentos): serviços de engenharia (6 contatos ativos) —
   // gerenciamento, fiscalização, projetos e consultorias.
+  titulo: "Serviços de engenharia",
   industria: "construção serviços de engenharia",
   anchor: "agente-ia",
   status: "ready",

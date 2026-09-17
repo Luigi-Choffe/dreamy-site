@@ -27,6 +27,7 @@ import {
   Code,
   CONTACT_STATUS_LABELS,
   campaignDisplayStatus,
+  campaignTitle,
   countBy,
   DailySendSparkline,
   fmtDate,
@@ -172,12 +173,15 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
                       href={consoleHref(`/interno/outbound/${def.slug}`, isDemo)}
                       className="font-semibold text-foreground hover:text-brand-strong"
                     >
-                      {def.industria}
+                      {campaignTitle(def)}
                     </Link>
                     <span className="text-xs text-foreground-subtle">
-                      {def.slug} · {ANCHOR_LABELS[def.anchor]}
+                      {def.slug} · {def.industria} · {ANCHOR_LABELS[def.anchor]}
                     </span>
-                    <CampaignStatusChip status={campaignDisplayStatus(def, runtime)} />
+                    <CampaignStatusChip
+                      status={campaignDisplayStatus(def, runtime)}
+                      pausedReason={runtime?.pausedReason}
+                    />
                   </li>
                 );
               })}
@@ -242,6 +246,11 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
   const reunioes = meetingStats(data.deals, data.replies);
   const tempoResposta = replyTimeStats(data.sends, data.replies);
   const lastBriefing = [...data.briefings].sort((a, b) => b.generatedAt.localeCompare(a.generatedAt))[0];
+  // Briefing de outro dia pode contradizer os números ao lado (ex.: "0 interessados"
+  // na manhã em que a 1ª resposta chegou) — sinalizado em vez de exibido como atual.
+  const briefingDesatualizado = lastBriefing
+    ? sendDateKey(new Date(lastBriefing.generatedAt), env.utcOffset) !== todayKey
+    : false;
 
   // Slugs presentes no store sem definição no registro (honestidade > silêncio).
   const knownSlugs = new Set(data.defs.map((c) => c.slug));
@@ -346,6 +355,7 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
                       content: lastBriefing.content,
                       label: `${fmtDateTime(lastBriefing.generatedAt)}${lastBriefing.demo ? " · exemplo" : ""}`,
                       model: lastBriefing.model,
+                      stale: briefingDesatualizado,
                     }
                   : null
               }
@@ -389,14 +399,20 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
                               href={consoleHref(`/interno/outbound/${def.slug}`, isDemo)}
                               className="after:absolute after:inset-0 hover:text-brand-strong"
                             >
-                              {def.industria}
+                              {campaignTitle(def)}
                             </Link>
                           </h3>
-                          <p className="mt-0.5 truncate text-xs text-foreground-subtle">
-                            {def.slug} · {ANCHOR_LABELS[def.anchor]}
+                          <p
+                            className="mt-0.5 truncate text-xs text-foreground-subtle"
+                            title={`${def.slug} · ${def.industria} · ${ANCHOR_LABELS[def.anchor]}`}
+                          >
+                            {def.slug} · {def.industria} · {ANCHOR_LABELS[def.anchor]}
                           </p>
                         </div>
-                        <CampaignStatusChip status={campaignDisplayStatus(def, runtime)} />
+                        <CampaignStatusChip
+                          status={campaignDisplayStatus(def, runtime)}
+                          pausedReason={runtime?.pausedReason}
+                        />
                       </div>
 
                       {/* Régua de métricas: divisores hairline, zeros mudos, verde só no que vale. */}
@@ -476,7 +492,7 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
                           href={consoleHref(`/interno/outbound/${def.slug}`, isDemo)}
                           className="font-semibold text-foreground underline-offset-2 hover:text-brand-strong hover:underline"
                         >
-                          {def.industria}
+                          {campaignTitle(def)}
                         </Link>
                         <span className="min-w-0 truncate text-xs text-foreground-subtle">
                           {def.slug} · {ANCHOR_LABELS[def.anchor]}
@@ -702,19 +718,19 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
                 </p>
               ) : (
                 <div tabIndex={0} role="region" aria-label="Lotes importados" className="overflow-x-auto">
-                  <table className="w-full min-w-[28rem] border-collapse text-small">
+                  <table className="w-full min-w-[28rem] table-fixed border-collapse text-small">
                     <thead>
                       <tr className="border-b border-border text-left text-xs tracking-wide text-foreground-subtle uppercase">
-                        <th scope="col" className="py-1.5 pr-4 font-semibold">
+                        <th scope="col" className="w-[34%] py-1.5 pr-4 font-semibold">
                           Arquivo
                         </th>
-                        <th scope="col" className="py-1.5 pr-4 font-semibold">
+                        <th scope="col" className="w-[34%] py-1.5 pr-4 font-semibold">
                           Origem
                         </th>
-                        <th scope="col" className="py-1.5 pr-4 font-semibold">
+                        <th scope="col" className="w-[18%] py-1.5 pr-4 font-semibold">
                           Quando
                         </th>
-                        <th scope="col" className="py-1.5 text-right font-semibold">
+                        <th scope="col" className="w-[14%] py-1.5 text-right font-semibold">
                           Importados
                         </th>
                       </tr>
@@ -722,8 +738,10 @@ export default async function OutboundOverviewPage({ searchParams }: { searchPar
                     <tbody>
                       {imports.map((batch) => (
                         <tr key={batch.id} className="border-b border-border last:border-b-0">
-                          <td className="py-1.5 pr-4 font-medium text-foreground">{batch.file}</td>
-                          <td className="max-w-[16rem] truncate py-1.5 pr-4 text-foreground-muted" title={batch.origin}>
+                          <td className="truncate py-1.5 pr-4 font-medium text-foreground" title={batch.file}>
+                            {batch.file}
+                          </td>
+                          <td className="truncate py-1.5 pr-4 text-foreground-muted" title={batch.origin}>
                             {batch.origin}
                           </td>
                           <td className="py-1.5 pr-4 whitespace-nowrap text-foreground-muted tabular-nums">

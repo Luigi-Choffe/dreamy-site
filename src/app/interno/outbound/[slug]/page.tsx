@@ -27,6 +27,7 @@ import {
   fmtDate,
   fmtInt,
   fmtQuando,
+  campaignTitle,
   type FunnelStepData,
   OpenRateNote,
   plural,
@@ -186,8 +187,8 @@ export default async function OutboundCampaignPage({
       sessionEmail={session.email}
       active="campanha"
       data={data}
-      title={campaign.industria.charAt(0).toUpperCase() + campaign.industria.slice(1)}
-      subtitle={`${campaign.slug} · âncora: ${ANCHOR_LABELS[campaign.anchor]} · ${fmtInt(campaignEnrollments.length)} contatos inscritos`}
+      title={campaignTitle(campaign)}
+      subtitle={`${campaign.slug} · ${campaign.industria} · âncora: ${ANCHOR_LABELS[campaign.anchor]} · ${fmtInt(campaignEnrollments.length)} contatos inscritos`}
       headerExtra={headerExtra}
     >
       <div className="flex flex-col gap-8">

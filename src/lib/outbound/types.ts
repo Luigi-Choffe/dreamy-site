@@ -80,6 +80,12 @@ export interface CampaignStep {
 /** Definição versionada em `src/content/outbound/` (copy é conteúdo, não código). */
 export interface CampaignDefinition {
   slug: string;
+  /**
+   * Nome de exibição no console (duas campanhas podem mirar a MESMA indústria,
+   * ex.: obras-sistemas-sob-medida e validacao-indicacao). Fora do hash de
+   * aprovação de propósito: é apresentação, não copy.
+   */
+  titulo?: string;
   industria: string;
   anchor: SolutionAnchor;
   /** Campanhas draft nunca são elegíveis para envio. */

@@ -41,6 +41,7 @@ import type { CampaignDefinition } from "../../lib/outbound/types";
 
 export const logisticaEstoqueReceita: CampaignDefinition = {
   slug: "logistica-estoque-receita",
+  titulo: "Operadores logísticos",
   industria: "logística",
   anchor: "nova-receita",
   // "ready" + aprovação do Luigi registrada em 2026-09-10 ("gostei da copy… pode aprovar tudo").

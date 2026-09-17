@@ -8,6 +8,8 @@ export interface BriefingView {
   /** Data/hora já formatada (evita divergência de fuso entre servidor e cliente). */
   label: string;
   model: string;
+  /** Gerado em outro dia: os números citados podem contradizer o funil ao lado. */
+  stale?: boolean;
 }
 
 /**
@@ -69,6 +71,14 @@ export function BriefingCard({ initial, isDemo }: { initial: BriefingView | null
             MK
           </span>
           <h3 className="text-xs font-semibold tracking-wide text-foreground-subtle uppercase">Briefing do MORK</h3>
+          {briefing?.stale ? (
+            <span
+              className="inline-flex items-center rounded-full bg-warning-soft px-2 py-0.5 text-xs leading-none font-semibold whitespace-nowrap text-warning"
+              title="Escrito em outro dia: os números podem ter mudado. Gere de novo para o retrato de hoje."
+            >
+              de outro dia
+            </span>
+          ) : null}
         </span>
         <Button
           type="button"
@@ -101,7 +111,11 @@ export function BriefingCard({ initial, isDemo }: { initial: BriefingView | null
         </div>
       ) : briefing ? (
         <div className="motion-safe:animate-fade-in">
-          <p className="mt-3 text-small whitespace-pre-wrap text-foreground">{briefing.content}</p>
+          <p
+            className={`mt-3 text-small whitespace-pre-wrap ${briefing.stale ? "text-foreground-muted" : "text-foreground"}`}
+          >
+            {briefing.content}
+          </p>
           <p className="mt-2 text-xs text-foreground-subtle">
             {briefing.label} · {briefing.model} · escrito por IA, confira os números no console
           </p>

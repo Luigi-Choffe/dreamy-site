@@ -18,6 +18,7 @@ export const construcaoNovaReceita: CampaignDefinition = {
   // Segmento curado da tabela de empresas (apply-segmentos): SÓ incorporadoras —
   // a tese "depois das chaves" não serve para construtora de obra, fornecedor ou
   // serviço de engenharia (esses ganham campanhas próprias depois).
+  titulo: "Incorporadoras",
   industria: "construção incorporadora",
   anchor: "nova-receita",
   // "ready" + aprovação registrada em 2026-08-27 ("OK, aprovado, pode seguir!" — Luigi).

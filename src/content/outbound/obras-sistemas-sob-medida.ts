@@ -20,6 +20,7 @@ export const obrasSistemasSobMedida: CampaignDefinition = {
   // Segmento curado da tabela de empresas (apply-segmentos): construtoras que
   // executam obra para terceiros (17 contatos ativos). Incorporadoras têm a
   // campanha própria (construcao-nova-receita); fornecedores ficam de fora.
+  titulo: "Obras para terceiros",
   industria: "construção obras para terceiros",
   anchor: "sistema",
   status: "ready",

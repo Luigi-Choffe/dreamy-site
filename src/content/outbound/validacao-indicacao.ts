@@ -29,6 +29,7 @@ export const validacaoIndicacao: CampaignDefinition = {
   slug: "validacao-indicacao",
   // Default: o maior segmento do alvo. O enroll roda com override por indústria
   // (serviços de engenharia, incorporadora, fornecedor usam a mesma copy).
+  titulo: "Validação por indicação",
   industria: "construção obras para terceiros",
   // Âncora mais neutra do enum (sistemas/operação); nenhum passo vende ou linka.
   anchor: "sistema",

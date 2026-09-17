@@ -325,6 +325,16 @@ export function campaignDisplayStatus(def: CampaignDefinition, runtime?: Campaig
   return def.status;
 }
 
+/** Nome de exibição: `titulo` da definição, senão a indústria capitalizada. */
+export function campaignTitle(def: CampaignDefinition): string {
+  return def.titulo ?? def.industria.charAt(0).toUpperCase() + def.industria.slice(1);
+}
+
+/** Motivos internos de pausa → rótulo curto do chip (livres viram tooltip). */
+const PAUSE_REASON_LABELS: Record<string, string> = {
+  "bounce-rate": "bounce alto",
+};
+
 const campaignStatusChips: Record<CampaignDisplayStatus, { label: string; tone: ChipTone }> = {
   draft: { label: "draft", tone: "neutral" },
   ready: { label: "ready", tone: "outline" },
@@ -332,8 +342,17 @@ const campaignStatusChips: Record<CampaignDisplayStatus, { label: string; tone: 
   pausada: { label: "pausada", tone: "warning" },
 };
 
-export function CampaignStatusChip({ status }: { status: CampaignDisplayStatus }) {
+export function CampaignStatusChip({ status, pausedReason }: { status: CampaignDisplayStatus; pausedReason?: string }) {
   const { label, tone } = campaignStatusChips[status];
+  // Pausa sem motivo à vista deixa o leitor no escuro: o chip carrega o porquê.
+  if (status === "pausada" && pausedReason) {
+    const curto = PAUSE_REASON_LABELS[pausedReason];
+    return (
+      <Chip tone={tone} title={curto ? undefined : pausedReason}>
+        {curto ? `${label} · ${curto}` : label}
+      </Chip>
+    );
+  }
   return <Chip tone={tone}>{label}</Chip>;
 }
 
