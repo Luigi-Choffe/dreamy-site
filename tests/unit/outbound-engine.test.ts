@@ -267,6 +267,22 @@ describe("computePlan — elegibilidade", () => {
     expect(r.skipped[0]?.reason).toMatch(/bounce/);
   });
 
+  it("retomada com checkpoint destrava o plano mesmo com a taxa acumulada acima do guard-rail (falha #17)", () => {
+    const ontem = "2026-08-31T10:00:00-03:00";
+    const sends = Array.from({ length: 15 }, (_, i) =>
+      send({
+        id: `g${i}`,
+        idempotencyKey: `g${i}`,
+        scheduledAt: ontem,
+        status: i < 2 ? "bounced" : "delivered",
+      }),
+    );
+    const def = campaign();
+    const bounceCheckpoint = { at: "2026-08-31T18:00:00Z", sent: 15, bounced: 2 };
+    const r = plan({ sends, campaignDefs: [def], runtimes: [approvedRuntime(def, { bounceCheckpoint })] });
+    expect(r.items).toHaveLength(1);
+  });
+
   it("sequência concluída não gera envio", () => {
     const r = plan({ enrollments: [enrollment({ nextStep: 4, lastSendAt: "2026-08-20T10:00:00-03:00" })] });
     expect(r.items).toHaveLength(0);

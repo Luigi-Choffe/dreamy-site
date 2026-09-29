@@ -111,6 +111,20 @@ export interface CampaignRuntime {
   approvedHash?: string;
   pausedAt?: string;
   pausedReason?: string;
+  /**
+   * Gravado na retomada humana de uma campanha pausada por bounce: a régua do
+   * guard-rail passa a valer só para os envios feitos DEPOIS deste ponto. Sem ele
+   * a taxa acumulada nunca cai (o próprio motor bloqueia os envios que a
+   * diluiriam) e a campanha fica presa para sempre (falha #17).
+   */
+  bounceCheckpoint?: BounceCheckpoint;
+}
+
+export interface BounceCheckpoint {
+  at: string;
+  /** Envios processados pelo provedor até a retomada. */
+  sent: number;
+  bounced: number;
 }
 
 export type EnrollmentStatus = "active" | "replied" | "finished" | "stopped";

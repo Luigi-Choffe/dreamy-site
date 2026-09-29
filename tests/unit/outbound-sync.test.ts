@@ -11,7 +11,7 @@ import {
   selectEnrollmentCandidates,
 } from "@/lib/outbound/ops-core";
 import { openStore } from "@/lib/outbound/store";
-import { applySync, isPollable, mapLastEvent } from "@/lib/outbound/sync-core";
+import { applySync, consultaExpirada, isPollable, mapLastEvent } from "@/lib/outbound/sync-core";
 import type { Contact, Enrollment, Reply, SendRecord } from "@/lib/outbound/types";
 
 const NOW = new Date("2026-08-27T12:00:00Z");
@@ -161,9 +161,30 @@ describe("isPollable (sync-core)", () => {
     expect(isPollable(makeSend({ status: "failed" }), NOW)).toBe(false);
   });
 
-  it("delivered continua sendo consultado por até 30 dias após sentAt", () => {
+  it("delivered continua sendo consultado por até 21 dias após sentAt", () => {
     expect(isPollable(makeSend({ status: "delivered", sentAt: "2026-08-10T00:00:00.000Z" }), NOW)).toBe(true);
     expect(isPollable(makeSend({ status: "delivered", sentAt: "2026-07-01T00:00:00.000Z" }), NOW)).toBe(false);
+  });
+
+  it("#18 o caso real: envio entregue de 29 dias (já apagado pelo Resend) não é mais consultado", () => {
+    const hoje = new Date("2026-09-29T18:06:00Z");
+    expect(isPollable(makeSend({ status: "delivered", sentAt: "2026-08-31T12:05:12.050Z" }), hoje)).toBe(false);
+  });
+});
+
+describe("#18 consultaExpirada (sync-core)", () => {
+  it("404 de envio já entregue é registro expirado no provedor, não falha", () => {
+    expect(consultaExpirada(makeSend({ status: "delivered" }), 404)).toBe(true);
+  });
+
+  it("404 de envio agendado ou enviado continua sendo falha (o ciclo não sabe se saiu)", () => {
+    expect(consultaExpirada(makeSend({ status: "scheduled" }), 404)).toBe(false);
+    expect(consultaExpirada(makeSend({ status: "sent" }), 404)).toBe(false);
+  });
+
+  it("outros erros de um envio entregue continuam sendo falha", () => {
+    expect(consultaExpirada(makeSend({ status: "delivered" }), 500)).toBe(false);
+    expect(consultaExpirada(makeSend({ status: "delivered" }), undefined)).toBe(false);
   });
 
   it("sem resendEmailId não há o que consultar", () => {

@@ -7,6 +7,7 @@ import { requireSession } from "@/lib/outbound/auth";
 import { cancelScheduledSends } from "@/lib/outbound/cancel";
 import { getOutboundEnv } from "@/lib/outbound/config";
 import { ensureFollowUpTask, reconcileDeals } from "@/lib/outbound/crm-core";
+import { bounceCheckpointNow } from "@/lib/outbound/guardrails";
 import { applyOptOut, applyReply } from "@/lib/outbound/ops-core";
 import { createResendClient, type ResendClient } from "@/lib/outbound/resend";
 import { openStore, runExclusive, type OutboundStore } from "@/lib/outbound/store";
@@ -109,10 +110,12 @@ export async function resumeCampaignAction(formData: FormData): Promise<void> {
     const runtimes = await store.campaignRuntimes();
     const runtime = runtimes.find((r) => r.slug === slug);
     if (!runtime?.pausedAt) return;
+    const pausadaPorBounce = runtime.pausedReason === "bounce-rate";
     delete runtime.pausedAt;
     delete runtime.pausedReason;
+    if (pausadaPorBounce) runtime.bounceCheckpoint = bounceCheckpointNow(await store.sends(), slug, new Date());
     await store.saveCampaignRuntimes(runtimes);
-    logger.info("outbound.console.resume", { slug, isDemo });
+    logger.info("outbound.console.resume", { slug, isDemo, reguaReiniciada: pausadaPorBounce });
   });
 }
 

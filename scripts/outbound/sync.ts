@@ -17,10 +17,10 @@ import { logger } from "../../src/lib/observability/logger";
 import { cancelScheduledSends } from "../../src/lib/outbound/cancel";
 import { getOutboundEnv } from "../../src/lib/outbound/config";
 import { evaluateGuardRails } from "../../src/lib/outbound/guardrails";
-import { createResendClient } from "../../src/lib/outbound/resend";
+import { createResendClient, ResendApiError } from "../../src/lib/outbound/resend";
 import type { ResendClient } from "../../src/lib/outbound/resend";
 import { openStore, runExclusive } from "../../src/lib/outbound/store";
-import { applySync, chunk, isPollable } from "../../src/lib/outbound/sync-core";
+import { applySync, chunk, consultaExpirada, isPollable } from "../../src/lib/outbound/sync-core";
 import type { SendRecord } from "../../src/lib/outbound/types";
 
 /** Rate limit do Resend: 10 req/s — lotes de 5 com pausa de 250 ms ficam com folga. */
@@ -35,6 +35,7 @@ interface PollOutcome {
   send: SendRecord;
   lastEvent?: string | null;
   error?: string;
+  expired?: boolean;
 }
 
 async function pollAll(client: ResendClient, sends: SendRecord[]): Promise<PollOutcome[]> {
@@ -47,6 +48,9 @@ async function pollAll(client: ResendClient, sends: SendRecord[]): Promise<PollO
           const status = await client.getEmail(send.resendEmailId!);
           return { send, lastEvent: status.last_event };
         } catch (err) {
+          if (consultaExpirada(send, err instanceof ResendApiError ? err.status : undefined)) {
+            return { send, expired: true };
+          }
           return { send, error: err instanceof Error ? err.message : String(err) };
         }
       }),
@@ -96,6 +100,7 @@ async function main() {
   const sendById = new Map(sends.map((s) => [s.id, s]));
 
   let falhasConsulta = 0;
+  let expirados = 0;
   let eventosNovos = 0;
   let supressoesNovas = 0;
   let enrollmentsParados = 0;
@@ -105,6 +110,10 @@ async function main() {
   const bump = (key: string) => mudancas.set(key, (mudancas.get(key) ?? 0) + 1);
 
   for (const outcome of outcomes) {
+    if (outcome.expired) {
+      expirados++;
+      continue;
+    }
     if (outcome.error !== undefined) {
       falhasConsulta++;
       logger.warn("outbound.sync.consulta_falhou", { sendId: outcome.send.id, error: outcome.error });
@@ -180,9 +189,9 @@ async function main() {
   const runtimeBySlug = new Map(runtimes.map((r) => [r.slug, r]));
   const campanhasPausadas: string[] = [];
   for (const slug of new Set(updatedSends.map((s) => s.campaignSlug))) {
-    const rails = evaluateGuardRails(updatedSends, slug);
-    if (!rails.bounceTripped) continue;
     let runtime = runtimeBySlug.get(slug);
+    const rails = evaluateGuardRails(updatedSends, slug, runtime?.bounceCheckpoint);
+    if (!rails.bounceTripped) continue;
     if (!runtime) {
       runtime = { slug };
       runtimes.push(runtime);
@@ -216,6 +225,7 @@ async function main() {
   console.log("Resultado do sync");
   console.log(`  consultados:         ${outcomes.length}`);
   console.log(`  falhas de consulta:  ${falhasConsulta}`);
+  if (expirados > 0) console.log(`  expirados no Resend: ${expirados} (já entregues; status final mantido)`);
   const mudancasStr =
     [...mudancas.entries()]
       .map(([key, count]) => `${key}=${count}`)
@@ -239,6 +249,7 @@ async function main() {
   logger.info("outbound.sync", {
     consultados: outcomes.length,
     falhasConsulta,
+    expirados,
     eventosNovos,
     supressoesNovas,
     enrollmentsParados,

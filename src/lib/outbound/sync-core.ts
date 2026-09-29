@@ -7,8 +7,21 @@ import type { OutboundEvent, OutboundEventType, SendRecord, SendStatus, StopReas
  * breaker global). Sem I/O — quem aplica os efeitos é `scripts/outbound/sync.ts`.
  */
 
-/** Sends entregues continuam sendo consultados por este prazo (opened/clicked/bounce tardio). */
-export const DELIVERED_POLL_WINDOW_DAYS = 30;
+/**
+ * Sends entregues continuam sendo consultados por este prazo (bounce tardio). Tem de
+ * ficar abaixo da retenção do Resend: em 29/09 os envios de 31/08 (29 dias) já
+ * respondiam 404 e o sync abortou o ciclo (falha #18).
+ */
+export const DELIVERED_POLL_WINDOW_DAYS = 21;
+
+/**
+ * 404 de um send já ENTREGUE = registro expirado no provedor, não falha: o status
+ * final já está no store. Para scheduled/sent o 404 continua sendo falha de verdade
+ * (o ciclo não sabe se o e-mail saiu).
+ */
+export function consultaExpirada(send: SendRecord, httpStatus: number | undefined): boolean {
+  return httpStatus === 404 && send.status === "delivered";
+}
 
 /** Status finais — sync nunca os altera (não há volta). */
 const TERMINAL_STATUSES: ReadonlySet<SendStatus> = new Set(["bounced", "complained", "failed", "canceled"]);
@@ -137,7 +150,7 @@ export function applySync(
 
 /**
  * Send ainda vale consulta? Não-terminais (scheduled/sent) sempre; delivered por
- * até 30 dias após o envio, para capturar opened/clicked/bounce tardio.
+ * até DELIVERED_POLL_WINDOW_DAYS após o envio, para capturar bounce tardio.
  */
 export function isPollable(send: SendRecord, now: Date): boolean {
   if (!send.resendEmailId) return false;

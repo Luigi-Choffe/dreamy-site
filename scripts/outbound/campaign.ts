@@ -16,7 +16,7 @@ import { campaigns } from "../../src/content/outbound";
 import { logger } from "../../src/lib/observability/logger";
 import { cancelScheduledSends } from "../../src/lib/outbound/cancel";
 import { getOutboundEnv } from "../../src/lib/outbound/config";
-import { evaluateGuardRails } from "../../src/lib/outbound/guardrails";
+import { bounceCheckpointNow, evaluateGuardRails } from "../../src/lib/outbound/guardrails";
 import { buildEnrollment, normalizeIndustria, selectEnrollmentCandidates } from "../../src/lib/outbound/ops-core";
 import { campaignContentHash, lintEmail, renderTemplate } from "../../src/lib/outbound/render";
 import { createResendClient } from "../../src/lib/outbound/resend";
@@ -83,7 +83,7 @@ async function cmdList() {
   } else {
     const rows = defs.map((def) => {
       const runtime = runtimeBySlug.get(def.slug);
-      const rails = evaluateGuardRails(sends, def.slug);
+      const rails = evaluateGuardRails(sends, def.slug, runtime?.bounceCheckpoint);
       return [
         def.slug,
         def.industria,
@@ -253,10 +253,18 @@ async function cmdResume(flags: Flags) {
     console.log(`Campanha "${slug}" não está pausada — nada a fazer.`);
     return;
   }
+  const pausadaPorBounce = runtime.pausedReason === "bounce-rate";
   delete runtime.pausedAt;
   delete runtime.pausedReason;
+  if (pausadaPorBounce) runtime.bounceCheckpoint = bounceCheckpointNow(await store.sends(), slug, new Date());
   await store.saveCampaignRuntimes(runtimes);
   console.log(`✓ Campanha "${slug}" retomada.`);
+  if (pausadaPorBounce && runtime.bounceCheckpoint) {
+    const cp = runtime.bounceCheckpoint;
+    console.log(
+      `  régua de bounce reiniciada: vale para os envios a partir de agora (até aqui ${cp.bounced} de ${cp.sent}).`,
+    );
+  }
   const state = await store.state();
   if (state.breakerTrippedAt) {
     console.log(

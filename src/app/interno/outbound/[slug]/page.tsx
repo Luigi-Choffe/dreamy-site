@@ -140,7 +140,7 @@ export default async function OutboundCampaignPage({
     respostas: row.replies,
   }));
 
-  const guard = evaluateGuardRails(data.sends, slug);
+  const guard = evaluateGuardRails(data.sends, slug, runtime?.bounceCheckpoint);
   const stopsByReason = countBy(
     campaignEnrollments.filter((e) => e.stopReason),
     (e) => e.stopReason,

@@ -243,7 +243,7 @@ export function computePlan(input: PlanInput): PlanResult {
     }
     let bounceTripped = bounceTrippedCache.get(def.slug);
     if (bounceTripped === undefined) {
-      bounceTripped = evaluateGuardRails(input.sends, def.slug).bounceTripped;
+      bounceTripped = evaluateGuardRails(input.sends, def.slug, runtime.bounceCheckpoint).bounceTripped;
       bounceTrippedCache.set(def.slug, bounceTripped);
     }
     if (bounceTripped) {
