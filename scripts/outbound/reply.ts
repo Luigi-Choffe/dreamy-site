@@ -12,6 +12,7 @@ import { parseArgs } from "node:util";
 import { logger } from "../../src/lib/observability/logger";
 import { cancelScheduledSends } from "../../src/lib/outbound/cancel";
 import { getOutboundEnv } from "../../src/lib/outbound/config";
+import { ensureFollowUpTask, reconcileDeals } from "../../src/lib/outbound/crm-core";
 import { applyOptOut, applyReply } from "../../src/lib/outbound/ops-core";
 import type { ApplyReplyResult } from "../../src/lib/outbound/ops-core";
 import { createResendClient } from "../../src/lib/outbound/resend";
@@ -107,6 +108,25 @@ async function main() {
   }
   await store.saveEnrollments(finalEnrollments);
 
+  // CRM piloto (PRD §29), o mesmo que o console faz ao classificar: interessado ganha
+  // tarefa de follow-up (a 1ª resposta real, em 16/09, ficou sem tarefa por faltar isto
+  // aqui) e o pipeline acompanha a resposta sem esperar o `crm reconcile` manual.
+  let tarefaCriada = false;
+  if (classification === "interested") {
+    const tasks = await store.tasks();
+    const task = ensureFollowUpTask(tasks, { contactId: contact.id, utcOffset: getOutboundEnv().utcOffset });
+    if (task) {
+      tasks.push(task);
+      await store.saveTasks(tasks);
+      tarefaCriada = true;
+    }
+  }
+  if (classification !== "ooo") {
+    const [contacts, sendsAtuais, deals] = await Promise.all([store.contacts(), store.sends(), store.deals()]);
+    const crm = reconcileDeals({ contacts, enrollments: finalEnrollments, sends: sendsAtuais, replies, deals });
+    if (crm.created > 0 || crm.advanced > 0) await store.saveDeals(crm.deals);
+  }
+
   // Sends já AGENDADOS no Resend para este contato precisam ser cancelados — parar o
   // enrollment não desfaz um scheduled_at que já está na fila do provedor (PRD §15:
   // opt-out/resposta param a sequência IMEDIATAMENTE, inclusive o que está a caminho).
@@ -149,6 +169,11 @@ async function main() {
     console.log("  sequência:     continua — ooo não conta como resposta real (PRD §14)");
   } else {
     console.log(`  sequência:     ${result.stoppedEnrollmentIds.length} enrollment(s) parado(s) por resposta`);
+  }
+  if (classification === "interested") {
+    console.log(
+      `  follow-up:     ${tarefaCriada ? "tarefa criada no Hoje (próximo dia útil)" : "já havia tarefa aberta para o contato"}`,
+    );
   }
   if (values.suppress) {
     console.log(`  supressão:     adicionada (unsubscribe) — ${paradosPorOptOut} enrollment(s) extra parado(s)`);

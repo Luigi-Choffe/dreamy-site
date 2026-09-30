@@ -50,3 +50,5 @@ async function main(): Promise<void> {
   console.log(`total alcançado: ${alcancados.size} pessoas · respostas: ${respondeu.size}`);
 }
 main();
+
+export {};
