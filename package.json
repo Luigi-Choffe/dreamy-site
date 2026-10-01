@@ -45,15 +45,15 @@
     "@neondatabase/serverless": "^1.1.0",
     "clsx": "^2.1.1",
     "gray-matter": "^4.0.3",
-    "lucide-react": "^1.31.0",
-    "motion": "^13.1.1",
+    "lucide-react": "^1.48.0",
+    "motion": "^13.4.4",
     "next": "16.3.1",
     "next-mdx-remote": "^6.0.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "remark-gfm": "^4.0.1",
-    "tailwind-merge": "^3.6.0",
-    "zod": "^4.4.3"
+    "tailwind-merge": "^3.7.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
