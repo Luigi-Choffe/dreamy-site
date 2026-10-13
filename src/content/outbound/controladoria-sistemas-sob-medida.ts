@@ -110,7 +110,7 @@ Quantos dias depois do fechamento a diretoria vê o número aí?`,
       // Resposta de uma palavra no lugar de pergunta aberta (copy v3).
       body: `{{nome}}, último e-mail, prometo.
 
-Se o fechamento aí já cai no painel sem passar por planilha, ótimo, não insisto. Se ainda tem alguém extraindo do ERP e consolidando na mão todo mês, responde só "painel" que eu te mando por escrito por onde eu começaria, sem reunião.
+Se o fechamento aí já cai no painel sem passar por planilha, ótimo, não insisto. Se ainda tem alguém extraindo do ERP e consolidando na mão todo mês, responde só "painel" ou "planilha" que eu te mando por escrito por onde eu começaria, sem reunião.
 
 Se o assunto não for para vocês, me diz que eu não escrevo de novo.`,
     },

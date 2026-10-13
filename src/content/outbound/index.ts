@@ -1,5 +1,6 @@
 import type { CampaignDefinition } from "../../lib/outbound/types";
 import { construcaoNovaReceita } from "./construcao-nova-receita";
+import { controladoriaPainelPlanilha } from "./controladoria-painel-planilha";
 import { controladoriaSistemasSobMedida } from "./controladoria-sistemas-sob-medida";
 import { engenhariaAgentesIa } from "./engenharia-agentes-ia";
 import { exemploAgentes } from "./exemplo-agentes";
@@ -20,6 +21,7 @@ export const campaigns: CampaignDefinition[] = [
   validacaoIndicacao,
   logisticaEstoqueReceita,
   controladoriaSistemasSobMedida,
+  controladoriaPainelPlanilha,
   exemploNovaReceita,
   exemploSistemas,
   exemploAgentes,
