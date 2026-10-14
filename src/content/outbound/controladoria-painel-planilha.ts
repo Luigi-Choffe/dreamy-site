@@ -29,7 +29,7 @@ export const controladoriaPainelPlanilha: CampaignDefinition = {
   titulo: "Controladoria (geral)",
   industria: "controladoria",
   anchor: "sistema",
-  status: "draft",
+  status: "ready",
   notes:
     "Variante genérica da campanha de controladoria (onda 2: 95 contatos sem 'Sobre' do LinkedIn + cadastros de empresa duvidosos). " +
     "Não cita o nome da empresa em lugar nenhum. E1 sem slots de personalização (só {{nome}}), mesma cena do painel montado na mão; " +

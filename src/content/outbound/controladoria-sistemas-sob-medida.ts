@@ -46,7 +46,7 @@ export const controladoriaSistemasSobMedida: CampaignDefinition = {
   titulo: "Controladoria",
   industria: "controladoria",
   anchor: "sistema",
-  status: "draft",
+  status: "ready",
   notes:
     "Lista Clay controladoria SP 2026-10 (~410 contatos; 59 empresas com 2+ pessoas). Ângulo: foco nos dashs (painel e fechamento montados na mão, " +
     "número chega depois da pergunta da diretoria). E1 molde v3 com slots (abertura, gancho, frase_colegas); E2 remove a objeção 'já temos Power BI' " +
