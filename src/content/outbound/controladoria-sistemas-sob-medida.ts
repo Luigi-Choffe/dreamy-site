@@ -71,19 +71,19 @@ export const controladoriaSistemasSobMedida: CampaignDefinition = {
 
 {{gancho}}
 
-Eu construo software sob medida em cima da operação, para o número sair do ERP direto no painel, sem passar pela planilha. {{frase_colegas}}
+Prazer, Luigi. Te encontrei pelo LinkedIn. Tenho uma solução que já roda com outros controllers e tira a planilha do caminho entre o ERP e o painel, com IA integrada. Acho que facilitaria o seu dia. {{frase_colegas}}
 
-Isso acontece aí também, ou estou chutando longe?`,
+Faz sentido te mandar por escrito como funciona?`,
     },
     {
       id: "e2",
       offsetDays: 3,
       subject: "a planilha entre o sistema e o painel",
-      body: `{{nome}}, complemento ao e-mail anterior.
+      body: `{{nome}}, só completando o que te escrevi.
 
-A objeção que mais escuto é "a gente já tem Power BI". O painel não é o problema, é o que alimenta ele: alguém extrai do ERP, cruza folha, banco e orçamento na planilha, acerta o de-para, e só então o painel atualiza. O dado existe desde o dia primeiro. O número chega depois da pergunta.
+O que mais ouço é "a gente já tem Power BI". O painel não é o problema, é o que alimenta ele: alguém extrai do ERP, cruza folha, banco e orçamento na planilha, acerta o de-para, e só então o painel atualiza. O dado existe desde o dia primeiro. O número chega depois da pergunta.
 
-Essa camada do meio é o que eu construo, encaixada no ERP de vocês. Você não precisa saber o que construir: o desenho é trabalho nosso, com quem monta o número hoje.
+Essa camada do meio é o que eu monto, encaixada no ERP de vocês, com a IA fazendo a parte repetitiva. Você não precisa saber o que construir: o desenho eu faço junto com quem monta o número hoje.
 
 Qual relatório do fechamento ainda sai da planilha aí?`,
     },
@@ -99,7 +99,7 @@ Um cliente meu opera galpão em São Paulo. O cliente dele ligava para saber do 
 
 Na controladoria é igual: o lançamento já está no ERP, falta a camada que leva ele ao painel sem a planilha no meio.
 
-Escrevi como pensamos isso: https://www.dreamy.app.br/solucoes/sistemas-sob-medida?solucao=sistema&utm_source=outbound&utm_medium=email&utm_campaign=controladoria-sistemas-sob-medida&utm_content=e3
+Escrevi como eu penso isso: https://www.dreamy.app.br/solucoes/sistemas-sob-medida?solucao=sistema&utm_source=outbound&utm_medium=email&utm_campaign=controladoria-sistemas-sob-medida&utm_content=e3
 
 Quantos dias depois do fechamento a diretoria vê o número aí?`,
     },
