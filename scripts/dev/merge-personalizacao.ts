@@ -27,10 +27,12 @@ function issuesAbertura(s: string): string[] {
   if (words < 8) out.push(`abertura curta (${words} palavras, mín. 8)`);
   if (words > 22) out.push(`abertura longa (${words} palavras, máx. 22: o E1 estoura 140 com a assinatura)`);
   if (!/^[a-zà-ü]/.test(s)) out.push("abertura não começa com minúscula");
-  if (!/\.$/.test(s.trim())) out.push("abertura não termina com ponto");
+  // Formato do Luigi (controladoria, 14/10): a abertura pode fechar com UMA exclamação
+  // (o linter do e-mail aceita até 1); no meio do texto continua proibida.
+  if (!/[.!]$/.test(s.trim())) out.push("abertura não termina com ponto ou exclamação");
   if (TRAVESSAO.test(s)) out.push("abertura com travessão");
   if (/\{\{|\}\}/.test(s)) out.push("abertura com chaves {{}}");
-  if (/[!"“”]/.test(s)) out.push("abertura com exclamação/aspas");
+  if (/["“”]/.test(s) || /!(?!$)/.test(s.trim())) out.push("abertura com exclamação no meio/aspas");
   if (/impressionante|parabéns|referência no|líder de mercado|incrível|admir/i.test(s))
     out.push("abertura com elogio proibido");
   if (/\b[A-ZÀ-Ü]{4,}\b/.test(s)) out.push("abertura com palavra em caixa alta");

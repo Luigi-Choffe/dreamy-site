@@ -45,7 +45,7 @@ export const controladoriaPainelPlanilha: CampaignDefinition = {
 
 O dado está no ERP desde o dia primeiro. Mesmo assim, o painel que a diretoria olha é montado na mão: alguém extrai, consolida na planilha e confere linha por linha antes de atualizar. Quando a diretoria pergunta como fechou o mês, a resposta ainda está sendo montada.
 
-Tenho uma solução que já roda com outros controllers e tira a planilha desse caminho, com IA integrada. Acho que facilitaria o seu dia.
+Decidi te enviar este e-mail pois tenho uma solução que já roda com outros controllers e tira a planilha desse caminho, com IA integrada. Acho que facilitaria o seu dia.
 
 Faz sentido te mandar por escrito como funciona?`,
     },

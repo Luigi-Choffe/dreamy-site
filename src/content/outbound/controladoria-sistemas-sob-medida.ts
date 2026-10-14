@@ -53,8 +53,7 @@ export const controladoriaSistemasSobMedida: CampaignDefinition = {
     "(o problema é a camada que alimenta o painel) e tira o peso da especificação; E3 traz o case do galpão como prova cruzada e o único link (UTM = slug); " +
     "E4 encerra com resposta de uma palavra ('painel') e opt-out humano.",
   sampleCustom: {
-    abertura:
-      "vi que você responde pela controladoria e pelo planejamento aí, com fechamento mensal e consolidação de mais de uma empresa.",
+    abertura: "você é controller na Acme Distribuidora e responde pelo fechamento do grupo!",
     gancho:
       "Imagino que boa parte do fechamento ainda saia do ERP para a planilha antes de virar o painel que a diretoria vê.",
     frase_colegas:
@@ -66,12 +65,12 @@ export const controladoriaSistemasSobMedida: CampaignDefinition = {
       offsetDays: 0,
       // Nome da empresa ABRE o assunto, sem artigo (concordância de gênero varia
       // por nome e denuncia mala direta). Sem link, sem número.
-      subject: "{{empresa}} e o painel montado na mão",
-      body: `{{nome}}, {{abertura}}
+      subject: "{{empresa}} e Dreamy",
+      // Formato do Luigi (14/10): um fato só sobre a pessoa ({{abertura}} curta,
+      // "você é X na Y e responde por Z!"), sem gancho; o resto é ele falando.
+      body: `{{nome}}, prazer, Luigi. Te encontrei pelo LinkedIn. E vi que {{abertura}}
 
-{{gancho}}
-
-Prazer, Luigi. Te encontrei pelo LinkedIn. Tenho uma solução que já roda com outros controllers e tira a planilha do caminho entre o ERP e o painel, com IA integrada. Acho que facilitaria o seu dia. {{frase_colegas}}
+Decidi te enviar este e-mail pois tenho uma solução que já roda com outros controllers e tira a planilha do caminho entre o ERP e o painel, com IA integrada. Acho que facilitaria o seu dia. {{frase_colegas}}
 
 Faz sentido te mandar por escrito como funciona?`,
     },
