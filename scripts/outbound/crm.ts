@@ -8,7 +8,6 @@
  * Mover negócio NÃO pausa nem cancela e-mail (isso é outbound:reply/campaign/arm).
  */
 import { parseArgs } from "node:util";
-import { campaigns } from "../../src/content/outbound";
 import { logger } from "../../src/lib/observability/logger";
 import { gerarToquesPreviosNoStore, toquesAbertos } from "../../src/lib/outbound/toque-previo";
 import { getOutboundEnv, sendDateKey } from "../../src/lib/outbound/config";
@@ -54,7 +53,7 @@ async function main() {
 
   if (cmd === "toques") {
     // main() já roda sob runExclusive (fim do arquivo): NÃO abrir um segundo lock aqui.
-    const r = await gerarToquesPreviosNoStore(store, campaigns);
+    const r = await gerarToquesPreviosNoStore(store);
     const [tasks, contacts, enrollments] = await Promise.all([store.tasks(), store.contacts(), store.enrollments()]);
     const fila = toquesAbertos(tasks, contacts, enrollments);
     console.log(

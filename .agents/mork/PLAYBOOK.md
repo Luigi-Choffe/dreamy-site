@@ -22,9 +22,11 @@ Sinais vermelhos no fio de saúde: `pending` (run interrompido → `outbound:sen
 --resolve-pending`, conferindo o painel do Resend antes) e `agendados órfãos`
 (cancelar no painel do Resend ou repetir a ação com a chave presente).
 
-**Toque prévio no LinkedIn (desde 2026-09-10):** o ciclo gera no Hoje a fila
-"Conectar antes do E1" (quem recebe E1 hoje/próximo dia de envio e tem perfil);
-o Luigi abre o perfil, manda o convite sem mensagem e marca "Convite enviado".
+**Toque no LinkedIn (regra de 2026-10-15; antes era um dia ANTES do E1):** o
+ciclo gera no Hoje a fila "Conectar no LinkedIn" só para quem JÁ recebeu o E1
+(sent/delivered no Resend); o Luigi abre o perfil, manda o convite com a frase
+curta ("te mandei um e-mail...") e marca "Convite enviado". Nunca mandar o
+convite antes de o e-mail existir (caso GYLOG, 14/10: "não recebi").
 `pnpm outbound:crm toques` gera/lista pela CLI. O resultado vai para
 `custom.toque_previo` do contato: comparar resposta com vs. sem toque no
 relatório semanal.

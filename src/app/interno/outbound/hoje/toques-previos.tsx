@@ -6,8 +6,8 @@ import { PendingPill } from "../pending";
 import { Chip, MenuLinha, plural } from "../ui";
 
 /**
- * Seção "Toque prévio no LinkedIn" do Hoje: uma fila de cliques. Cada linha é uma
- * pessoa que recebe E1 hoje ou no próximo dia de envio: abrir o perfil (nova aba),
+ * Seção "Toque no LinkedIn" do Hoje: uma fila de cliques. Cada linha é uma
+ * pessoa que JÁ recebeu o E1 (regra do Luigi, 15/10): abrir o perfil (nova aba),
  * mandar o convite sem mensagem, marcar "Convite enviado". Matéria da casa
  * (vidro da lente, eyebrow verde, superfície rebaixada), zero fio a mais.
  */
@@ -62,9 +62,9 @@ export function ToquesPrevios({
             ) : null}
           </h2>
           <p className="mt-1 max-w-prose text-xs leading-relaxed text-foreground-muted">
-            Um pedido de conexão sem mensagem: um dia antes do primeiro e-mail, ou agora para quem já está recebendo a
-            sequência. Quem já viu seu rosto responde mais. Abra o perfil, conecte, marque feito. O resultado fica na
-            conta da pessoa.
+            Um pedido de conexão com uma frase curta (&quot;te mandei um e-mail...&quot;), só para quem já recebeu o
+            primeiro e-mail. Quem já viu seu rosto responde mais. Abra o perfil, conecte, marque feito. O resultado fica
+            na conta da pessoa.
             {campanhas.size === 1 ? ` Hoje: ${[...campanhas][0]}.` : null}
           </p>
         </div>

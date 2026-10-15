@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import type { ForecastDay } from "../../src/lib/outbound/agenda-core";
 import {
   candidatosToquePrevio,
   linkedinUrl,
@@ -10,7 +9,7 @@ import {
   TOQUE_PREVIO_CUSTOM,
   TOQUE_PREVIO_KIND,
 } from "../../src/lib/outbound/toque-previo";
-import type { Contact, CrmTask, Enrollment, PlanItem } from "../../src/lib/outbound/types";
+import type { Contact, CrmTask, Enrollment, SendRecord } from "../../src/lib/outbound/types";
 
 function contact(id: string, over: Partial<Contact> = {}): Contact {
   return {
@@ -28,15 +27,36 @@ function contact(id: string, over: Partial<Contact> = {}): Contact {
   };
 }
 
-function item(contactId: string, stepId = "e1", campaignSlug = "logistica-estoque-receita"): PlanItem {
-  return { contactId, enrollmentId: `en-${contactId}`, campaignSlug, stepId } as PlanItem;
+function send(
+  contactId: string,
+  status: SendRecord["status"],
+  sentAt: string,
+  stepId = "e1",
+  campaignSlug = "logistica-estoque-receita",
+): SendRecord {
+  return {
+    id: `s-${contactId}-${stepId}`,
+    enrollmentId: `en-${contactId}`,
+    contactId,
+    campaignSlug,
+    stepId,
+    idempotencyKey: `${campaignSlug}/${contactId}/${stepId}`,
+    status,
+    scheduledAt: sentAt,
+    sentAt,
+  } as SendRecord;
 }
 
 const HOJE = "2026-09-11";
-const forecast: ForecastDay[] = [
-  { dateKey: "2026-09-11", items: [item("a"), item("b", "e3", "construcao-nova-receita")] },
-  { dateKey: "2026-09-14", items: [item("c"), item("d"), item("a")] },
-  { dateKey: "2026-09-15", items: [item("e")] },
+// a e c já receberam o E1; b só recebeu um E3; d tem E1 entregue mas sem perfil;
+// e está só AGENDADO (ainda não saiu); f bounceou.
+const sends: SendRecord[] = [
+  send("a", "delivered", "2026-09-10T14:00:00-03:00"),
+  send("b", "delivered", "2026-09-10T15:00:00-03:00", "e3", "construcao-nova-receita"),
+  send("c", "sent", "2026-09-11T09:30:00-03:00"),
+  send("d", "delivered", "2026-09-11T09:40:00-03:00"),
+  send("e", "scheduled", "2026-09-11T16:00:00-03:00"),
+  send("f", "bounced", "2026-09-10T14:10:00-03:00"),
 ];
 
 describe("linkedinUrl", () => {
@@ -51,11 +71,18 @@ describe("linkedinUrl", () => {
   });
 });
 
-describe("candidatosToquePrevio", () => {
-  it("pega só E1 de hoje e do PRÓXIMO dia de envio (pula quinta → segunda), um contato uma vez, só com perfil", () => {
-    const contacts = [contact("a"), contact("b"), contact("c"), contact("d", { linkedin: undefined }), contact("e")];
-    const out = candidatosToquePrevio({ contacts, forecastDays: forecast, hojeKey: HOJE });
-    expect(out.map((c) => `${c.contact.id}@${c.e1Em}`)).toEqual(["a@2026-09-11", "c@2026-09-14"]);
+describe("candidatosToquePrevio (regra de 15/10: só depois do E1 ter saído)", () => {
+  it("pega quem já teve o E1 processado (sent/delivered); ignora agendado, bounce, outro passo e quem não tem perfil", () => {
+    const contacts = [
+      contact("a"),
+      contact("b"),
+      contact("c"),
+      contact("d", { linkedin: undefined }),
+      contact("e"),
+      contact("f"),
+    ];
+    const out = candidatosToquePrevio({ contacts, sends, hojeKey: HOJE });
+    expect(out.map((c) => `${c.contact.id}@${c.e1Em}`)).toEqual(["a@2026-09-10", "c@2026-09-11"]);
     expect(out[1]?.campaignSlug).toBe("logistica-estoque-receita");
   });
   it("ignora contato inativo e quem já teve toque", () => {
@@ -63,13 +90,13 @@ describe("candidatosToquePrevio", () => {
       contact("a", { status: "excluded" }),
       contact("c", { custom: { [TOQUE_PREVIO_CUSTOM]: "enviado 2026-09-10" } }),
     ];
-    expect(candidatosToquePrevio({ contacts, forecastDays: forecast, hojeKey: HOJE })).toEqual([]);
+    expect(candidatosToquePrevio({ contacts, sends, hojeKey: HOJE })).toEqual([]);
   });
 });
 
 describe("planejarToquesPrevios", () => {
   const contacts = [contact("a"), contact("c")];
-  const candidatos = candidatosToquePrevio({ contacts, forecastDays: forecast, hojeKey: HOJE });
+  const candidatos = candidatosToquePrevio({ contacts, sends, hojeKey: HOJE });
 
   it("cria uma tarefa de regra por candidato, vencendo hoje, com kind e título legível", () => {
     const novas = planejarToquesPrevios({
@@ -95,6 +122,11 @@ describe("planejarToquesPrevios", () => {
     expect(segunda).toEqual([]);
     const concluida = primeira.map((t) => ({ ...t, status: "concluida" as const }));
     expect(planejarToquesPrevios({ candidatos, tasks: concluida, hojeKey: HOJE })).toEqual([]);
+  });
+  it("tarefa CANCELADA não bloqueia: foi cancelada para ser refeita depois do E1", () => {
+    const primeira = planejarToquesPrevios({ candidatos, tasks: [], hojeKey: HOJE });
+    const canceladas = primeira.map((t) => ({ ...t, status: "cancelada" as const }));
+    expect(planejarToquesPrevios({ candidatos, tasks: canceladas, hojeKey: HOJE })).toHaveLength(2);
   });
 });
 

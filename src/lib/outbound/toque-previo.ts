@@ -1,18 +1,19 @@
 import { randomUUID } from "node:crypto";
-import type { ForecastDay } from "./agenda-core";
-import { forecastCadence } from "./agenda-core";
 import { getOutboundEnv, sendDateKey } from "./config";
 import type { OutboundStore } from "./store";
-import type { CampaignDefinition, Contact, CrmTask, Enrollment } from "./types";
+import type { Contact, CrmTask, Enrollment, SendRecord } from "./types";
 
 /**
- * TOQUE PRÉVIO NO LINKEDIN (ordem do Luigi, 2026-09-10): um pedido de conexão,
- * sem mensagem, um dia antes do E1. Quem já viu o rosto do remetente responde
- * mais. O motor descobre quem recebe E1 hoje ou no próximo dia de envio (a
- * mesma previsão da Agenda), cria UMA tarefa por contato (idempotente) vencendo
- * hoje, e o Hoje vira uma fila de cliques: abrir perfil → conectar → feito.
- * O resultado fica no contato (`custom.toque_previo`) para medirmos resposta
- * com e sem toque. Sem PII fora do store; nada aqui toca no envio.
+ * TOQUE NO LINKEDIN DEPOIS DO E1 (regra do Luigi, 2026-10-15; até então era um dia
+ * ANTES, pela previsão da Agenda): um pedido de conexão com uma mensagem curta
+ * ("te mandei um e-mail..."), só depois de o E1 ter saído de verdade. Se a
+ * mensagem chegasse antes do e-mail, a pessoa respondia "não recebi" (caso
+ * GYLOG, 14/10). O motor descobre quem já teve o E1 processado pelo provedor
+ * (sent/delivered), cria UMA tarefa por contato (idempotente) vencendo hoje, e o
+ * Hoje vira uma fila de cliques: abrir perfil → conectar → feito. O resultado
+ * fica no contato (`custom.toque_previo`, nome mantido pela compatibilidade do
+ * relatório) para medirmos resposta com e sem toque. Sem PII fora do store;
+ * nada aqui toca no envio.
  */
 
 export const TOQUE_PREVIO_KIND = "toque-previo" as const;
@@ -38,35 +39,36 @@ export function linkedinUrl(contact: Pick<Contact, "linkedin">): string | null {
 export interface CandidatoToque {
   contact: Contact;
   campaignSlug: string;
-  /** Dia previsto do E1 (YYYY-MM-DD). */
+  /** Dia em que o E1 saiu (YYYY-MM-DD). */
   e1Em: string;
 }
 
+/** E1 que o provedor já processou: o e-mail existe na caixa (bounce não gera toque). */
+const E1_SAIU: ReadonlySet<SendRecord["status"]> = new Set(["sent", "delivered"]);
+
 /**
- * Quem recebe E1 HOJE ou no PRÓXIMO dia de envio previsto, está ativo, tem perfil
- * no LinkedIn e ainda não teve toque. Um contato conta uma vez.
+ * Quem JÁ RECEBEU o E1 (processado pelo provedor), está ativo, tem perfil no
+ * LinkedIn e ainda não teve toque. Um contato conta uma vez, pelo E1 mais antigo.
  */
 export function candidatosToquePrevio(input: {
   contacts: Contact[];
-  forecastDays: ForecastDay[];
+  sends: SendRecord[];
   hojeKey: string;
 }): CandidatoToque[] {
-  const hoje = input.forecastDays.find((d) => d.dateKey === input.hojeKey);
-  const proximo = input.forecastDays.find((d) => d.dateKey > input.hojeKey);
   const byId = new Map(input.contacts.map((c) => [c.id, c]));
   const vistos = new Set<string>();
   const out: CandidatoToque[] = [];
-  for (const day of [hoje, proximo]) {
-    if (!day) continue;
-    for (const item of day.items) {
-      if (item.stepId !== "e1") continue;
-      const contact = byId.get(item.contactId);
-      if (!contact || contact.status !== "active" || vistos.has(contact.id)) continue;
-      if ((contact.custom[TOQUE_PREVIO_CUSTOM] ?? "").trim() !== "") continue;
-      if (!linkedinUrl(contact)) continue;
-      vistos.add(contact.id);
-      out.push({ contact, campaignSlug: item.campaignSlug, e1Em: day.dateKey });
-    }
+  const quando = (s: SendRecord): string => s.sentAt ?? s.scheduledAt ?? "";
+  const e1s = input.sends
+    .filter((s) => s.stepId === "e1" && E1_SAIU.has(s.status))
+    .sort((a, b) => quando(a).localeCompare(quando(b)));
+  for (const send of e1s) {
+    const contact = byId.get(send.contactId);
+    if (!contact || contact.status !== "active" || vistos.has(contact.id)) continue;
+    if ((contact.custom[TOQUE_PREVIO_CUSTOM] ?? "").trim() !== "") continue;
+    if (!linkedinUrl(contact)) continue;
+    vistos.add(contact.id);
+    out.push({ contact, campaignSlug: send.campaignSlug, e1Em: quando(send).slice(0, 10) });
   }
   return out.sort(
     (a, b) =>
@@ -76,7 +78,11 @@ export function candidatosToquePrevio(input: {
   );
 }
 
-/** Tarefas NOVAS (uma por contato que ainda não tem tarefa de toque, aberta ou concluída). */
+/**
+ * Tarefas NOVAS (uma por contato que ainda não tem tarefa de toque aberta ou
+ * concluída; uma CANCELADA não conta, porque foi cancelada justamente para ser
+ * refeita no momento certo).
+ */
 export function planejarToquesPrevios(input: {
   candidatos: CandidatoToque[];
   tasks: CrmTask[];
@@ -85,7 +91,9 @@ export function planejarToquesPrevios(input: {
 }): CrmTask[] {
   const now = input.now ?? new Date();
   const jaTem = new Set(
-    input.tasks.filter((t) => t.kind === TOQUE_PREVIO_KIND && t.contactId).map((t) => t.contactId as string),
+    input.tasks
+      .filter((t) => t.kind === TOQUE_PREVIO_KIND && t.contactId && t.status !== "cancelada")
+      .map((t) => t.contactId as string),
   );
   return input.candidatos
     .filter((c) => !jaTem.has(c.contact.id))
@@ -154,31 +162,18 @@ export function registrarToque(
 }
 
 /**
- * Gera as tarefas no store (idempotente): roda no ciclo (`outbound:auto`), na CLI
- * (`outbound:crm toques`) e no botão do Hoje. Lê a previsão da Agenda (5 dias
- * cobrem sexta → segunda) e grava só o que for novo.
+ * Gera as tarefas no store (idempotente): roda no ciclo (`outbound:auto`, depois do
+ * envio e do sync), na CLI (`outbound:crm toques`) e no botão do Hoje. Lê os envios
+ * reais e grava só o que for novo.
  */
 export async function gerarToquesPreviosNoStore(
   store: OutboundStore,
-  campaignDefs: CampaignDefinition[],
   now: Date = new Date(),
 ): Promise<{ criados: number; abertos: number; candidatos: number }> {
   const env = getOutboundEnv();
   const hojeKey = sendDateKey(now, env.utcOffset);
-  const [contacts, enrollments, sends, suppressions, runtimes, state, tasks] = await Promise.all([
-    store.contacts(),
-    store.enrollments(),
-    store.sends(),
-    store.suppressions(),
-    store.campaignRuntimes(),
-    store.state(),
-    store.tasks(),
-  ]);
-  const forecast = forecastCadence(
-    { contacts, enrollments, sends, suppressions, campaignDefs, runtimes, state, env, now },
-    5,
-  );
-  const candidatos = candidatosToquePrevio({ contacts, forecastDays: forecast.days, hojeKey });
+  const [contacts, sends, tasks] = await Promise.all([store.contacts(), store.sends(), store.tasks()]);
+  const candidatos = candidatosToquePrevio({ contacts, sends, hojeKey });
   const novas = planejarToquesPrevios({ candidatos, tasks, hojeKey, now });
   if (novas.length > 0) {
     tasks.push(...novas);

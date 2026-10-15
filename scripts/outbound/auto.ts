@@ -7,7 +7,6 @@
  */
 import { spawnSync } from "node:child_process";
 import { parseArgs } from "node:util";
-import { campaigns } from "../../src/content/outbound";
 import { logger } from "../../src/lib/observability/logger";
 import { openStore, runExclusive } from "../../src/lib/outbound/store";
 import { gerarToquesPreviosNoStore } from "../../src/lib/outbound/toque-previo";
@@ -73,7 +72,7 @@ async function main() {
   // Toque prévio no LinkedIn: tarefas para os E1s de hoje e do próximo dia de envio
   // (idempotente; o Luigi clica no Hoje). Falha aqui não afeta o envio do dia.
   try {
-    const toques = await runExclusive("toques-previos", () => gerarToquesPreviosNoStore(openStore(), campaigns));
+    const toques = await runExclusive("toques-previos", () => gerarToquesPreviosNoStore(openStore()));
     console.log(
       `\n── outbound:auto · toques prévios no LinkedIn ── ${toques.criados} nova(s), ${toques.abertos} aberta(s) no Hoje`,
     );

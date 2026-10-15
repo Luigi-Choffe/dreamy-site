@@ -14,7 +14,6 @@ import {
   type ToqueResultado,
 } from "@/lib/outbound/toque-previo";
 import type { DealStage } from "@/lib/outbound/types";
-import { campaigns } from "@/content/outbound";
 import { getOutboundEnv, sendDateKey } from "@/lib/outbound/config";
 import { demoDir } from "./data";
 
@@ -179,7 +178,7 @@ export async function createTaskAction(formData: FormData): Promise<void> {
 /** Botão "Atualizar lista" do toque prévio: gera as tarefas dos E1s de hoje e do próximo dia (idempotente). */
 export async function gerarToquesPreviosAction(formData: FormData): Promise<void> {
   await withCrmContext(formData, "toques-gerar", async ({ store, isDemo }) => {
-    const r = await gerarToquesPreviosNoStore(store, campaigns);
+    const r = await gerarToquesPreviosNoStore(store);
     logger.info("outbound.toques.gerados", { ...r, isDemo, console: true });
   });
 }
