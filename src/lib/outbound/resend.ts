@@ -4,6 +4,8 @@
  * POST /emails/:id/cancel (circuit breaker cancela agendados).
  */
 
+import { fetchResiliente } from "./http";
+
 const BASE = "https://api.resend.com";
 const TIMEOUT_MS = 15_000;
 
@@ -43,7 +45,9 @@ async function request(
   body?: unknown,
   extraHeaders?: Record<string, string>,
 ): Promise<unknown> {
-  const res = await fetch(`${BASE}${pathName}`, {
+  // Fetch resiliente (IPv4, h2, 30 s): o global do Node estourava o connect timeout
+  // nesta rede e derrubava sync e envio (falha #19).
+  const res = await fetchResiliente(`${BASE}${pathName}`, {
     method,
     headers: {
       authorization: `Bearer ${apiKey}`,

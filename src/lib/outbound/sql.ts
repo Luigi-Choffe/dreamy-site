@@ -6,7 +6,8 @@
  * trivial nos dois sentidos.
  */
 
-import { neon } from "@neondatabase/serverless";
+import { neon, neonConfig } from "@neondatabase/serverless";
+import { fetchResiliente } from "./http";
 
 export interface SqlStatement {
   text: string;
@@ -19,18 +20,84 @@ export interface SqlClient {
   transaction(statements: SqlStatement[]): Promise<void>;
 }
 
+/**
+ * Falha #19 (2026-10-20): numa rede ruim (handshake TLS de 2 a 14 s, DNS lento) o
+ * fetch do driver estoura o connect timeout e o ciclo inteiro abortava no sync.
+ * Erros de REDE antes de uma resposta são transitórios e seguros de repetir: as
+ * gravações do store são upserts de coleção inteira, os eventos têm dedupe por
+ * sourceKey e o lock é condicional. Erros de SQL (sintaxe, constraint) não entram.
+ */
+const TRANSIENT_CODES = new Set([
+  "UND_ERR_CONNECT_TIMEOUT",
+  "UND_ERR_SOCKET",
+  "UND_ERR_HEADERS_TIMEOUT",
+  "ECONNRESET",
+  "ECONNREFUSED",
+  "ETIMEDOUT",
+  "EAI_AGAIN",
+  "ENOTFOUND",
+  "EPIPE",
+]);
+
+export function isTransientNetworkError(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  const cause = (err as Error & { cause?: { code?: string; message?: string } }).cause;
+  if (cause?.code && TRANSIENT_CODES.has(cause.code)) return true;
+  const code = (err as Error & { code?: string }).code;
+  if (code && TRANSIENT_CODES.has(code)) return true;
+  const msg = `${err.message} ${cause?.message ?? ""}`.toLowerCase();
+  return msg.includes("fetch failed") || msg.includes("terminated") || msg.includes("socket hang up");
+}
+
+export const SQL_RETRY = { attempts: 6, baseMs: 2000 } as const;
+
+/** Repete `fn` em erro transitório de rede com espera crescente (2 · 4 · 8 · 16 · 32 s: aguenta ~1 min de rede ruim). */
+export async function withNetworkRetry<T>(
+  fn: () => Promise<T>,
+  opts: { attempts?: number; baseMs?: number; onRetry?: (attempt: number, err: unknown) => void } = {},
+): Promise<T> {
+  const attempts = opts.attempts ?? SQL_RETRY.attempts;
+  const baseMs = opts.baseMs ?? SQL_RETRY.baseMs;
+  let lastErr: unknown;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+      if (attempt === attempts || !isTransientNetworkError(err)) throw err;
+      opts.onRetry?.(attempt, err);
+      await new Promise((resolve) => setTimeout(resolve, baseMs * 2 ** (attempt - 1)));
+    }
+  }
+  throw lastErr;
+}
+
 /** Cliente Neon (HTTP, sem sockets — funciona em serverless e no CLI local). */
 export function createNeonSqlClient(databaseUrl: string): SqlClient {
+  // O driver fala HTTP com `api.<região>.aws.neon.tech`; o fetch global do Node
+  // travava na resolução AAAA desta rede (falha #19). Fetch próprio: IPv4, h2, 30 s.
+  neonConfig.fetchFunction = fetchResiliente;
   const sql = neon(databaseUrl);
+  const onRetry = (attempt: number, err: unknown) => {
+    const cause = (err as Error & { cause?: { code?: string } }).cause?.code ?? (err as Error).message;
+    console.warn(`  (banco: falha de rede transitória "${cause}", tentativa ${attempt + 1} de ${SQL_RETRY.attempts})`);
+  };
   return {
     async query<T>(text: string, params: unknown[] = []): Promise<T[]> {
-      return (await sql.query(text, params as never[])) as T[];
+      return withNetworkRetry(async () => (await sql.query(text, params as never[])) as T[], { onRetry });
     },
     async transaction(statements) {
       if (statements.length === 0) return;
       // `sql.query` devolve uma query preguiçosa; `transaction` executa todas numa transação.
-      const queries = statements.map((s) => sql.query(s.text, (s.params ?? []) as never[]));
-      await sql.transaction(queries as never);
+      // A transação é atômica no servidor: se a conexão caiu antes da resposta, ou
+      // nada foi aplicado ou tudo foi (e repetir um upsert de coleção é idempotente).
+      await withNetworkRetry(
+        async () => {
+          const queries = statements.map((s) => sql.query(s.text, (s.params ?? []) as never[]));
+          await sql.transaction(queries as never);
+        },
+        { onRetry },
+      );
     },
   };
 }

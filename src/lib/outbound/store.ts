@@ -3,6 +3,7 @@ import { unlinkSync } from "node:fs";
 import { hostname } from "node:os";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import { setDefaultResultOrder } from "node:dns";
 import { logger } from "../observability/logger";
 import { createNeonSqlClient, type SqlClient } from "./sql";
 import { DEFAULT_STATE, LOCK_STALE_MS, LOCK_WAIT_MS, normalizeEmail } from "./store-common";
@@ -254,6 +255,16 @@ export function getSqlClient(): SqlClient {
   const url = databaseUrl();
   if (!url) throw new Error("OUTBOUND_DATABASE_URL não definida.");
   if (!sharedSqlClient || sharedSqlUrl !== url) {
+    // Falha #19 (2026-10-20): o host do Neon tem AAAA e o Node tentava IPv6
+    // primeiro; nesta rede o caminho IPv6 até o Neon estourava o connect timeout
+    // do fetch (UND_ERR_CONNECT_TIMEOUT) e TODO ciclo abortava no sync, enquanto
+    // o IPv4 conectava normal. IPv4 primeiro, em processo, para não depender de
+    // NODE_OPTIONS da máquina (o mesmo vale na Vercel, sem efeito colateral).
+    try {
+      setDefaultResultOrder("ipv4first");
+    } catch {
+      // runtime sem node:dns configurável (edge): segue a ordem padrão
+    }
     sharedSqlClient = createNeonSqlClient(url);
     sharedSqlUrl = url;
   }

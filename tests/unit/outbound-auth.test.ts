@@ -19,6 +19,7 @@ import {
   verifyLoginToken,
   verifySession,
 } from "@/lib/outbound/auth";
+import { setFetchResilienteParaTestes } from "@/lib/outbound/http";
 import { proxy } from "@/proxy";
 
 /**
@@ -64,6 +65,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  setFetchResilienteParaTestes(null);
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
   vi.useRealTimers();
@@ -247,6 +249,8 @@ describe("link de acesso — sendLoginLink", () => {
   function stubResend() {
     const fetchMock = vi.fn(async () => new Response(JSON.stringify({ data: [{ id: "em_1" }] }), { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
+    // O Resend fala pelo fetch resiliente (falha #19): o mesmo stub vale lá.
+    setFetchResilienteParaTestes(fetchMock as never);
     vi.stubEnv("OUTBOUND_RESEND_API_KEY", "re_test");
     vi.stubEnv("OUTBOUND_FROM", "Dreamy <console@bedreamy.com.br>");
     return fetchMock;

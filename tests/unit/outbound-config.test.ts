@@ -1,9 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { assertSendReady, getOutboundEnv, parseReplyTo, replyToField } from "../../src/lib/outbound/config";
 import type { OutboundEnv } from "../../src/lib/outbound/config";
+import { setFetchResilienteParaTestes } from "../../src/lib/outbound/http";
 import { createResendClient } from "../../src/lib/outbound/resend";
 
 afterEach(() => {
+  setFetchResilienteParaTestes(null);
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
 });
@@ -97,6 +99,7 @@ describe("Resend — payload com reply_to em array", () => {
   it("sendBatch repassa o array de reply_to sem alterar", async () => {
     const fetchMock = vi.fn(async () => new Response(JSON.stringify({ data: [{ id: "em_1" }] }), { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
+    setFetchResilienteParaTestes(fetchMock as never);
     const client = createResendClient("re_test");
     const ids = await client.sendBatch(
       [
