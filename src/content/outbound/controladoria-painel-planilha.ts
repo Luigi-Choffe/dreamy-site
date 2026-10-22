@@ -45,9 +45,9 @@ export const controladoriaPainelPlanilha: CampaignDefinition = {
 
 O dado está no ERP desde o dia primeiro. Mesmo assim, o painel que a diretoria olha é montado na mão: alguém extrai, consolida na planilha e confere linha por linha antes de atualizar. Quando a diretoria pergunta como fechou o mês, a resposta ainda está sendo montada.
 
-Decidi te enviar este e-mail pois tenho uma solução que já roda com outros controllers e tira a planilha desse caminho, com IA integrada. Acho que facilitaria o seu dia.
+Decidi te enviar este e-mail pois tenho uma solução que já roda com outros controllers e tira a planilha desse caminho, com IA integrada.
 
-Faz sentido te mandar por escrito como funciona?`,
+Acha que consegue alguns minutos para eu te apresentar nossa solução? Acredito que consigo otimizar bastante as suas tarefas do dia a dia. Abraços!`,
     },
     {
       id: "e2",
@@ -55,11 +55,11 @@ Faz sentido te mandar por escrito como funciona?`,
       subject: "a planilha entre o sistema e o painel",
       body: `{{nome}}, só completando o que te escrevi.
 
-O que mais ouço é "a gente já tem Power BI". O painel não é o problema, é o que alimenta ele: alguém extrai do ERP, cruza folha, banco e orçamento na planilha, acerta o de-para, e só então o painel atualiza. O dado existe desde o dia primeiro. O número chega depois da pergunta.
+Quase todo controller com quem converso me diz "a gente já tem Power BI". O painel não é o problema. O problema é o caminho até ele: alguém extrai do ERP, cruza folha, banco e orçamento na planilha, e só depois disso o painel atualiza. É essa parte do meio que eu resolvo, encaixada no ERP de vocês, com a IA fazendo o trabalho repetitivo.
 
-Essa camada do meio é o que eu monto, encaixada no ERP de vocês, com a IA fazendo a parte repetitiva. Você não precisa saber o que construir: o desenho eu faço junto com quem monta o número hoje.
+Você não precisa saber o que construir. O desenho eu faço junto com quem monta o número hoje.
 
-Qual relatório do fechamento ainda sai da planilha aí?`,
+Acha que consegue alguns minutos para eu te apresentar nossa solução? Acredito que consigo otimizar bastante as suas tarefas do dia a dia. Abraços!`,
     },
     {
       id: "e3",
@@ -75,7 +75,7 @@ Na controladoria é igual: o lançamento já está no ERP, falta a camada que le
 
 Escrevi como eu penso isso: https://www.dreamy.app.br/solucoes/sistemas-sob-medida?solucao=sistema&utm_source=outbound&utm_medium=email&utm_campaign=controladoria-painel-planilha&utm_content=e3
 
-Quantos dias depois do fechamento a diretoria vê o número aí?`,
+Se topar, me dá alguns minutos que eu te mostro isso funcionando. Acredito que dá para tirar bastante coisa da sua mão. Abraços!`,
     },
     {
       id: "e4",
@@ -85,9 +85,9 @@ Quantos dias depois do fechamento a diretoria vê o número aí?`,
       // duas palavras, decisão do Luigi em 2026-10-13.
       body: `{{nome}}, último e-mail, prometo.
 
-Se o fechamento aí já cai no painel sem passar por planilha, ótimo, não insisto. Se ainda tem alguém extraindo do ERP e consolidando na mão todo mês, responde só "painel" ou "planilha" que eu te mando por escrito por onde eu começaria, sem reunião.
+Se o fechamento aí já cai no painel sem passar por planilha, ótimo, não insisto. Se ainda tem alguém extraindo do ERP e consolidando na mão todo mês, me responde que eu te apresento em alguns minutos. Acredito que consigo facilitar bastante o seu dia a dia.
 
-Se o assunto não for para vocês, me diz que eu não escrevo de novo.`,
+Se não for para vocês, me diz que eu não escrevo de novo. Abraços!`,
     },
   ],
 };

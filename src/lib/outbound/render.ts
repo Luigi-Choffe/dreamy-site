@@ -267,9 +267,11 @@ export function lintEmail(subject: string, body: string, opts: LintOptions = {})
     });
   }
 
+  // Copy v4 (Luigi, 2026-10-21): o fecho pessoal usa "Abraços!" e o E1 fecha a
+  // abertura com "!"; duas por e-mail é a voz dele, três é gritaria de marketing.
   const exclamations = (body.match(/!/g) ?? []).length + (subject.match(/!/g) ?? []).length;
-  if (exclamations > 1) {
-    issues.push({ level: "error", rule: "tom-marketing", detail: `${exclamations} exclamações (máx. 1)` });
+  if (exclamations > 2) {
+    issues.push({ level: "error", rule: "tom-marketing", detail: `${exclamations} exclamações (máx. 2)` });
   }
 
   // Decisão do usuário (2026-08-29): travessão é PROIBIDO — "esse traço é muito cara de IA".

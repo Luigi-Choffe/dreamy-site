@@ -94,16 +94,22 @@ nomes de clientes, logos e depoimentos — nada disso está aprovado em `docs/CO
 - Um bloco de prova por passo, nunca no E1. O E1 não carrega número; os demais só carregam os números do case ou
   de uma das fontes acima (construção tem conta de padaria no E3 e case no E4, aprovado em 2026-09-14).
 
-## Pergunta final (copy v3, aprovada pelo Luigi em 2026-09-14)
+## Fecho do e-mail (copy v4, ordem do Luigi em 2026-10-21; substitui a "pergunta final" da v3)
 
-As primeiras campanhas terminaram com zero respostas em 61 prospects, e três delas abriam pedindo reunião. Regra
-desde então: **nenhum e-mail pede reunião**. A pergunta final se responde com uma linha ou uma palavra.
+A v3 (2026-09-14) fechava todo e-mail com uma pergunta de uma linha sobre a operação ("Qual relatório do fechamento
+ainda sai da planilha aí?", "Isso acontece aí também, ou estou chutando longe?"). O Luigi leu isso num E2 real e
+reprovou por escrito: "confuso, não direto, frio, 100% vendedor, com muita cara de IA". Regra desde então:
 
-- **E1:** pergunta concreta sobre a operação ou convite para corrigir. Padrão da casa para listas novas:
-  "Isso acontece aí também, ou estou chutando longe?"
-- **E4:** resposta de uma palavra ("responde só 'planilha'") com a promessa de mandar por escrito, sem reunião. O
-  MORK redige essa resposta e o Luigi revisa antes de enviar.
-- **Proibido:** "vale vinte minutos de conversa", "podemos agendar", "tem disponibilidade".
+- **Nenhum e-mail termina com pergunta de diagnóstico.** Perguntar sobre a rotina da pessoa no fecho está proibido.
+- **Todo e-mail termina pedindo alguns minutos para apresentar, de forma pessoal, com a convicção de que ajuda**, e
+  "Abraços!". O molde do Luigi: "Acha que consegue alguns minutos para eu te apresentar nossa solução? Acredito que
+  consigo otimizar bastante as suas tarefas do dia a dia. Abraços!" Variar as palavras entre os passos, nunca o tom.
+- **O corpo é uma oportunidade de mostrar que ele consegue ajudar**, direto: problema em uma frase, o que o Luigi faz
+  em uma frase, convite. Sem parágrafo-aforismo ("o dado existe desde o dia primeiro; o número chega depois da
+  pergunta"): isso é o que soou escrito por IA.
+- **Até duas exclamações por e-mail** (o linter barra a partir da terceira): uma no corpo, uma no "Abraços!".
+- **Segue proibido:** "vale vinte minutos de conversa", "podemos agendar", "tem disponibilidade?", "espero que esteja
+  bem", pergunta que exige resposta de uma palavra.
 
 ### Molde E1 v3 (listas novas)
 
