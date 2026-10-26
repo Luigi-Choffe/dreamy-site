@@ -1,5 +1,6 @@
 import Link from "next/link";
-import type { ToqueAberto } from "@/lib/outbound/toque-previo";
+import { mensagemConvite, type ToqueAberto } from "@/lib/outbound/toque-previo";
+import { CopiarConvite } from "./copiar-convite";
 import { gerarToquesPreviosAction, registrarToqueAction } from "../crm-actions";
 import { consoleHref } from "../data";
 import { PendingPill } from "../pending";
@@ -7,8 +8,9 @@ import { Chip, MenuLinha, plural } from "../ui";
 
 /**
  * Seção "Toque no LinkedIn" do Hoje: uma fila de cliques. Cada linha é uma
- * pessoa que JÁ recebeu o E1 (regra do Luigi, 15/10): abrir o perfil (nova aba),
- * mandar o convite sem mensagem, marcar "Convite enviado". Matéria da casa
+ * pessoa que JÁ recebeu o E1 (regra do Luigi, 15/10): "Copiar e abrir" copia a
+ * mensagem com o nome e abre o perfil (nova aba), o Luigi cola o convite e marca
+ * "Convite enviado". Matéria da casa
  * (vidro da lente, eyebrow verde, superfície rebaixada), zero fio a mais.
  */
 
@@ -62,9 +64,8 @@ export function ToquesPrevios({
             ) : null}
           </h2>
           <p className="mt-1 max-w-prose text-xs leading-relaxed text-foreground-muted">
-            Um pedido de conexão com uma frase curta (&quot;te mandei um e-mail...&quot;), só para quem já recebeu o
-            primeiro e-mail. Quem já viu seu rosto responde mais. Abra o perfil, conecte, marque feito. O resultado fica
-            na conta da pessoa.
+            Só para quem já recebeu o primeiro e-mail. &quot;Copiar e abrir&quot; copia a mensagem do convite com o nome
+            da pessoa e abre o perfil; cole no convite, envie e marque feito. O resultado fica na conta da pessoa.
             {campanhas.size === 1 ? ` Hoje: ${[...campanhas][0]}.` : null}
           </p>
         </div>
@@ -137,11 +138,7 @@ export function ToquesPrevios({
                 </span>
                 <span className="flex items-center gap-1.5 sm:justify-self-end">
                   {url ? (
-                    <a href={url} target="_blank" rel="noopener noreferrer" className={BTN_GHOST}>
-                      Abrir perfil
-                      <span aria-hidden>↗</span>
-                      <span className="sr-only"> (abre em nova aba)</span>
-                    </a>
+                    <CopiarConvite mensagem={mensagemConvite(contact)} url={url} className={BTN_GHOST} />
                   ) : (
                     <Chip tone="warning">sem perfil</Chip>
                   )}

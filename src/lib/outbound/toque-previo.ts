@@ -36,6 +36,19 @@ export function linkedinUrl(contact: Pick<Contact, "linkedin">): string | null {
   }
 }
 
+/**
+ * Mensagem do convite no LinkedIn, já com o nome (texto do Luigi, 2026-10-26). O
+ * Hoje copia isto para a área de transferência e abre o perfil num clique só.
+ * Primeiro nome apenas, com a inicial maiúscula (o Clay às vezes manda tudo em
+ * caixa alta). Cabe no limite do LinkedIn (≈175 caracteres + nome).
+ */
+export function mensagemConvite(contact: Pick<Contact, "nome">): string {
+  const bruto = contact.nome.trim().split(/\s+/)[0] ?? "";
+  const nome = bruto ? bruto.charAt(0).toLocaleUpperCase("pt-BR") + bruto.slice(1).toLocaleLowerCase("pt-BR") : "";
+  const saudacao = nome ? `Olá, ${nome}!` : "Olá!";
+  return `${saudacao} Vi seu perfil e te mandei um e-mail sobre uma solução que eu tenho em minha empresa. Achei que valia conectar por aqui também. Prazer, sou o Luigi, da Dreamy.`;
+}
+
 export interface CandidatoToque {
   contact: Contact;
   campaignSlug: string;

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   candidatosToquePrevio,
   linkedinUrl,
+  mensagemConvite,
   planejarToquesPrevios,
   progressoToques,
   registrarToque,
@@ -166,5 +167,19 @@ describe("fila do Hoje e registro", () => {
     expect(contacts[0]?.custom[TOQUE_PREVIO_CUSTOM]).toBe("enviado 2026-09-11");
     expect(progressoToques(tasks, HOJE)).toEqual({ feitos: 1, abertos: 1 });
     expect(toquesAbertos(tasks, contacts, enrollments)).toHaveLength(1);
+  });
+});
+
+describe("mensagemConvite (texto do Luigi, 2026-10-26)", () => {
+  it("usa só o primeiro nome, com inicial maiúscula, e cabe no convite do LinkedIn", () => {
+    const m = mensagemConvite({ nome: "ALLAN RODRIGUES" });
+    expect(m).toBe(
+      "Olá, Allan! Vi seu perfil e te mandei um e-mail sobre uma solução que eu tenho em minha empresa. Achei que valia conectar por aqui também. Prazer, sou o Luigi, da Dreamy.",
+    );
+    expect(m.length).toBeLessThanOrEqual(200);
+    expect(mensagemConvite({ nome: "lívia" })).toMatch(/^Olá, Lívia! /);
+  });
+  it("sem nome, cumprimenta sem o nome em vez de deixar um buraco", () => {
+    expect(mensagemConvite({ nome: "  " })).toMatch(/^Olá! Vi seu perfil/);
   });
 });
